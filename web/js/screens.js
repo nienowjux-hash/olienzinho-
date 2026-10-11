@@ -149,6 +149,72 @@ const Screens = {
     Art.ship(sx, sy, { vx: 0, t, scale: sc, boost: ign * (1 + Math.min(2.2, liftT * .8)), lookx: .3, looky: -.5, blinkT: 0 });
   },
 
+  // estilhaco facetado do Coracao de Luz
+  shard(x, y, s, col, rot, spin) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(rot);
+    ctx.scale((.35 + .65 * Math.abs(Math.cos(spin))) * s, s);
+    const P = [[0, -100], [44, -34], [30, 62], [0, 104], [-36, 48], [-40, -38]];
+    ctx.fillStyle = lin(-40, -100, 44, 104, [[0, '#ffffff'], [.45, col], [1, '#3a1a6a']]);
+    ctx.beginPath(); P.forEach(([px, py], i) => i ? ctx.lineTo(px, py) : ctx.moveTo(px, py)); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,.9)'; ctx.lineWidth = 3; ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,255,255,.45)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, -100); ctx.lineTo(0, 104); ctx.moveTo(44, -34); ctx.lineTo(-36, 48); ctx.moveTo(-40, -38); ctx.lineTo(30, 62); ctx.stroke();
+    ctx.globalAlpha = .4; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.moveTo(-10, -90); ctx.lineTo(30, -30); ctx.lineTo(-8, 10); ctx.closePath(); ctx.fill();
+    ctx.restore();
+  },
+
+  // o setor se acende: onda de luz e estrelas voltando a brilhar
+  sceneLit(S, t, keep) {
+    const u = keep ? 99 : S.t, k = easeOut(u / 2.2), cx = W / 2, cy = H * .4;
+    if (!keep && !S.fx) { S.fx = true; Snd.play('heart'); }
+    if (!S.ls2) S.ls2 = Array.from({ length: 80 }, () => { const x = rand(30, W - 30), y = rand(70, 430); return { x, y, on: Math.hypot(x - cx, y - cy) / 900 * 2.2, c: pick(['#ffe9a8', '#ffd6f4', '#bfe6ff', '#e2d4ff']), sz: rand(.6, 1.4) }; });
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    ctx.globalAlpha = .6 * k; ctx.drawImage(World.nebA, -40, 0, W + 80, H);
+    ctx.globalAlpha = .8 * k; ctx.drawImage(World.nebB, -40, 0, W + 80, H);
+    ctx.globalAlpha = 1; drawGlow(cx, cy, 520 * k, '#ffd36a', .35 * k); drawGlow(cx, cy, 300 * k, '#ffffff', .12 * k);
+    for (let i = 0; i < 3; i++) { const r = (u - i * .5) / 2.6; if (r > 0 && r < 1) { ctx.globalAlpha = (1 - r) * .7; ctx.strokeStyle = '#ffe9a8'; ctx.lineWidth = 8 * (1 - r) + 2; ctx.beginPath(); ctx.arc(cx, cy, 40 + r * 900, 0, TAU); ctx.stroke(); } }
+    for (const s of S.ls2) {
+      if (u < s.on) continue;
+      const a = clamp((u - s.on) / .5, 0, 1), fl = 1 - clamp((u - s.on) / .7, 0, 1), tw = .75 + .25 * Math.sin(t * 3 + s.x);
+      drawGlow(s.x, s.y, (10 + s.sz * 9 + fl * 46) * 1.1, s.c, (.55 * a + fl) * tw);
+      ctx.globalAlpha = a * tw; ctx.fillStyle = '#fff'; const r1 = 2.5 * s.sz + fl * 6; ctx.beginPath(); for (let q = 0; q < 8; q++) { const aa = q * Math.PI / 4, rr = q % 2 ? r1 * .3 : r1 * 2.6; ctx.lineTo(s.x + Math.cos(aa) * rr, s.y + Math.sin(aa) * rr); } ctx.closePath(); ctx.fill();
+    }
+    ctx.restore(); ctx.globalAlpha = 1;
+  },
+
+  // fragmento do Coracao de Luz surgindo e girando
+  sceneFragment(S, pg, t, keep) {
+    const u = keep ? 99 : S.t; if (pg.frag) S.frag = pg.frag; const col = S.frag || '#ffd36a';
+    const cx = W / 2, cy = H * .38 + Math.sin(t * 1.8) * 8, k = easeBack(clamp(u / 1.1, 0, 1));
+    if (!keep && !S.fx) { S.fx = true; Snd.play('upgrade'); Snd.play('heart'); }
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    drawGlow(cx, cy, 300 * k, col, .8); drawGlow(cx, cy, 150 * k, '#ffffff', .8);
+    ctx.strokeStyle = col; ctx.lineWidth = 2;
+    for (let i = 0; i < 14; i++) { const a = i / 14 * TAU + t * .2, l = 150 + Math.sin(t * 2 + i) * 30; ctx.globalAlpha = .35 * k; ctx.beginPath(); ctx.moveTo(cx + Math.cos(a) * 80, cy + Math.sin(a) * 80); ctx.lineTo(cx + Math.cos(a) * (80 + l), cy + Math.sin(a) * (80 + l)); ctx.stroke(); }
+    const r0 = u / 1.3; if (r0 < 1) { ctx.globalAlpha = (1 - r0) * .8; ctx.strokeStyle = '#fff'; ctx.lineWidth = 6 * (1 - r0) + 1; ctx.beginPath(); ctx.arc(cx, cy, 20 + r0 * 380, 0, TAU); ctx.stroke(); }
+    for (let i = 0; i < 18; i++) { const p = (t * .45 + i / 18) % 1, a = i * 2.4, d = (1 - p) * 300; drawGlow(cx + Math.cos(a) * d, cy + Math.sin(a) * d * .7, 7, col, p * .9 * k); }
+    ctx.restore(); ctx.globalAlpha = 1;
+    this.shard(cx, cy, k * 1.15, col, Math.sin(t * .6) * .12, t * .8);
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    for (let i = 0; i < 9; i++) { const a = t * .7 + i * .7, d = 120 + (i % 3) * 22, x = cx + Math.cos(a) * d, y = cy + Math.sin(a) * d * .6; ctx.globalAlpha = (.5 + .5 * Math.sin(t * 6 + i)) * k; ctx.fillStyle = '#fff'; ctx.beginPath(); for (let q = 0; q < 8; q++) { const aa = q * Math.PI / 4, rr = q % 2 ? 2 : 7; ctx.lineTo(x + Math.cos(aa) * rr, y + Math.sin(aa) * rr); } ctx.closePath(); ctx.fill(); }
+    if (pg.react) { // o nucleo do Orbi responde ao fragmento
+      const ox = pg.who === 'B' ? 150 : W - 140, oy = 540;
+      ctx.globalAlpha = .6 + Math.sin(t * 5) * .2; ctx.strokeStyle = '#7fe0ff'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(cx + (ox < cx ? -60 : 60), cy + 40); ctx.quadraticCurveTo((cx + ox) / 2, cy + 20, ox, oy - 70); ctx.stroke();
+      drawGlow(ox, oy, 130 + Math.sin(t * 5) * 20, '#7fe0ff', .6);
+    }
+    ctx.restore(); ctx.globalAlpha = 1;
+  },
+
+  // os quatro fragmentos reunidos, com o vazio da peca que falta
+  sceneFragments4(S, pg, t) {
+    const cx = W / 2, cy = H * .38, cols = ['#ffb340', '#c8a0b8', '#ff7ac8', '#ff8a1f'], k = easeOut(S.t / 1.2);
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(cx, cy, 280 * k, '#ffe9a8', .4); ctx.restore(); ctx.globalAlpha = 1;
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(t * .1); ctx.strokeStyle = 'rgba(255,233,168,.6)'; ctx.setLineDash([10, 10]); ctx.lineWidth = 3;
+    ctx.beginPath(); for (let i = 0; i < 16; i++) { const a = i / 16 * TAU - Math.PI / 2, r = i % 2 ? 50 : 104; ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r); } ctx.closePath(); ctx.stroke(); ctx.setLineDash([]);
+    ctx.globalCompositeOperation = 'lighter'; drawGlow(0, -86, 44 + Math.sin(t * 4) * 8, '#7fe0ff', .9); // a peca que falta
+    ctx.restore(); ctx.globalAlpha = 1;
+    cols.forEach((c, i) => { const a = t * .45 + i * Math.PI / 2, d = 220 * k, x = cx + Math.cos(a) * d, y = cy + Math.sin(a) * d * .6; ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(x, y, 70, c, .6); ctx.restore(); ctx.globalAlpha = 1; this.shard(x, y, .5 * k, c, a * .2, t + i); });
+  },
+
   // pula marcadores de musica e toca a trilha da cena
   curPage(S) {
     while (S.pages[S.i] && S.pages[S.i].music && !S.pages[S.i].who && !S.pages[S.i].title && !S.pages[S.i].mission) {
@@ -168,6 +234,7 @@ const Screens = {
     ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
     const sc = pg.scene || (pg.mission ? 'boss' : null);
     if (sc === 'void') this.sceneVoid(t); else if (sc === 'heart') this.sceneHeart(t); else if (sc === 'lumi') this.sceneLumi(t); else if (sc === 'boss') this.sceneBoss(S, t); else if (sc === 'spark') this.sceneSpark(S, t); else if (sc === 'launch') this.sceneLaunch(S, t);
+    else if (sc === 'lit' || sc === 'litKeep') this.sceneLit(S, t, sc === 'litKeep'); else if (sc === 'fragment' || sc === 'fragmentKeep') this.sceneFragment(S, pg, t, sc === 'fragmentKeep'); else if (sc === 'fragments4') this.sceneFragments4(S, pg, t);
     // particulas flutuando (poeira de luz)
     if (!S.motes) S.motes = Array.from({ length: 70 }, () => ({ x: rand(0, W), y: rand(0, H), v: rand(10, 40), r: rand(2, 6), ph: rand(0, 6) }));
     const mc = sc === 'void' ? '#b98cff' : sc === 'heart' || sc === 'lumi' ? '#ffe9a8' : sc === 'boss' ? '#ffb340' : '#cdb8ff';
@@ -183,7 +250,7 @@ const Screens = {
     const now = World.t, dt = Math.min(.05, now - (S.last ?? now)); S.last = now; S.t += dt;
     const t = now, adv = Input.pressed(' ') || Input.pressed('enter') || Input.mouse.click;
     const narr = pg.who === 'N', title = !!pg.title, mis = !!pg.mission;
-    const next = () => { S.i++; S.t = 0; S.lastShown = 0; S.doneAt = null; Snd.play('uiSelect'); if (S.i >= S.pages.length) Game.endStory(); };
+    const next = () => { S.i++; S.t = 0; S.lastShown = 0; S.doneAt = null; S.fx = false; Snd.play('uiSelect'); if (S.i >= S.pages.length) Game.endStory(); };
     ctx.globalAlpha = 1; ctx.fillStyle = `rgba(8,2,26,${title ? .88 : mis ? .6 : narr ? .42 : .22})`; ctx.fillRect(0, 0, W, H);
     ctx.fillStyle = rdl(W / 2, H / 2, H * .35, H * .95, [[0, 'rgba(0,0,0,0)'], [1, 'rgba(0,0,0,.7)']]); ctx.fillRect(0, 0, W, H);
     const BH = 64 * easeOut((S.total || 0) / .8);

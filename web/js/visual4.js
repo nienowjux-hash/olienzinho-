@@ -70,18 +70,18 @@ Visual4.celebrate = function () {
 Screens.celebrate = function () {
   const dt = 1 / 60; G.celT += dt; const t = G.celT, p = G.player, cx = W / 2, cy = H * .56;
   Visual4.fxStep(dt); World.boost = Math.max(World.boost, .5);
-  if (t < 1.7) { const u = easeOut(t / 1.7), a = Math.PI / 2 + u * TAU * 1.0; p.x = cx + Math.cos(a) * 150 * (1 - u * .15); p.y = cy + Math.sin(a) * 120 - u * 20; p.vx = -Math.sin(a) * 420; G.parts.push({ x: p.x, y: p.y + 24, vx: rand(-30, 30), vy: rand(30, 90), life: .6, max: .6, r: rand(4, 8), c: Math.random() < .5 ? '#ffe9a8' : '#b98cff', drag: 1 }); }
+  if (t < 2.6) { const u = easeOut(t / 2.6), a = Math.PI / 2 + u * TAU * 1.0; p.x = cx + Math.cos(a) * 150 * (1 - u * .15); p.y = cy + Math.sin(a) * 120 - u * 20; p.vx = -Math.sin(a) * 420; G.parts.push({ x: p.x, y: p.y + 24, vx: rand(-30, 30), vy: rand(30, 90), life: .6, max: .6, r: rand(4, 8), c: Math.random() < .5 ? '#ffe9a8' : '#b98cff', drag: 1 }); }
   else { p.x += (cx - p.x) * .08; p.y += (cy - 20 + Math.sin(t * 3) * 8 - p.y) * .08; p.vx *= .9; }
   for (let i = 0; i < 2; i++) G.parts.push({ x: rand(0, W), y: -10, vx: rand(-20, 20), vy: rand(180, 340), life: 3, max: 3, r: rand(2, 5), c: ['#ffe9a8', '#ffffff', '#ff9ac0', '#9fe8ff'][i + (t * 10 | 0) % 3], drag: 0 });
-  while (G.celFire < 4 && t > .5 + G.celFire * .55) { G.celFire++; const fx = rand(160, W - 160), fy = rand(120, 300); burst(fx, fy, ['#ffe9a8', '#ff9ac0', '#9fe8ff', '#ffffff'], 40, 420, 5); shockwave(fx, fy, 160, '#ffe9a8'); Snd.play('explode', { size: .6 }); }
+  while (G.celFire < 7 && t > .6 + G.celFire * .8) { G.celFire++; const fx = rand(160, W - 160), fy = rand(120, 300); burst(fx, fy, ['#ffe9a8', '#ff9ac0', '#9fe8ff', '#ffffff'], 40, 420, 5); shockwave(fx, fy, 160, '#ffe9a8'); Snd.play('explode', { size: .6 }); }
   // legenda
-  const e = easeOut(clamp((t - .2) / .6, 0, 1)), out = clamp((3.6 - t) / .4, 0, 1);
+  const e = easeOut(clamp((t - .2) / .6, 0, 1)), out = clamp((6.6 - t) / .5, 0, 1);
   const bh = 64 * easeOut(clamp(t / .5, 0, 1)); ctx.fillStyle = '#03010b'; ctx.fillRect(0, 0, W, bh); ctx.fillRect(0, H - bh, W, bh);
   ctx.save(); ctx.globalAlpha = e * out; ctx.translate(W / 2, 150); ctx.scale(1.2 - .2 * e, 1.2 - .2 * e); ctx.shadowColor = G.stage.tint; ctx.shadowBlur = 40;
   txt('SETOR LIMPO!', 0, -44, 84, '#ffe9a8', 'center', 900); ctx.restore();
   ctx.globalAlpha = e * out; txt(G.stage.name, W / 2, 190, 26, '#fff', 'center', 800); ctx.globalAlpha = 1;
-  if (t > 1.3) { ctx.globalAlpha = .5 + .3 * Math.sin(World.t * 5); txt('ENTER para continuar', W / 2, H - bh - 30, 16, '#cdb8ff', 'center', 700); ctx.globalAlpha = 1; }
-  if (t > 3.8 || (t > 1.3 && (Input.pressed('enter') || Input.mouse.click))) { G.clearAt = World.t; G.stamped = false; G.state = 'clear'; Snd.musicPlay('menu', 0); }
+  if (t > 2.4) { ctx.globalAlpha = .5 + .3 * Math.sin(World.t * 5); txt('ENTER para continuar', W / 2, H - bh - 30, 16, '#cdb8ff', 'center', 700); ctx.globalAlpha = 1; }
+  if (t > 7 || (t > 2.4 && (Input.pressed('enter') || Input.mouse.click))) { G.clearAt = World.t; G.stamped = false; G.state = 'clear'; Snd.musicPlay('menu', 0); }
 };
 
 // ===== 4. rosto do Olienzinho reagindo a golpe forte =====

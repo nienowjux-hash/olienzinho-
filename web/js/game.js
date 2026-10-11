@@ -1,5 +1,6 @@
 'use strict';
 // ---------- estado global e logica de jogo ----------
+const SHIP_S = .62;
 const G = {
   state: 'title', t: 0, stage: null, stageIdx: 0, sel: 0,
   player: null, enemies: [], pb: [], eb: [], pickups: [], parts: [], rings: [], pops: [], hazards: [], boss: null, pulse: null,
@@ -200,7 +201,7 @@ const Game = {
       b.x += b.vx * dt; b.y += b.vy * dt; b.life -= dt;
       if (b.acc) { const s = Math.hypot(b.vx, b.vy) + b.acc * dt, a = Math.atan2(b.vy, b.vx); b.vx = Math.cos(a) * s; b.vy = Math.sin(a) * s; }
       if (b.life <= 0 || b.x < -60 || b.x > W + 60 || b.y < -60 || b.y > H + 60) b.dead = true;
-      else if (!p.dead && Math.hypot(b.x - p.x, b.y - p.y - 6) < b.r + 13) { b.dead = true; hurtPlayer(1); }
+      else if (!p.dead && Math.hypot(b.x - p.x, b.y - p.y - 6) < b.r + 10) { b.dead = true; hurtPlayer(1); }
     }
     for (const k of G.pickups) updatePickup(k, dt);
 
@@ -239,7 +240,7 @@ const Game = {
 
     // tiro e chama
     p.fireT -= dt; if (p.fireT <= 0) { playerShoot(); p.fireT = p.fireDelay; }
-    for (let i = 0; i < 2; i++) G.parts.push({ x: p.x + rand(-6, 6), y: p.y + 42, vx: rand(-30, 30), vy: rand(150, 280), life: rand(.25, .5), max: .5, r: rand(3, 7), c: Math.random() < .5 ? '#ffb340' : '#ffe9a8', drag: 1 });
+    for (let i = 0; i < 2; i++) G.parts.push({ x: p.x + rand(-4, 4), y: p.y + 27, vx: rand(-30, 30), vy: rand(150, 280), life: rand(.25, .5), max: .5, r: rand(3, 7), c: Math.random() < .5 ? '#ffb340' : '#ffe9a8', drag: 1 });
 
     // pulso e escudo
     const wasCd = p.pulseT > 0; p.pulseT = Math.max(0, p.pulseT - dt);
@@ -261,15 +262,26 @@ const Game = {
     for (const b of G.pb) Art.pbullet(b);
     for (const b of G.eb) Art.ebullet(b);
     if (p && !p.dead) {
-      Art.ship(p.x, p.y, { vx: p.vx, t: p.t, lookx: p.lookx, looky: p.looky, blinkT: p.blinkT, inv: p.inv, shield: p.shieldReady });
+      Art.ship(p.x, p.y, { vx: p.vx, t: p.t, lookx: p.lookx, looky: p.looky, blinkT: p.blinkT, inv: p.inv, shield: p.shieldReady, scale: SHIP_S });
       for (const o of p.orbPos) {
         ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(o[0], o[1], 26, '#ffb340', .9); ctx.restore();
         ctx.globalAlpha = 1; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(o[0], o[1], 7, 0, 7); ctx.fill();
         ctx.fillStyle = '#ff8a1f'; ctx.beginPath(); ctx.arc(o[0], o[1], 4, 0, 7); ctx.fill();
       }
     }
-    ctx.save(); ctx.globalCompositeOperation = 'lighter';
-    for (const q of G.parts) drawGlow(q.x, q.y, q.r * 2.4, q.c, clamp(q.life / q.max, 0, 1));
+    for (const q of G.parts) if (q.k === 'smoke') {
+      const k = clamp(q.life / q.max, 0, 1);
+      ctx.globalAlpha = k * .4; ctx.fillStyle = q.c; ctx.beginPath(); ctx.arc(q.x, q.y, q.r * (1.6 - k * .6), 0, 7); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round';
+    for (const q of G.parts) {
+      if (q.k === 'smoke') continue;
+      const k = clamp(q.life / q.max, 0, 1);
+      if (q.k === 'spark') { ctx.globalAlpha = k; ctx.strokeStyle = q.c; ctx.lineWidth = q.r; ctx.beginPath(); ctx.moveTo(q.x, q.y); ctx.lineTo(q.x - q.vx * .04, q.y - q.vy * .04); ctx.stroke(); }
+      else if (q.k === 'flash') drawGlow(q.x, q.y, q.r * (1.3 - k * .3), q.c, k);
+      else drawGlow(q.x, q.y, q.r * 2.4, q.c, k);
+    }
     for (const r of G.rings) { ctx.globalAlpha = r.life * .8; ctx.strokeStyle = r.c; ctx.lineWidth = 4 * r.life + 1; ctx.beginPath(); ctx.arc(r.x, r.y, r.r, 0, 7); ctx.stroke(); }
     if (G.pulse) {
       const u = G.pulse, k = 1 - u.r / 1000;

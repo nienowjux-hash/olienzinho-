@@ -150,10 +150,15 @@ const Art = {
   },
 
   ebullet(b) {
-    ctx.save(); ctx.globalCompositeOperation = 'lighter';
-    drawGlow(b.x, b.y, b.r * 3, b.c, .9);
-    ctx.restore(); ctx.globalAlpha = 1;
-    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(b.x, b.y, b.r * .6, 0, 7); ctx.fill();
+    const R = b.r * 1.55, pul = 1 + Math.sin(World.t * 18 + b.x * .05) * .08;
+    ctx.save(); ctx.globalAlpha = 1; ctx.translate(b.x, b.y);
+    // contorno escuro: separa do fundo e dos tiros do jogador
+    ctx.fillStyle = 'rgba(14,4,36,.85)'; ctx.beginPath(); ctx.arc(0, 0, R * pul + 3.5, 0, 7); ctx.fill();
+    ctx.fillStyle = b.c; ctx.beginPath(); ctx.arc(0, 0, R * pul, 0, 7); ctx.fill();
+    ctx.fillStyle = '#ffe08a'; ctx.beginPath(); ctx.arc(0, 0, R * .62, 0, 7); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(-R * .12, -R * .12, R * .3, 0, 7); ctx.fill();
+    ctx.globalCompositeOperation = 'lighter'; drawGlow(0, 0, R * 2.4, b.c, .45);
+    ctx.restore();
   },
 
   pickup(p) {

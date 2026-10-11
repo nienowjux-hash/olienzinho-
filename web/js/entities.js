@@ -1,17 +1,36 @@
 'use strict';
 // ---------- helpers de efeito ----------
 function burst(x, y, colors, n, sp = 260, size = 5) {
+  const P = G.parts;
   for (let i = 0; i < n; i++) {
     const a = rand(0, TAU), s = rand(.25, 1) * sp;
-    G.parts.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, life: rand(.4, .9), max: .9, r: rand(.5, 1) * size, c: colors[i % colors.length], drag: 2.6 });
+    P.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, life: rand(.4, .9), max: .9, r: rand(.5, 1) * size, c: colors[i % colors.length], drag: 2.6 });
   }
-  if (G.parts.length > 900) G.parts.splice(0, G.parts.length - 900);
+  // faiscas em risco, clarao central e fumaca
+  const ns = Math.ceil(n * .7);
+  for (let i = 0; i < ns; i++) {
+    const a = rand(0, TAU), s = rand(.5, 1.5) * sp * 1.4;
+    P.push({ k: 'spark', x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, life: rand(.25, .6), max: .6, r: rand(1.4, 3), c: i % 3 === 0 ? '#ffffff' : i % 3 === 1 ? '#ffe9a8' : colors[0], drag: 2.4 });
+  }
+  P.push({ k: 'flash', x, y, vx: 0, vy: 0, life: .17, max: .17, r: size * (5 + n * .1), c: '#ffffff', drag: 1 });
+  P.push({ k: 'flash', x, y, vx: 0, vy: 0, life: .28, max: .28, r: size * (7 + n * .14), c: colors[0], drag: 1 });
+  if (n >= 18) for (let i = 0; i < 5; i++) {
+    const a = rand(0, TAU), s = rand(20, 90);
+    P.push({ k: 'smoke', x: x + Math.cos(a) * 8, y: y + Math.sin(a) * 8, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 20, life: rand(.7, 1.3), max: 1.3, r: size * rand(2.4, 3.6), c: '#2a1450', drag: 1.2 });
+  }
+  if (P.length > 1100) P.splice(0, P.length - 1100);
+}
+function sparks(x, y, c, n, sp = 220) {
+  for (let i = 0; i < n; i++) {
+    const a = rand(0, TAU), s = rand(.4, 1) * sp;
+    G.parts.push({ k: 'spark', x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, life: rand(.15, .35), max: .35, r: rand(1.2, 2.2), c: i % 2 ? '#ffffff' : c, drag: 3 });
+  }
 }
 const shockwave = (x, y, max, c) => G.rings.push({ x, y, r: 6, max, c, life: 1 });
 const popup = (x, y, text, c = '#ffe9a8', size = 24) => G.pops.push({ x, y, text, c, size, life: 1 });
 const shake = a => { G.shake = Math.max(G.shake, a); };
 const flashScreen = a => { G.flash = Math.max(G.flash, a); };
-const bulletColor = () => ['#ff7ac8', '#ffb340', '#7fe0ff', '#ff6a3c'][G.stage ? G.stage.id : 0];
+const bulletColor = () => '#ff4a2e';
 
 function ebullet(x, y, ang, spd, o = {}) {
   G.eb.push(Object.assign({ x, y, vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd, r: 7, c: bulletColor(), life: 9, acc: 0 }, o));
@@ -107,7 +126,7 @@ function updateEnemy(e, dt) {
   }
   if (e.y > H + 90 || e.y < -250 || e.x < -150 || e.x > W + 150) e.dead = true;
   // contato com o jogador
-  if (!e.dead && Math.hypot(p.x - e.x, p.y - e.y) < e.rad + 16) {
+  if (!e.dead && Math.hypot(p.x - e.x, p.y - e.y) < e.rad + 12) {
     hurtPlayer(e.type === 'kami' ? 2 : 1);
     if (e.type !== 'tank') { killEnemy(e, false); }
   }
@@ -142,6 +161,7 @@ function killEnemy(e, byPlayer) {
 function damageEnemy(e, dmg, crit) {
   e.hp -= dmg; e.hit = .08;
   Snd.play('hit', { pan: Snd.panX(e.x) });
+  sparks(e.x + rand(-8, 8), e.y + e.rad * .4, crit ? '#ffe9a8' : '#e2d4ff', crit ? 8 : 4);
   if (crit) popup(e.x, e.y - e.rad, Math.round(dmg * 10) / 10 + '!', '#ffe9a8', 22);
   if (e.hp <= 0) killEnemy(e, true);
 }
@@ -199,10 +219,11 @@ function playerShoot() {
     const k = i - (n - 1) / 2, ang = -Math.PI / 2 + k * .09;
     const crit = Math.random() < p.crit;
     G.pb.push({
-      x: p.x + k * 20, y: p.y - 58, vx: Math.cos(ang) * 920, vy: Math.sin(ang) * 920,
+      x: p.x + k * 14, y: p.y - 36, vx: Math.cos(ang) * 920, vy: Math.sin(ang) * 920,
       dmg: p.dmg * (crit ? p.critMul : 1), crit, pierce: p.pierce, hits: [], c: crit ? '#ffe9a8' : '#b98cff',
     });
   }
+  G.parts.push({ k: 'flash', x: p.x, y: p.y - 34, vx: 0, vy: 0, life: .07, max: .07, r: 18, c: '#e2d4ff', drag: 1 });
   Snd.play('shoot', { lv: n - 1, pan: Snd.panX(p.x) * .5 });
 }
 
@@ -264,7 +285,7 @@ function updatePlayerWeapons(dt) {
   // drones orbitais
   p.orbAng += dt * 3;
   for (let i = 0; i < p.orbitals; i++) {
-    const a = p.orbAng + i / p.orbitals * TAU, ox = p.x + Math.cos(a) * 92, oy = p.y + Math.sin(a) * 92 * .85;
+    const a = p.orbAng + i / p.orbitals * TAU, ox = p.x + Math.cos(a) * 66, oy = p.y + Math.sin(a) * 66 * .85;
     for (const e of G.enemies) if (!e.dead && e.orbCd <= 0 && Math.hypot(e.x - ox, e.y - oy) < e.rad + 14) { e.orbCd = .25; damageEnemy(e, p.dmg * 1.5, false); }
     for (const b of G.eb) if (!b.dead && Math.hypot(b.x - ox, b.y - oy) < b.r + 14) { b.dead = true; burst(b.x, b.y, [b.c], 4, 120, 3); }
     const bo = G.boss;

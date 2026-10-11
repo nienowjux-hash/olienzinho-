@@ -491,7 +491,7 @@ const Game = {
     }
     Events.drawOverlay();
     if (G.flash > 0) { ctx.globalAlpha = Math.min(.7, G.flash * .35); ctx.fillStyle = '#e9e0ff'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; }
-    if (!G.cut) { this.drawHud(); Extras.tutDraw(); Extras.trainDraw(); }
+    if (!G.cut && !G.hideHud) { this.drawHud(); Extras.tutDraw(); Extras.trainDraw(); }
     this.drawCinematic();
     this.drawCut();
   },

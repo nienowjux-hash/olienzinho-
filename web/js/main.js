@@ -67,6 +67,7 @@ function render() {
     ctx.fillStyle = 'rgba(255,179,64,' + (1 - k) + ')'; ctx.fillRect(0, h - 2, W, 2); ctx.fillRect(0, H - h, W, 2);
     ctx.globalAlpha = (1 - k) * .5; ctx.fillStyle = '#0b0422'; ctx.fillRect(0, h, W, H - 2 * h); ctx.globalAlpha = 1;
   }
+  Visual7.capture();
 }
 
 document.addEventListener('visibilitychange', () => { if (document.hidden && G.state === 'play') G.state = 'pause'; });

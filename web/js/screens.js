@@ -72,35 +72,56 @@ const Screens = {
     ctx.restore(); ctx.globalAlpha = 1;
     ctx.fillStyle = 'rgba(20,6,50,.5)'; ctx.fillRect(0, 0, W, H);
   },
+  // pula marcadores de musica e toca a trilha da cena
+  curPage(S) {
+    while (S.pages[S.i] && S.pages[S.i].music && !S.pages[S.i].who && !S.pages[S.i].title && !S.pages[S.i].mission) {
+      Snd.musicPlay(S.pages[S.i].music, 1); S.mk = S.pages[S.i].music; S.i++; S.t = 0; S.lastShown = 0; S.doneAt = null;
+    }
+    return S.pages[S.i];
+  },
   storyBackdrop() {
-    const S = G.story, pg = S && S.pages[S.i], t = World.t;
+    const S = G.story, pg = S && this.curPage(S), t = World.t;
+    if (!S || !pg) { World.draw(0); return; }
+    const dt = Math.min(.05, t - (S.bl ?? t)); S.bl = t; S.total = (S.total || 0) + dt;
+    const dram = pg.mood === 'angry' || pg.mood === 'shock', shk = dram ? Math.max(0, 1 - S.t / .5) * 9 : 0;
     ctx.save();
-    const z = 1 + clamp((S ? S.t : 0) / 16, 0, 1) * .06;
-    ctx.translate(W / 2, H / 2); ctx.scale(z, z); ctx.translate(-W / 2, -H / 2);
+    const z = 1 + clamp(S.t / 16, 0, 1) * .06;
+    ctx.translate(W / 2 + rand(-shk, shk), H / 2 + rand(-shk, shk)); ctx.scale(z, z); ctx.translate(-W / 2, -H / 2);
     World.draw(Math.sin(t * .2) * 70);
     ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
-    const sc = pg && (pg.scene || (pg.mission ? 'boss' : null));
+    const sc = pg.scene || (pg.mission ? 'boss' : null);
     if (sc === 'void') this.sceneVoid(t); else if (sc === 'heart') this.sceneHeart(t); else if (sc === 'lumi') this.sceneLumi(t); else if (sc === 'boss') this.sceneBoss(S, t);
+    // particulas flutuando (poeira de luz)
+    if (!S.motes) S.motes = Array.from({ length: 70 }, () => ({ x: rand(0, W), y: rand(0, H), v: rand(10, 40), r: rand(2, 6), ph: rand(0, 6) }));
+    const mc = sc === 'void' ? '#b98cff' : sc === 'heart' || sc === 'lumi' ? '#ffe9a8' : sc === 'boss' ? '#ffb340' : '#cdb8ff';
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    for (const m of S.motes) { m.y -= m.v * dt; m.x += Math.sin(t + m.ph) * 12 * dt; if (m.y < -10) { m.y = H + 10; m.x = rand(0, W); } drawGlow(m.x, m.y, m.r * 3, mc, .22 + .2 * Math.sin(t * 2 + m.ph)); }
+    ctx.restore(); ctx.globalAlpha = 1;
     ctx.restore();
   },
 
   story() {
     const S = G.story; if (!S) return;
-    const pg = S.pages[S.i]; if (!pg) { Game.endStory(); return; }
+    let pg = this.curPage(S); if (!pg) { Game.endStory(); return; }
     const now = World.t, dt = Math.min(.05, now - (S.last ?? now)); S.last = now; S.t += dt;
     const t = now, adv = Input.pressed(' ') || Input.pressed('enter') || Input.mouse.click;
     const narr = pg.who === 'N', title = !!pg.title, mis = !!pg.mission;
     const next = () => { S.i++; S.t = 0; S.lastShown = 0; S.doneAt = null; Snd.play('uiSelect'); if (S.i >= S.pages.length) Game.endStory(); };
     ctx.globalAlpha = 1; ctx.fillStyle = `rgba(8,2,26,${title ? .88 : mis ? .6 : narr ? .42 : .22})`; ctx.fillRect(0, 0, W, H);
     ctx.fillStyle = rdl(W / 2, H / 2, H * .35, H * .95, [[0, 'rgba(0,0,0,0)'], [1, 'rgba(0,0,0,.7)']]); ctx.fillRect(0, 0, W, H);
-    const BH = 64;
+    const BH = 64 * easeOut((S.total || 0) / .8);
+    const dram = pg.mood === 'angry' || pg.mood === 'shock', shk = dram ? Math.max(0, 1 - S.t / .5) * 7 : 0;
 
-    if (title) { // cartao de titulo (ato / setor)
+    if (title) { // cartao de titulo (ato / setor) com explosao de estrelas
       const k = easeOut(S.t / 1.1);
+      ctx.save(); ctx.globalCompositeOperation = 'lighter';
+      for (let i = 0; i < 34; i++) { const a = i * 2.399, r = easeOut(S.t / 1.6) * (140 + (i % 6) * 70); drawGlow(W / 2 + Math.cos(a) * r, H / 2 - 10 + Math.sin(a) * r * .5, 5 + (i % 3) * 3, i % 2 ? '#ffe9a8' : '#b98cff', clamp(1 - S.t / 2.6, 0, 1) * .8); }
+      ctx.restore(); ctx.globalAlpha = 1;
       ctx.save(); ctx.translate(W / 2, H / 2 - 10);
       ctx.fillStyle = '#ffb340'; const lw = 560 * k; ctx.fillRect(-lw / 2, -112, lw, 3); ctx.fillRect(-lw / 2, 62, lw, 3);
       ctx.globalAlpha = clamp((S.t - .25) / .5, 0, 1); txt(pg.title.split('').join(' '), 0, -96, 28, '#ffb340', 'center', 900);
-      ctx.globalAlpha = clamp((S.t - .6) / .7, 0, 1); ctx.save(); ctx.shadowColor = '#8b4dff'; ctx.shadowBlur = 40; txt(pg.sub, 0, -56, pg.sub.length > 16 ? 70 : 84, '#ffffff', 'center', 900); ctx.restore();
+      const sk = 1 + (1 - easeOut((S.t - .6) / 1)) * .12;
+      ctx.globalAlpha = clamp((S.t - .6) / .7, 0, 1); ctx.save(); ctx.scale(sk, sk); ctx.shadowColor = '#8b4dff'; ctx.shadowBlur = 40; txt(pg.sub, 0, -56, pg.sub.length > 16 ? 70 : 84, '#ffffff', 'center', 900); ctx.restore();
       ctx.globalAlpha = 1; ctx.save(); ctx.globalCompositeOperation = 'lighter'; const sw = (S.t * .5) % 1.6 - .3; drawGlow(-300 + sw * 600, -4, 160, '#ffe9a8', .5 * k); ctx.restore(); ctx.globalAlpha = 1;
       if (S.t > 2) { ctx.globalAlpha = .5 + .4 * Math.sin(t * 5); txt('clique ou ENTER para continuar', 0, 100, 17, '#cdb8ff', 'center', 700); ctx.globalAlpha = 1; }
       ctx.restore();
@@ -118,39 +139,49 @@ const Screens = {
       ctx.restore();
       if (adv && S.t > .6) next();
     } else { // dialogo
-      const ch = CHARS[pg.who], text = pg.text, len = text.length, sp = 44;
-      const shown = Math.min(len, Math.floor(S.t * sp));
+      const ch = CHARS[pg.who], text = pg.text, len = text.length;
+      const mood = pg.mood, spd = (mood === 'sad' ? .75 : mood === 'fade' ? .6 : mood === 'angry' ? 1.1 : mood === 'shock' ? 1.25 : pg.who === 'V' ? .85 : 1);
+      const sp = 44 * spd, shown = Math.min(len, Math.floor(S.t * sp));
       if (shown > S.lastShown && text[shown - 1] !== ' ' && shown % 2 === 0) Snd.play('blip', { who: pg.who });
       S.lastShown = shown;
       if (shown >= len && S.doneAt === null) S.doneAt = now;
-      if (S.prevWho !== pg.who) { S.prevWho = pg.who; S.sw = 0; } S.sw += dt;
+      if (S.prevWho !== pg.who) { if (S.prevWho && S.prevWho !== 'N' && pg.who !== 'N') S.other = { who: S.prevWho, mood: S.prevMood }; S.prevWho = pg.who; S.sw = 0; } S.sw += dt; S.prevMood = mood;
+      // clarao dramatico
+      if ((mood === 'shock' || (pg.who === 'V' && S.t < .3)) && S.t < .2) { ctx.globalAlpha = .5 * (1 - S.t / .2); ctx.fillStyle = pg.who === 'V' ? '#b98cff' : '#ffffff'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; }
+      if (pg.who === 'V') { ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = 'rgba(150,90,255,.08)'; for (let i = 0; i < 3; i++) ctx.fillRect(0, rand(80, 400), W, rand(2, 8)); ctx.restore(); }
       const talking = shown < len, y0 = 420, y1 = H - BH;
-      // faixa do dialogo (legenda de cinema)
       ctx.fillStyle = lin(0, y0, 0, y1, [[0, 'rgba(8,2,26,0)'], [.3, 'rgba(8,2,26,.82)'], [1, 'rgba(8,2,26,.96)']]); ctx.fillRect(0, y0, W, y1 - y0);
+      const jit = mood === 'angry' ? 1.4 : mood === 'fade' ? .8 : 0, wh = pg.who === 'V' ? .78 + Math.random() * .22 : 1;
       if (narr) {
         const lines = this.wrapLines(text, 920, 32, 700);
         ctx.fillStyle = '#ffb340'; ctx.fillRect(W / 2 - 40, y0 + 52, 80, 3);
         ctx.save(); ctx.globalAlpha = Math.min(1, S.t / .3); this.typed(lines, shown, W / 2, y0 + 78, 46, 32, '#e2d4ff', 'center', 700); ctx.restore();
         if (!talking) { ctx.globalAlpha = .5 + .5 * Math.sin(t * 6); txt('▼', W / 2, y1 - 40, 20, '#cdb8ff', 'center'); ctx.globalAlpha = 1; }
       } else {
-        const sl = easeOut(S.sw / .3);
-        ctx.save(); ctx.globalAlpha = sl; ctx.translate((1 - sl) * -30, 0);
-        ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(150, 540, 170, ch.c, talking ? .5 : .25); ctx.restore(); ctx.globalAlpha = sl;
-        Portraits.draw(pg.who, 150, 540, 190, { mood: pg.mood, talk: talking, t });
+        // o outro personagem da conversa, apagado, do lado direito
+        if (S.other && CHARS[S.other.who]) { ctx.save(); ctx.globalAlpha = .5; Portraits.draw(S.other.who, W - 140, 540, 120, { mood: S.other.mood, t }); ctx.restore(); }
+        const sl = easeBack(S.sw / .35), sc2 = .7 + .3 * sl;
+        ctx.save(); ctx.globalAlpha = clamp(S.sw / .2, 0, 1); ctx.translate(150 + rand(-shk, shk), 540 + rand(-shk, shk)); ctx.scale(sc2, sc2);
+        ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(0, 0, 170, ch.c, talking ? .5 + Math.sin(t * 14) * .08 : .25); ctx.restore(); ctx.globalAlpha = 1;
+        Portraits.draw(pg.who, 0, 0, 190, { mood, talk: talking, t });
         ctx.restore();
         txt(ch.name, 272, y0 + 46, 22, ch.c, 'left', 900);
         ctx.fillStyle = ch.c; ctx.fillRect(272, y0 + 76, 54, 3);
         const lines = this.wrapLines(text, 830, 30, 700);
-        this.typed(lines, shown, 272, y0 + 92, 40, 30, '#ffffff', 'left', 700);
+        ctx.save(); ctx.globalAlpha = wh; if (jit) ctx.translate(rand(-jit, jit), rand(-jit, jit));
+        this.typed(lines, shown, 272, y0 + 92, 40, 30, '#ffffff', 'left', 700); ctx.restore();
         if (!talking) { ctx.globalAlpha = .5 + .5 * Math.sin(t * 6); txt('▼', 1130, y1 - 40, 20, ch.c, 'center'); ctx.globalAlpha = 1; }
       }
       if (adv && S.t > .1) { if (talking) S.t = len / sp + .01; else if (now - S.doneAt > .3) next(); }
     }
-    // barras de cinema, progresso e dicas
+    // barras de cinema (deslizam ao entrar), progresso e dicas
     ctx.fillStyle = '#05010f'; ctx.fillRect(0, 0, W, BH); ctx.fillRect(0, H - BH, W, BH);
-    const pw = 260, px = W / 2 - pw / 2; ctx.fillStyle = 'rgba(255,255,255,.14)'; ctx.fillRect(px, BH / 2 - 2, pw, 4); ctx.fillStyle = '#ffb340'; ctx.fillRect(px, BH / 2 - 2, pw * clamp((S.i + 1) / S.pages.length, 0, 1), 4);
-    txt('ESC  pular cena', W - 28, BH / 2 - 9, 16, '#8a7fb0', 'right', 800);
-    txt('clique / ENTER: continuar', W / 2, H - BH / 2 - 9, 16, '#8a7fb0', 'center', 800);
+    if (BH > 40) {
+      const pw = 260, px = W / 2 - pw / 2, cnt = S.pages.filter(p => !(p.music && !p.who && !p.title && !p.mission)).length;
+      ctx.fillStyle = 'rgba(255,255,255,.14)'; ctx.fillRect(px, BH / 2 - 2, pw, 4); ctx.fillStyle = '#ffb340'; ctx.fillRect(px, BH / 2 - 2, pw * clamp((S.i + 1) / S.pages.length, 0, 1), 4);
+      txt('ESC  pular cena', W - 28, BH / 2 - 9, 16, '#8a7fb0', 'right', 800);
+      txt('clique / ENTER: continuar', W / 2, H - BH / 2 - 9, 16, '#8a7fb0', 'center', 800);
+    }
     if (Input.pressed('escape')) { Snd.play('uiBack'); Game.endStory(); }
   },
 

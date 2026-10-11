@@ -1,7 +1,7 @@
 'use strict';
 // ---------- audio: efeitos e musica 100% sintetizados (Web Audio) ----------
 const Snd = (() => {
-  let ac = null, comp, master, sfxBus, musBus, revIn, delIn, noiseBuf, analyser;
+  let ac = null, comp, master, sfxBus, musBus, cineBus, revIn, delIn, noiseBuf, analyser;
   const vol = { sfx: .8, music: .55 };
   const SFX_TRIM = .62, MUS_TRIM = .72; // margem interna para nada estourar
   const lastPlay = {};
@@ -32,6 +32,7 @@ const Snd = (() => {
     comp.connect(shelf); shelf.connect(tone); tone.connect(master); master.connect(analyser); master.connect(ac.destination);
     sfxBus = ac.createGain(); sfxBus.gain.value = vol.sfx * SFX_TRIM; sfxBus.connect(comp);
     musBus = ac.createGain(); musBus.gain.value = vol.music * MUS_TRIM; musBus.connect(comp);
+    cineBus = ac.createGain(); cineBus.gain.value = 1.9; cineBus.connect(musBus);
     // reverb
     const conv = ac.createConvolver(); conv.buffer = makeImpulse(2.6, 2.4);
     revIn = ac.createGain(); const revOut = ac.createGain(); revOut.gain.value = .5;
@@ -327,7 +328,7 @@ const Snd = (() => {
   const panX = x => ((x / 1280) * 2 - 1) * .7;
 
   // ---------- musica epica: cordas, metais, taiko; um tema por fase + um tema de chefe por fase ----------
-  const MIN = [0, 2, 3, 5, 7, 8, 10];
+  const MIN = [0, 2, 3, 5, 7, 8, 10], MAJ = [0, 2, 4, 5, 7, 9, 11], PHR = [0, 1, 3, 5, 7, 8, 10];
   // chords = grau (escala menor natural) por compasso; mel = [passo 0-15, grau, duracao em passos]
   const T = (root, bpm, chords, mel, extra) => Object.assign({ root, scale: MIN, bpm, chords, mel }, extra);
   const THEMES = {
@@ -418,6 +419,27 @@ const Snd = (() => {
       { kick: '1010001010100011', snare: '0000100000001000', flair: 'fanfare' }),
   };
   THEMES.menu = Object.assign({}, THEMES.s1, { bpm: 84 });
+  // ---- trilhas da historia: esperanca, tristeza, tensao, misterio, heroismo e triunfo ----
+  Object.assign(THEMES, {
+    hope: T(60, 70, [0, 4, 5, 3, 0, 4, 3, 4], [
+      [[0, 7, 8], [8, 9, 8]], [[0, 8, 8], [8, 6, 8]], [[0, 7, 6], [6, 9, 4], [10, 11, 6]], [[0, 10, 8], [8, 9, 8]],
+      [[0, 9, 8], [8, 11, 8]], [[0, 12, 8], [8, 11, 8]], [[0, 10, 6], [6, 9, 4], [10, 8, 6]], [[0, 6, 8], [8, 8, 8]]], { scale: MAJ, cine: 'hope' }),
+    sad: T(57, 56, [0, 5, 3, 4, 0, 5, 3, 4], [
+      [[0, 11, 8], [8, 9, 8]], [[0, 9, 8], [8, 7, 8]], [[0, 10, 8], [8, 7, 8]], [[0, 11, 6], [6, 9, 4], [10, 8, 6]],
+      [[0, 7, 16]], [[0, 12, 8], [8, 9, 8]], [[0, 10, 8], [8, 7, 8]], [[0, 8, 12], [12, 9, 4]]], { cine: 'sad' }),
+    tension: T(50, 92, [0, 0, 1, 0, 0, 0, 5, 1], [
+      [[0, 7, 3], [4, 7, 2], [6, 8, 2], [8, 7, 8]], [[0, 7, 3], [4, 7, 2], [6, 9, 2], [8, 8, 8]], [[0, 8, 3], [4, 8, 2], [6, 9, 2], [8, 8, 8]], [[0, 7, 12], [12, 6, 4]],
+      [[0, 7, 3], [4, 7, 2], [6, 8, 2], [8, 7, 8]], [[0, 7, 3], [4, 7, 2], [6, 9, 2], [8, 8, 8]], [[0, 12, 3], [4, 12, 2], [6, 11, 2], [8, 12, 8]], [[0, 8, 6], [6, 7, 2], [8, 8, 4], [12, 7, 4]]], { scale: PHR, cine: 'tension' }),
+    mystery: T(45, 54, [0, 1, 0, 1, 5, 1, 0, 1], [
+      [[0, 14, 4], [8, 15, 4]], [[0, 17, 4], [8, 16, 4]], [[0, 15, 6], [8, 14, 8]], [[4, 19, 4], [12, 18, 4]],
+      [[0, 14, 4], [8, 15, 4]], [[0, 17, 4], [8, 16, 4]], [[0, 15, 6], [8, 14, 8]], [[4, 19, 6], [12, 18, 4]]], { scale: PHR, cine: 'mystery' }),
+    heroic: T(62, 116, [0, 4, 5, 3, 0, 4, 3, 4], [
+      [[0, 7, 4], [4, 9, 4], [8, 11, 8]], [[0, 11, 4], [4, 9, 4], [8, 8, 8]], [[0, 9, 4], [4, 10, 4], [8, 9, 8]], [[0, 10, 4], [4, 12, 4], [8, 14, 8]],
+      [[0, 14, 2], [2, 13, 2], [4, 11, 4], [8, 9, 4], [12, 7, 4]], [[0, 8, 4], [4, 11, 4], [8, 13, 8]], [[0, 10, 4], [4, 12, 4], [8, 10, 4], [12, 8, 4]], [[0, 11, 8], [8, 13, 4], [12, 11, 4]]],
+      { scale: MAJ, kick: '1000100010001010', snare: '0000100000001000', flair: 'fanfare' }),
+  });
+  THEMES.triumph = Object.assign({}, THEMES.heroic, { bpm: 100, root: 64, flair: 'bells' });
+  THEMES.defeat = Object.assign({}, THEMES.sad, { bpm: 50 });
   const mus = { on: false, key: null, th: null, inten: 0, step: 0, next: 0, timer: null };
   let pending = null;
 
@@ -439,7 +461,47 @@ const Snd = (() => {
     voice('sine', f * 2, f * 2, t, dur * .6, v * .35, Object.assign({ bus: musBus, a: .006, rev: .35 }, o));
   }
 
+  // trilhas cinematograficas da historia (sem bateria constante): piano, cordas, drones, sinos
+  function scheduleCine(step, t) {
+    const th = mus.th, kind = th.cine, bar = Math.floor(step / 16) % 8, s = step % 16, sd = stepDur();
+    const deg = th.chords[bar], chord = [deg, deg + 2, deg + 4].map(d => noteOf(th, d));
+    const piano = (m, dur, v) => {
+      const f = mtof(m);
+      voice('triangle', f, f, t, dur, v, { bus: cineBus, a: .004, rev: .5, del: .12 });
+      voice('sine', f * 2, f * 2, t, dur * .6, v * .3, { bus: cineBus, a: .004, rev: .5 });
+      voice('sine', f, f, t, dur * 1.6, v * .5, { bus: cineBus, a: .01, rev: .6 });
+    };
+    const pad = (v, lp, a) => { if (s === 0) chord.forEach(m => [-6, 6].forEach(dt => voice('sawtooth', mtof(m - 12), mtof(m - 12), t, sd * 16 + .6, v, { bus: cineBus, lp, detune: dt, a, hold: sd * 14, rev: .6 }))); };
+    const mel = th.mel[bar];
+    if (kind === 'hope') {
+      pad(.013, 1400, .6);
+      if (s === 0) voice('sine', mtof(chord[0] - 24), mtof(chord[0] - 24), t, sd * 14, .1, { bus: cineBus, a: .1 });
+      if (s % 2 === 0) piano(chord[[0, 1, 2, 1][(s / 2) % 4]] + 12, sd * 3, .02);
+      for (const [ms, d, len] of mel) if (ms === s) { const f = mtof(noteOf(th, d)), dur = len * sd * 1.2; piano(noteOf(th, d), dur, .07); voice('sawtooth', f, f, t, dur, .02, { bus: cineBus, lp: 1500, a: .15, rev: .5 }); }
+      if (bar % 4 === 0 && s === 0) pluck(chord[2] + 24, t, 1.2, .02);
+    } else if (kind === 'sad') {
+      pad(.011, 900, .9);
+      if (s === 0) { voice('sawtooth', mtof(chord[0] - 24), mtof(chord[0] - 24), t, sd * 15, .07, { bus: cineBus, lp: 360, a: .2 }); voice('sine', mtof(chord[0] - 24), mtof(chord[0] - 24), t, sd * 15, .08, { bus: cineBus, a: .2 }); }
+      if (s % 4 === 0) piano(chord[[0, 1, 2, 1][s / 4]], sd * 5, .02);
+      for (const [ms, d, len] of mel) if (ms === s) { const dur = len * sd * 1.5 + .4; piano(noteOf(th, d), dur, .06); voice('sawtooth', mtof(noteOf(th, d) - 12), mtof(noteOf(th, d) - 12), t, dur, .025, { bus: cineBus, lp: 900, a: .12, rev: .5 }); }
+    } else if (kind === 'tension') {
+      pad(.012, 700, .5);
+      if (s === 0) voice('sawtooth', mtof(chord[0] - 24), mtof(chord[0] - 24), t, sd * 16, .06, { bus: cineBus, lp: 260, a: .3 });
+      if (s === 0) taiko(t, .28); if (s === 3) taiko(t, .2);
+      voice('sawtooth', mtof(chord[0]), mtof(chord[0]), t, sd * 1.1, s % 4 === 0 ? .018 : .01, { bus: cineBus, lp: 1400, a: .004, rev: .2 });
+      if (bar % 4 === 3 && s === 0) noiseV(t, sd * 16, .05, { type: 'bandpass', f0: 300, f1: 4000, q: 1.2, a: sd * 13, bus: cineBus, rev: .4 });
+      if (s === 12) snare(t, .05);
+      for (const [ms, d, len] of mel) if (ms === s) { const f = mtof(noteOf(th, d)), dur = len * sd * .8 + .1; voice('sawtooth', f, f, t, dur, .05, { bus: cineBus, lp: 700, lp1: 2400, a: .025, rev: .35 }); voice('sawtooth', f / 2, f / 2, t, dur, .03, { bus: cineBus, lp: 600, a: .03, rev: .3 }); }
+    } else if (kind === 'mystery') {
+      if (s === 0) { for (const dt of [-9, 9]) voice('sawtooth', mtof(chord[0] - 24), mtof(chord[0] - 24), t, sd * 16 + .5, .05, { bus: cineBus, lp: 220, detune: dt, a: 1 }); voice('sine', mtof(chord[2] - 12), mtof(chord[2] - 12), t, sd * 16, .02, { bus: cineBus, a: 1.2, rev: .7 }); }
+      if (s === 0 && bar % 2 === 0) noiseV(t, sd * 14, .04, { type: 'bandpass', f0: 1500, f1: 3000, q: 2, a: sd * 7, bus: cineBus, rev: .7 });
+      if (s === 0 && bar % 4 === 0) taiko(t, .3);
+      for (const [ms, d, len] of mel) if (ms === s) { const f = mtof(noteOf(th, d)); voice('sine', f, f, t, len * sd + 1.8, .05, { bus: cineBus, a: .01, rev: .8, del: .4 }); voice('sine', f * 1.0595, f * 1.0595, t, len * sd + 1.2, .02, { bus: cineBus, a: .02, rev: .8 }); voice('sine', f * 2.01, f * 2.01, t, len * sd + .8, .015, { bus: cineBus, rev: .8 }); }
+    }
+  }
+
   function scheduleStep(step, t) {
+    if (mus.th.cine) return scheduleCine(step, t);
     const th = mus.th, inten = mus.inten, boss = inten === 2, bar = Math.floor(step / 16) % 8, s = step % 16, sd = stepDur();
     const deg = th.chords[bar];
     const chord = [deg, deg + 2, deg + 4].map(d => noteOf(th, d));

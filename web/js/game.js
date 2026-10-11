@@ -105,7 +105,7 @@ const Game = {
     for (const k of G.pickups) k.mag = true;
     // cena: Olienzinho no holofote com a fala de impacto
     G.cut = { t: 0, text: STORY.stages[G.stageIdx].victory, last: 0 };
-    Snd.play('stinger'); Snd.musicPlay('menu', 0);
+    Snd.play('stinger'); Snd.musicPlay('triumph', 1);
   },
 
   stageClear() {
@@ -119,7 +119,15 @@ const Game = {
   gameOver() {
     this.endRunSave(0, false);
     G.result = { coins: G.runCoins, score: G.score, kills: G.kills, level: G.level };
-    G.state = 'over'; Snd.play('gameOver');
+    const toOver = () => { G.state = 'over'; Snd.play('gameOver'); };
+    if (this.noStory) { toOver(); return; }
+    // o vilao (o chefe da fase ou o Vazio) fala com o jogador
+    const D = STORY.defeat, inBoss = !!G.boss, bc = ['C', 'P', 'E', 'S'][G.stageIdx];
+    const pages = [{ music: 'sad' },
+      inBoss ? { who: bc, scene: 'boss', mood: 'angry', text: pick(D.boss[G.stageIdx]) } : { who: 'V', scene: 'void', mood: 'angry', text: pick(D.void) }];
+    if (Math.random() < .5) pages.push({ who: 'B', mood: 'worry', text: pick(D.orbi) });
+    pages.push({ who: 'O', mood: 'sad', text: pick(D.reply) });
+    this.startStory(pages, toOver, { music: null });
   },
 
   openLevelUp() {

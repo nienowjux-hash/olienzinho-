@@ -3,6 +3,7 @@
 const Snd = (() => {
   let ac = null, comp, master, sfxBus, musBus, revIn, delIn, noiseBuf, analyser;
   const vol = { sfx: .8, music: .55 };
+  const SFX_TRIM = .62, MUS_TRIM = .72; // margem interna para nada estourar
   const lastPlay = {};
   const mtof = m => 440 * Math.pow(2, (m - 69) / 12);
   const rnd = (a, b) => a + Math.random() * (b - a);
@@ -22,12 +23,15 @@ const Snd = (() => {
     if (!AC) return;
     ac = new AC();
     comp = ac.createDynamicsCompressor();
-    comp.threshold.value = -16; comp.knee.value = 20; comp.ratio.value = 6; comp.attack.value = .004; comp.release.value = .22;
-    master = ac.createGain(); master.gain.value = .9;
+    comp.threshold.value = -22; comp.knee.value = 24; comp.ratio.value = 4; comp.attack.value = .004; comp.release.value = .22;
+    master = ac.createGain(); master.gain.value = .85;
+    // tira a aspereza dos agudos
+    const shelf = ac.createBiquadFilter(); shelf.type = 'highshelf'; shelf.frequency.value = 5200; shelf.gain.value = -5;
+    const tone = ac.createBiquadFilter(); tone.type = 'lowpass'; tone.frequency.value = 9500; tone.Q.value = .5;
     analyser = ac.createAnalyser(); analyser.fftSize = 32768;
-    comp.connect(master); master.connect(analyser); master.connect(ac.destination);
-    sfxBus = ac.createGain(); sfxBus.gain.value = vol.sfx; sfxBus.connect(comp);
-    musBus = ac.createGain(); musBus.gain.value = vol.music; musBus.connect(comp);
+    comp.connect(shelf); shelf.connect(tone); tone.connect(master); master.connect(analyser); master.connect(ac.destination);
+    sfxBus = ac.createGain(); sfxBus.gain.value = vol.sfx * SFX_TRIM; sfxBus.connect(comp);
+    musBus = ac.createGain(); musBus.gain.value = vol.music * MUS_TRIM; musBus.connect(comp);
     // reverb
     const conv = ac.createConvolver(); conv.buffer = makeImpulse(2.6, 2.4);
     revIn = ac.createGain(); const revOut = ac.createGain(); revOut.gain.value = .5;
@@ -95,7 +99,7 @@ const Snd = (() => {
 
   function duck(amount, sec) {
     if (!ac) return;
-    const t = now(), base = vol.music;
+    const t = now(), base = vol.music * MUS_TRIM;
     musBus.gain.cancelScheduledValues(t);
     musBus.gain.setValueAtTime(musBus.gain.value, t);
     musBus.gain.linearRampToValueAtTime(base * (1 - amount), t + .03);
@@ -106,9 +110,9 @@ const Snd = (() => {
   const SFX = {
     shoot(o) {
       const t = now(), f = (1300 + (o.lv || 0) * 140) * rnd(.94, 1.06), p = o.pan;
-      voice('sawtooth', f, f * .18, t, .12, .1, { lp: 5200, lp1: 900, q: 5, rev: .1, pan: p });
-      voice('square', f * .5, f * .1, t, .08, .045, { lp: 3000, pan: p });
-      noiseV(t, .03, .035, { type: 'highpass', f0: 5000, pan: p });
+      voice('sawtooth', f * .85, f * .2, t, .12, .07, { lp: 3000, lp1: 700, q: 2, rev: .12, pan: p });
+      voice('triangle', f * .5, f * .12, t, .09, .05, { lp: 2200, pan: p });
+      noiseV(t, .025, .015, { type: 'bandpass', f0: 2500, pan: p });
     },
     enemyShoot(o) {
       const t = now(), p = o.pan;
@@ -117,8 +121,8 @@ const Snd = (() => {
     },
     hit(o) {
       const t = now();
-      noiseV(t, .04, .05, { type: 'highpass', f0: 3500, pan: o.pan });
-      voice('triangle', 900 * rnd(.9, 1.1), 320, t, .06, .05, { pan: o.pan });
+      noiseV(t, .04, .03, { type: 'bandpass', f0: 2200, pan: o.pan });
+      voice('triangle', 800 * rnd(.9, 1.1), 320, t, .06, .035, { pan: o.pan });
     },
     bossHit(o) {
       const t = now();
@@ -126,17 +130,17 @@ const Snd = (() => {
       noiseV(t, .05, .06, { type: 'bandpass', f0: 1800, pan: o.pan });
     },
     explode(o) {
-      const t = now(), s = o.size ?? 1, d = .35 + s * .5, p = o.pan, pk = .32 + s * .14;
+      const t = now(), s = o.size ?? 1, d = .35 + s * .5, p = o.pan, pk = .26 + s * .11;
       noiseV(t, d, pk, { type: 'lowpass', f0: 3200, f1: 120, q: 1.2, a: .004, pan: p, rev: .25 + s * .15 });
       voice('sine', 150, 28, t, .3 + s * .25, pk * 1.1, { pan: p });
       voice('sawtooth', 180, 50, t, .2 + s * .15, pk * .35, { lp: 900, lp1: 120, pan: p });
-      for (let i = 0; i < 3 + s * 3; i++) noiseV(t + rnd(.03, d * .8), rnd(.02, .06), pk * .3, { type: 'highpass', f0: rnd(1500, 4500), pan: p });
+      for (let i = 0; i < 3 + s * 3; i++) noiseV(t + rnd(.03, d * .8), rnd(.02, .06), pk * .2, { type: 'bandpass', f0: rnd(1200, 3000), pan: p });
     },
     playerHit() {
       const t = now();
-      voice('sawtooth', 260, 48, t, .45, .3, { lp: 1400, lp1: 160, q: 4, rev: .2 });
-      voice('sine', 120, 30, t, .4, .45);
-      noiseV(t, .25, .25, { type: 'bandpass', f0: 1200, f1: 200, q: 1.5 });
+      voice('sawtooth', 260, 48, t, .45, .2, { lp: 1200, lp1: 160, q: 2, rev: .2 });
+      voice('sine', 120, 30, t, .4, .35);
+      noiseV(t, .25, .17, { type: 'bandpass', f0: 1200, f1: 200, q: 1.5 });
       duck(.55, .5);
     },
     coin(o) {
@@ -193,8 +197,8 @@ const Snd = (() => {
       const t = now();
       for (let i = 0; i < 6; i++) {
         const f = i % 2 ? 330 : 440;
-        voice('sawtooth', f, f, t + i * .42, .4, .22, { lp: 1300, q: 3, a: .03, rev: .2 });
-        voice('square', f / 2, f / 2, t + i * .42, .4, .1, { lp: 600, a: .03 });
+        voice('sawtooth', f, f, t + i * .42, .4, .14, { lp: 1100, q: 1.2, a: .03, rev: .2 });
+        voice('triangle', f / 2, f / 2, t + i * .42, .4, .1, { lp: 600, a: .03 });
       }
       voice('sine', 55, 48, t, 2.6, .35, { a: .4 });
       duck(.6, 2.6);
@@ -240,9 +244,9 @@ const Snd = (() => {
     },
     lightning() {
       const t = now();
-      noiseV(t, .3, .55, { type: 'highpass', f0: 1800, f1: 700, a: .002, rev: .4 });
-      noiseV(t + .02, 1.3, .4, { type: 'lowpass', f0: 280, f1: 60, a: .02, rev: .5 });
-      voice('sawtooth', 2400, 120, t, .18, .15, { lp: 6000, lp1: 400 });
+      noiseV(t, .3, .36, { type: 'bandpass', f0: 1800, f1: 700, a: .002, rev: .4 });
+      noiseV(t + .02, 1.3, .3, { type: 'lowpass', f0: 280, f1: 60, a: .02, rev: .5 });
+      voice('sawtooth', 2000, 120, t, .18, .09, { lp: 3500, lp1: 400 });
       duck(.3, .5);
     },
     charge(o) {
@@ -312,7 +316,7 @@ const Snd = (() => {
 
   function kick(t, v) { voice('sine', 160, 42, t, .16, v, { bus: musBus }); noiseV(t, .02, v * .2, { type: 'lowpass', f0: 1500, bus: musBus }); }
   function snare(t, v) { noiseV(t, .16, v, { type: 'bandpass', f0: 1900, q: .9, bus: musBus, rev: .15 }); voice('triangle', 200, 120, t, .09, v * .6, { bus: musBus }); }
-  function hat(t, v, open) { noiseV(t, open ? .14 : .035, v, { type: 'highpass', f0: 7500, bus: musBus }); }
+  function hat(t, v, open) { noiseV(t, open ? .14 : .035, v, { type: 'highpass', f0: 6500, bus: musBus }); }
 
   function scheduleStep(step, t) {
     const th = mus.th, inten = mus.inten, bar = Math.floor(step / 16), s = step % 16;
@@ -323,21 +327,21 @@ const Snd = (() => {
     if (s === 0) { // pad do compasso
       [0, 1, 2].forEach(i => {
         const f = mtof(tones[i] + 12);
-        [-7, 7].forEach(dt => voice('sawtooth', f, f, t, sd * 16 + .5, .028, { bus: musBus, lp: th.padLP, detune: dt, a: .9, hold: sd * 14, rev: .5 }));
+        [-7, 7].forEach(dt => voice('sawtooth', f, f, t, sd * 16 + .5, .022, { bus: musBus, lp: th.padLP, detune: dt, a: .9, hold: sd * 14, rev: .5 }));
       });
     }
     // baixo
     const bassOn = inten === 2 ? (s % 2 === 0) : (s % 4 === 0 || (s === 10 && bar % 2) || (s === 14 && inten >= 1));
     if (bassOn) {
       const m = (s === 10 || s === 14) ? tones[2] - 12 : root - 12 + ((inten === 2 && s % 4 === 2) ? 12 : 0);
-      voice(inten === 2 ? 'sawtooth' : 'triangle', mtof(m), mtof(m), t, sd * 1.8, inten === 0 ? .1 : .16, { bus: musBus, lp: 420, q: 2 });
+      voice(inten === 2 ? 'sawtooth' : 'triangle', mtof(m), mtof(m), t, sd * 1.8, inten === 0 ? .08 : .13, { bus: musBus, lp: 380, q: 1.2 });
     }
     // arpejo
     const pat = ARP[inten === 2 ? 2 : (bar % 2 ? 1 : 0)];
     const ai = pat[s];
     if (ai >= 0 && (inten >= 1 || s % 4 === 0 || s % 8 === 6)) {
       const m = tones[ai] + 12 * (inten === 2 ? 2 : 1) + (s >= 8 && inten === 0 ? 0 : 0);
-      voice(th.arp, mtof(m), mtof(m), t, sd * 2.2, inten === 0 ? .04 : .06, { bus: musBus, lp: 3200, lp1: 900, q: 1, del: .45, rev: .25 });
+      voice(th.arp, mtof(m), mtof(m), t, sd * 2.2, inten === 0 ? .03 : .045, { bus: musBus, lp: 2600, lp1: 800, q: 1, del: .45, rev: .25 });
     }
     // melodia
     if (inten >= 1 && (inten === 2 || bar % 2 === 0)) {
@@ -347,16 +351,16 @@ const Snd = (() => {
         const r = rng(), dg = deg + [0, 2, 4, 5, 7, 9][Math.floor(r * 6)];
         if (s === sl && (rng() > .25)) {
           const m = degNote(th, dg) + 24;
-          voice('square', mtof(m), mtof(m), t, sd * 3.5, .035, { bus: musBus, lp: 2400, del: .5, rev: .45, a: .01 });
-          voice('sine', mtof(m), mtof(m), t, sd * 3.5, .06, { bus: musBus, del: .5, rev: .45, a: .01 });
+          voice('square', mtof(m), mtof(m), t, sd * 3.5, .026, { bus: musBus, lp: 2000, del: .5, rev: .45, a: .01 });
+          voice('sine', mtof(m), mtof(m), t, sd * 3.5, .045, { bus: musBus, del: .5, rev: .45, a: .01 });
         }
       });
     }
     // bateria
     if (inten >= 1) {
-      if (inten === 2 ? (s % 4 === 0 || s === 10) : (s % 8 === 0 || s === 10 && bar % 2)) kick(t, inten === 2 ? .5 : .38);
-      if (s === 4 || s === 12) snare(t, inten === 2 ? .2 : .15);
-      if (inten === 2 ? true : s % 2 === 0) hat(t, s % 4 === 2 ? .06 : .035, s === 14);
+      if (inten === 2 ? (s % 4 === 0 || s === 10) : (s % 8 === 0 || s === 10 && bar % 2)) kick(t, inten === 2 ? .4 : .3);
+      if (s === 4 || s === 12) snare(t, inten === 2 ? .15 : .11);
+      if (inten === 2 ? true : s % 2 === 0) hat(t, s % 4 === 2 ? .04 : .025, s === 14);
     }
   }
 
@@ -380,7 +384,7 @@ const Snd = (() => {
     const t = now();
     musBus.gain.cancelScheduledValues(t);
     musBus.gain.setValueAtTime(.0001, t);
-    musBus.gain.linearRampToValueAtTime(vol.music, t + 1.2);
+    musBus.gain.linearRampToValueAtTime(vol.music * MUS_TRIM, t + 1.2);
     clearInterval(mus.timer);
     mus.timer = setInterval(tick, 40);
   }
@@ -398,8 +402,8 @@ const Snd = (() => {
   function setVolumes(s, m) {
     vol.sfx = s; vol.music = m;
     if (!ac) return;
-    sfxBus.gain.value = s;
-    if (mus.on) musBus.gain.value = m;
+    sfxBus.gain.value = s * SFX_TRIM;
+    if (mus.on) musBus.gain.value = m * MUS_TRIM;
   }
   function peak() {
     if (!analyser) return -1;

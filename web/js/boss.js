@@ -40,8 +40,13 @@ class Boss {
   update(dt) {
     this.t += dt; this.flash = Math.max(0, this.flash - dt); this.orbCd = Math.max(0, this.orbCd - dt);
     if (this.state === 'intro') {
-      this.y += (this.baseY - this.y) * Math.min(1, 1.6 * dt) + 40 * dt;
-      if (this.y >= this.baseY - 6) { this.y = this.baseY; this.state = 'fight'; shake(10); Snd.play('rumble', { dur: 1 }); }
+      // desce suavemente ate exatamente onde a luta comeca (sem pulo lateral)
+      this.introT = (this.introT || 0) + dt;
+      const k = Math.min(1, this.introT / 3), keep = this.t;
+      this.t = 0; this.move(0); const fx = this.x, fy = this.y; this.t = keep;
+      this.x = fx; this.y = lerp(-300, fy, easeOut(k));
+      if (k < 1 && Math.random() < dt * 14) G.parts.push({ x: this.x + rand(-100, 100), y: this.y + 40, vx: rand(-20, 20), vy: rand(60, 140), life: .5, max: .5, r: rand(4, 8), c: this.col, drag: 1 });
+      if (k >= 1) { this.t = 0; this.state = 'fight'; shake(10); Snd.play('rumble', { dur: 1 }); }
       return;
     }
     if (this.state === 'dying') {

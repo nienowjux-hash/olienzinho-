@@ -33,8 +33,9 @@ function glow(color) {
   g.fillStyle = gr; g.fillRect(0, 0, 64, 64);
   return glowCache[color] = c;
 }
+const GLOW = .62; // intensidade geral dos brilhos
 function drawGlow(x, y, r, color, a = 1) {
-  ctx.globalAlpha = a; ctx.drawImage(glow(color), x - r, y - r, r * 2, r * 2);
+  ctx.globalAlpha = a * GLOW; ctx.drawImage(glow(color), x - r, y - r, r * 2, r * 2);
 }
 
 // ---------- entrada ----------

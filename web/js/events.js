@@ -222,7 +222,7 @@ const Events = {
       const g = ctx.createRadialGradient(W / 2, H / 2, H * .35, W / 2, H / 2, H * .9);
       g.addColorStop(0, 'rgba(255,60,60,0)'); g.addColorStop(1, `rgba(255,60,60,${a})`); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
     }
-    if (this.flash > 0) { ctx.globalAlpha = Math.min(1, this.flash * .6); ctx.fillStyle = '#e9e0ff'; ctx.fillRect(0, 0, W, H); }
+    if (this.flash > 0) { ctx.globalAlpha = Math.min(.7, this.flash * .35); ctx.fillStyle = '#e9e0ff'; ctx.fillRect(0, 0, W, H); }
     if (this.banner) {
       const b = this.banner, a = Math.max(0, Math.min(1, b.t / .4, (3.2 - b.t) / .6)), slide = (1 - Math.min(1, b.t / .4)) * -30;
       ctx.globalAlpha = a; ctx.textAlign = 'center'; ctx.textBaseline = 'top';

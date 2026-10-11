@@ -30,9 +30,9 @@ function render() {
   // bloom: realca so o que e claro
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   bctx.clearRect(0, 0, bloom.width, bloom.height);
-  bctx.filter = 'contrast(1.6) brightness(1.15) blur(5px)';
+  bctx.filter = 'contrast(2) brightness(1) blur(6px)';
   bctx.drawImage(cv, 0, 0, bloom.width, bloom.height); bctx.filter = 'none';
-  ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = .5;
+  ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = .28;
   ctx.drawImage(bloom, 0, 0, cv.width, cv.height);
   ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
 }

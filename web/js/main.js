@@ -32,7 +32,7 @@ function postFx(s) {
     const a = .1 + (.5 + .5 * Math.sin(World.t * 6)) * .14, g = ctx.createRadialGradient(gw / 2, gh / 2, gh * .35, gw / 2, gh / 2, gh * .9);
     g.addColorStop(0, 'rgba(255,40,70,0)'); g.addColorStop(1, 'rgba(255,40,70,' + a + ')'); ctx.fillStyle = g; ctx.fillRect(0, 0, gw, gh);
   }
-  if (FX_STATES.includes(s)) { ctx.save(); ctx.globalAlpha = .05; ctx.globalCompositeOperation = 'overlay'; ctx.translate(Math.random() * 128 | 0, Math.random() * 128 | 0); ctx.fillStyle = GRAIN; ctx.fillRect(-128, -128, gw + 256, gh + 256); ctx.restore(); }
+  if (FX_STATES.includes(s) && QL() >= 2) { ctx.save(); ctx.globalAlpha = .05; ctx.globalCompositeOperation = 'overlay'; ctx.translate(Math.random() * 128 | 0, Math.random() * 128 | 0); ctx.fillStyle = GRAIN; ctx.fillRect(-128, -128, gw + 256, gh + 256); ctx.restore(); }
   if ((G.glitchT || 0) > 0 && s === 'play') { // falha de imagem (Eco)
     G.glitchT -= 1 / 60; ctx.save(); ctx.globalCompositeOperation = 'lighter';
     for (let i = 0; i < 7; i++) { ctx.globalAlpha = .12 + Math.random() * .16; ctx.fillStyle = Math.random() < .5 ? '#ff2a6a' : '#2ad4ff'; ctx.fillRect(Math.random() * 40, Math.random() * gh, gw, 2 + Math.random() * 14); }
@@ -56,9 +56,10 @@ function render() {
   bctx.clearRect(0, 0, bloom.width, bloom.height);
   bctx.filter = 'contrast(2) brightness(1) blur(6px)';
   bctx.drawImage(cv, 0, 0, bloom.width, bloom.height); bctx.filter = 'none';
-  ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = .28;
-  ctx.drawImage(bloom, 0, 0, cv.width, cv.height);
+  if (QL() >= 1) { ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = .28;
+  ctx.drawImage(bloom, 0, 0, cv.width, cv.height); }
   ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+  Visual2.distort(s);
   postFx(s);
   if (Trans.t < .55) { // transicao cinematografica: faixas que se abrem do centro
     ctx.setTransform(K, 0, 0, K, 0, 0); const k = easeOut(Trans.t / .55), h = H / 2 * (1 - k);

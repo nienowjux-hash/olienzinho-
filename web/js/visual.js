@@ -6,7 +6,7 @@ const hsh = i => { const x = Math.sin(i * 127.1 + 311.7) * 43758.5453; return x 
 // ===== inimigos: matiz por fase, propulsores e pose de ataque =====
 {
   const base = Art.enemy;
-  const HUE = [0, -28, 48, -52, 150, 215];
+  const HUE = [0, -17, 29, -31, 90, 129];
   Art.enemy = function (e) {
     const st = G.stage ? G.stage.id : 0, hue = HUE[st] || 0, r = e.rad, t = World.t;
     // propulsor atras (so quem se move)
@@ -30,7 +30,7 @@ const hsh = i => { const x = Math.sin(i * 127.1 + 311.7) * 43758.5453; return x 
     }
     ctx.save();
     if (chg > 0) { ctx.translate(e.x, e.y); ctx.scale(1 + chg * .08, 1 + chg * .08); ctx.translate(-e.x, -e.y); }
-    if (hue && e.type !== 'dummy') ctx.filter = 'hue-rotate(' + hue + 'deg)';
+    if (hue && e.type !== 'dummy' && QL() >= 2) ctx.filter = 'hue-rotate(' + hue + 'deg)';
     base.call(this, e);
     ctx.restore();
   };
@@ -62,6 +62,7 @@ Art.ebullet = function (b) {
     ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(-R * .12, -R * .12, R * .3, 0, 7); ctx.fill();
     ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = b.c; ctx.globalAlpha = .28; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(0, 0, R * 1.9, 0, 7); ctx.stroke(); ctx.globalAlpha = 1; drawGlow(0, 0, R * 2.4, b.c, .45);
   }
+  if (Save.data.settings.outline) { ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(0, 0, R * 1.3, 0, 7); ctx.stroke(); }
   ctx.restore();
 };
 
@@ -100,6 +101,7 @@ Visual.bossAura = function (b) {
 
 // ===== fundos vivos por fase =====
 Visual.biome = function () {
+  if (QL() < 1) return;
   const st = G.stage ? G.stage.id : 0, t = World.t;
   ctx.save(); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'lighter';
   if (st === 0) { // esporos de luz

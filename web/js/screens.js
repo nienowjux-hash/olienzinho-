@@ -803,9 +803,7 @@ const Screens = {
       txt(rar.name, x + cw / 2, y0 + 26, 15, rar.c, 'center', 900);
       txt(String(i + 1), x + 18, y0 + 24, 22, '#8a7fb0');
       ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(x + cw / 2, y0 + 96, 60, rar.c, .7); ctx.restore(); ctx.globalAlpha = 1;
-      ctx.fillStyle = '#fff'; ctx.beginPath();
-      for (let k = 0; k < 10; k++) { const r = k % 2 ? 11 : 26, a = k * TAU / 10 - Math.PI / 2 + World.t * (f ? 1.5 : 0); ctx.lineTo(x + cw / 2 + Math.cos(a) * r, y0 + 96 + Math.sin(a) * r); }
-      ctx.closePath(); ctx.fill();
+      Visual2.upIcon(u.id, x + cw / 2, y0 + 96, 30, rar.c, f);
       txt(u.name, x + cw / 2, y0 + 150, 26, '#fff', 'center');
       UI.wrap(u.desc, x + cw / 2, y0 + 194, cw - 44, 24, 18, '#cdb8ff', 'center');
       const have = G.upCounts[u.id] || 0;

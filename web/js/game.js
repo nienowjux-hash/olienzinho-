@@ -316,7 +316,7 @@ const Game = {
     const p = G.player;
     G.t += dt; G.intro += dt;
     World.update(dt, p.vy);
-    Events.update(dt); Events.updateHazards(dt); Extras.update(dt); Visual.update(dt); Extras.tutUpdate(dt); if (G.training) Extras.trainUpdate(dt);
+    Events.update(dt); Events.updateHazards(dt); Extras.update(dt); Visual.update(dt); Visual2.update(dt); Extras.tutUpdate(dt); if (G.training) Extras.trainUpdate(dt);
     Snd.setLayers(p.dead ? 0 : G.combo >= 25 ? 2 : G.combo >= 10 ? 1 : 0, !p.dead && p.hp <= Math.max(1, p.maxHp * .25) ? 1 : 0);
     this.director(dt);
     if (!p.dead) this.updatePlayer(dt); else { G.overT -= rdt; if (G.overT <= 0) { this.gameOver(); return; } }
@@ -412,8 +412,8 @@ const Game = {
     const p = G.player, cx = p ? p.x - W / 2 : 0;
     ctx.save();
     if (G.shake > 0) ctx.translate(rand(-1, 1) * G.shake * .55, rand(-1, 1) * G.shake * .55);
-    G.zoom = (G.zoom || 0) * .92; if (G.zoom > .001) { ctx.translate(W / 2, H / 2); ctx.scale(1 + G.zoom, 1 + G.zoom); ctx.translate(-W / 2, -H / 2); }
-    World.draw(cx); Visual.biome();
+    G.zoom = (G.zoom || 0) * .92; if (G.zoom <= .002) G.zoomCx = null; if (G.zoom > .001) { const zx = G.zoomCx ?? W / 2, zy = G.zoomCy ?? H / 2; ctx.translate(zx, zy); ctx.scale(1 + G.zoom, 1 + G.zoom); ctx.translate(-zx, -zy); }
+    World.draw(cx); Visual.biome(); Visual2.lights();
     Events.drawHazards();
     for (const k of G.pickups) Art.pickup(k);
     if (G.boss) { const b = G.boss, br = 1 + Math.sin(b.t * 2) * .012; ctx.save(); ctx.translate(b.shx || 0, b.shy || 0); ctx.translate(b.x, b.y); ctx.scale(br, br); ctx.translate(-b.x, -b.y); b.draw(); ctx.restore(); Visual.bossAura(b); }
@@ -433,13 +433,14 @@ const Game = {
       ctx.globalAlpha = 1;
       Art.ship(p.x, p.y + bob, { pal, orbi: ob, vx: p.vx, t: p.t, lookx: p.lookx, looky: p.looky, blinkT: p.blinkT, inv: p.inv, shield: p.shieldReady, scale: SHIP_S, mood: p.mood,
         sx: (1 + p.recoil * .05 - Math.abs(p.vx) / 500 * .05) * (p.dashT > 0 ? .78 : 1), sy: (1 - p.recoil * .08 + Math.abs(p.vy) / 500 * .04) * (p.dashT > 0 ? 1.3 : 1) });
+      Visual2.shipFx(p);
       for (const o of p.orbPos) {
         ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(o[0], o[1], 26, '#ffb340', .9); ctx.restore();
         ctx.globalAlpha = 1; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(o[0], o[1], 7, 0, 7); ctx.fill();
         ctx.fillStyle = '#ff8a1f'; ctx.beginPath(); ctx.arc(o[0], o[1], 4, 0, 7); ctx.fill();
       }
     }
-    drawDark(); Visual.overlay();
+    drawDark(); Visual.overlay(); Visual2.flares(); Visual2.cine();
     this.drawFinisherBeam();
     for (const q of G.parts) if (q.k === 'smoke') {
       const k = clamp(q.life / q.max, 0, 1);

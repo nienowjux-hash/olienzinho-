@@ -42,7 +42,7 @@ const STORY = {
     { music: 'hope' },
     { who: 'L', scene: 'lumi', mood: 'happy', text: 'Por isso mesmo. O Vazio não sabe lidar com quem ainda acredita que dá pra consertar as coisas.' },
     { who: 'L', scene: 'lumi', text: 'Leve a Faísca. Ela guarda um pedaço da minha luz... e das luzes de todos que já se apagaram.' },
-    { who: 'N', scene: 'lumi', text: 'Do peito da Mestra, uma chama dourada voou até o Olienzinho e acendeu dentro dele.' },
+    { who: 'N', scene: 'spark', text: 'Do peito da Mestra, uma chama dourada voou até o Olienzinho e acendeu dentro dele.' },
     { music: 'sad' },
     { who: 'B', scene: 'lumi', mood: 'shock', text: 'Mestra Lumi! O seu sinal está caindo!' },
     { who: 'L', scene: 'lumi', mood: 'fade', text: 'Não chorem. Luz não desaparece... só muda de lugar. Orbi, cuide dele.' },
@@ -53,7 +53,7 @@ const STORY = {
     { who: 'B', mood: 'worry', text: 'Faísca estável. Combustível: esperança. Primeiro destino: Nebulosa Violeta.' },
     { music: 'heroic' },
     { who: 'O', mood: 'determined', text: 'Então vamos. Tem quatro amigos pra acordar.' },
-    { who: 'N', text: 'E o menor foguete da galáxia decolou rumo ao maior dos problemas.' },
+    { who: 'N', scene: 'launch', text: 'E o menor foguete da galáxia decolou rumo ao maior dos problemas.' },
   ],
 
   stages: [

@@ -72,6 +72,83 @@ const Screens = {
     ctx.restore(); ctx.globalAlpha = 1;
     ctx.fillStyle = 'rgba(20,6,50,.5)'; ctx.fillRect(0, 0, W, H);
   },
+  // ajusta o tamanho da letra para o texto sempre caber na area disponivel
+  fit(text, maxW, availH, sizes) {
+    let r = null;
+    for (const size of sizes) { const lines = this.wrapLines(text, maxW, size, 700), lh = size * 1.34; r = { lines, size, lh }; if (lines.length * lh <= availH) break; }
+    return r;
+  },
+
+  // Faisca da Mestra Lumi voando ate o Olienzinho
+  sceneSpark(S, t) {
+    const u = S.t, cx0 = 300, cy0 = 300, sx = 920, sy = 400;
+    const lf = clamp(1 - (u - 1.6) / 2.6, .06, 1);
+    ctx.save(); ctx.translate(cx0, cy0); ctx.globalAlpha = lf * (.7 + Math.sin(t * 20) * .05); ctx.globalCompositeOperation = 'lighter';
+    drawGlow(0, 0, 230, '#ffd36a', .75);
+    ctx.fillStyle = rdl(0, 0, 6, 130, [[0, '#ffffff'], [.5, '#ffe9a8'], [1, '#e0a030']]);
+    ctx.beginPath(); for (let i = 0; i < 16; i++) { const a = i / 16 * TAU + t * .2, r = i % 2 ? 66 : 128; ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r); } ctx.closePath(); ctx.fill();
+    ctx.restore(); ctx.globalAlpha = 1;
+    Art.ship(sx, sy + Math.sin(t * 2) * 8, { vx: 0, t, scale: .95, lookx: -.6, looky: -.2, blinkT: 0, boost: .1 });
+    const go = clamp((u - 1.2) / 2.2, 0, 1), e = go * go * (3 - 2 * go);
+    const pt = k => { const p0 = [cx0 + 30, cy0 + 10], p1 = [520, 90], p2 = [760, 130], p3 = [sx - 10, sy - 20], m = 1 - k; return [m * m * m * p0[0] + 3 * m * m * k * p1[0] + 3 * m * k * k * p2[0] + k * k * k * p3[0], m * m * m * p0[1] + 3 * m * m * k * p1[1] + 3 * m * k * k * p2[1] + k * k * k * p3[1]]; };
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    if (u < 1.2) {
+      const g = u / 1.2;
+      for (let i = 0; i < 10; i++) { const a = i / 10 * TAU + t * 3, d = (1 - g) * 120 + 10; drawGlow(cx0 + 30 + Math.cos(a) * d, cy0 + 10 + Math.sin(a) * d, 8, '#ffe9a8', g); }
+      drawGlow(cx0 + 30, cy0 + 10, 20 + g * 30, '#ffffff', g);
+    } else if (go < 1) {
+      for (let i = 0; i < 26; i++) { const k = Math.max(0, e - i * .018), [x, y] = pt(k); drawGlow(x + Math.sin(i * 3 + t * 10) * 4, y + Math.cos(i * 2 + t * 9) * 4, 14 * (1 - i / 30), i % 2 ? '#ffe9a8' : '#ffb340', (1 - i / 26) * .9); }
+      const [x, y] = pt(e); drawGlow(x, y, 60, '#ffd36a', .9); drawGlow(x, y, 26, '#ffffff', 1);
+    } else {
+      const a = u - 3.4;
+      if (!S.arr) { S.arr = true; Snd.play('levelUp'); }
+      if (a < .6) { ctx.globalAlpha = (1 - a / .6) * .6; ctx.fillStyle = '#fff6d8'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; }
+      ctx.strokeStyle = '#ffe9a8';
+      for (let i = 0; i < 3; i++) { const k = (a - i * .25) / 1.4; if (k > 0 && k < 1) { ctx.globalAlpha = (1 - k) * .8; ctx.lineWidth = 6 * (1 - k) + 1; ctx.beginPath(); ctx.arc(sx, sy, 20 + k * 260, 0, TAU); ctx.stroke(); } }
+      ctx.globalAlpha = 1; drawGlow(sx, sy, 150 + Math.sin(t * 4) * 14, '#ffd36a', .75); drawGlow(sx, sy - 10, 70, '#ffffff', .6 + Math.sin(t * 6) * .15);
+      for (let i = 0; i < 14; i++) { const k = (t * .5 + i / 14) % 1, ang = i * 2.4; drawGlow(sx + Math.cos(ang) * k * 120, sy - k * 140 + Math.sin(ang) * 20, 7, '#ffe9a8', (1 - k) * .8); }
+    }
+    ctx.restore(); ctx.globalAlpha = 1;
+  },
+
+  // decolagem do Olienzinho rumo a missao
+  sceneLaunch(S, t) {
+    const u = S.t, dt = Math.min(.05, u - (S.lu ?? u)); S.lu = u;
+    ctx.fillStyle = lin(0, 0, 0, H, [[0, 'rgba(4,1,16,.93)'], [1, 'rgba(14,6,40,.9)']]); ctx.fillRect(-20, -20, W + 40, H + 40);
+    const ign = clamp((u - .4) / .9, 0, 1), liftT = Math.max(0, u - 1.6), h = 55 * liftT * liftT, vel = 110 * liftT;
+    const camCap = 200, shipH = Math.min(h, camCap), padDrop = Math.max(0, h - camCap);
+    if (!S.ls) S.ls = Array.from({ length: 70 }, () => ({ x: rand(0, W), y: rand(0, H), z: rand(.3, 1) }));
+    ctx.save(); ctx.strokeStyle = 'rgba(226,212,255,.85)'; ctx.lineCap = 'round';
+    for (const s of S.ls) { s.y += (vel * s.z * .9 + 6 * s.z) * dt; if (s.y > H + 40) { s.y = -40; s.x = rand(0, W); } ctx.globalAlpha = .3 + .5 * s.z; ctx.lineWidth = 1 + s.z * 1.5; ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(s.x, s.y - 4 - vel * .12 * s.z); ctx.stroke(); }
+    ctx.restore(); ctx.globalAlpha = 1;
+    // eclipse do Vazio surgindo la no fundo
+    if (u > 3) { const er = 18 + easeOut((u - 3) / 6) * 62; this.eclipse(W * .78, H * .2, er, t); }
+    // plataforma com luzes e torres
+    const py = 430 + padDrop;
+    if (py < H + 160) {
+      ctx.fillStyle = '#0a0620'; ctx.fillRect(W / 2 - 260, py, 520, 150); ctx.fillStyle = '#2a1a5a'; ctx.fillRect(W / 2 - 260, py, 520, 8);
+      ctx.fillStyle = '#0a0620'; ctx.fillRect(W / 2 - 250, py - 170, 18, 170); ctx.fillRect(W / 2 + 232, py - 170, 18, 170);
+      for (let i = -2; i <= 2; i++) { const on = (Math.floor(u * 4) + i + 10) % 2 === 0; ctx.fillStyle = on ? '#ffb340' : '#4a2a10'; ctx.beginPath(); ctx.arc(W / 2 + i * 110, py + 26, 6, 0, 7); ctx.fill(); if (on) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(W / 2 + i * 110, py + 26, 26, '#ffb340', .8); ctx.restore(); ctx.globalAlpha = 1; } }
+    }
+    // fumaca da ignicao
+    if (!S.pf) S.pf = [];
+    if (u > .4 && u < 3.4) for (let i = 0; i < 4; i++) S.pf.push({ x: W / 2 + rand(-30, 30), y: py - 4, vx: rand(-230, 230), vy: rand(-30, -4), r: rand(18, 34), life: rand(1, 1.8), max: 1.8 });
+    for (const p of S.pf) { p.life -= dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= 1 - 1.5 * dt; p.r += 22 * dt; }
+    S.pf = S.pf.filter(p => p.life > 0);
+    ctx.save(); ctx.fillStyle = '#8a78c0'; for (const p of S.pf) { ctx.globalAlpha = clamp(p.life / p.max, 0, 1) * .35; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 7); ctx.fill(); } ctx.restore(); ctx.globalAlpha = 1;
+    // a nave: sobe, a camera acompanha, depois fica pequena rumo ao eclipse
+    const far = clamp((u - 4.2) / 7, 0, 1), sc = lerp(1.15, .45, far), jit = u < 1.6 ? ign * 3 : 0;
+    const sx = lerp(W / 2, W * .72, far * far) + rand(-jit, jit), sy = lerp(330 - shipH, 190, far);
+    if (u < 2.8) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(W / 2, py - 8, 140 * ign, '#ffb340', .7 * ign); ctx.restore(); ctx.globalAlpha = 1; }
+    if (!S.tr) S.tr = [];
+    if (ign > 0) for (let i = 0; i < 3; i++) S.tr.push({ x: sx + rand(-8, 8), y: sy + 62 * sc, vy: 140 + vel * 1.2 + rand(0, 120), life: rand(.35, .8), c: Math.random() < .5 ? '#ffb340' : '#ffe9a8' });
+    for (const q of S.tr) { q.life -= dt; q.y += q.vy * dt; }
+    S.tr = S.tr.filter(q => q.life > 0).slice(-140);
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; for (const q of S.tr) drawGlow(q.x, q.y, 8 + q.life * 16, q.c, q.life * 1.1); ctx.restore(); ctx.globalAlpha = 1;
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(sx, sy, 150 * sc, '#8b4dff', .45); ctx.restore(); ctx.globalAlpha = 1;
+    Art.ship(sx, sy, { vx: 0, t, scale: sc, boost: ign * (1 + Math.min(2.2, liftT * .8)), lookx: .3, looky: -.5, blinkT: 0 });
+  },
+
   // pula marcadores de musica e toca a trilha da cena
   curPage(S) {
     while (S.pages[S.i] && S.pages[S.i].music && !S.pages[S.i].who && !S.pages[S.i].title && !S.pages[S.i].mission) {
@@ -83,14 +160,14 @@ const Screens = {
     const S = G.story, pg = S && this.curPage(S), t = World.t;
     if (!S || !pg) { World.draw(0); return; }
     const dt = Math.min(.05, t - (S.bl ?? t)); S.bl = t; S.total = (S.total || 0) + dt;
-    const dram = pg.mood === 'angry' || pg.mood === 'shock', shk = dram ? Math.max(0, 1 - S.t / .5) * 9 : 0;
+    const dram = pg.mood === 'angry' || pg.mood === 'shock', shk = dram ? Math.max(0, 1 - S.t / .5) * 9 : (pg.scene === 'launch' ? Math.max(0, 1 - S.t / 3.2) * 6 : 0);
     ctx.save();
     const z = 1 + clamp(S.t / 16, 0, 1) * .06;
     ctx.translate(W / 2 + rand(-shk, shk), H / 2 + rand(-shk, shk)); ctx.scale(z, z); ctx.translate(-W / 2, -H / 2);
     World.draw(Math.sin(t * .2) * 70);
     ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
     const sc = pg.scene || (pg.mission ? 'boss' : null);
-    if (sc === 'void') this.sceneVoid(t); else if (sc === 'heart') this.sceneHeart(t); else if (sc === 'lumi') this.sceneLumi(t); else if (sc === 'boss') this.sceneBoss(S, t);
+    if (sc === 'void') this.sceneVoid(t); else if (sc === 'heart') this.sceneHeart(t); else if (sc === 'lumi') this.sceneLumi(t); else if (sc === 'boss') this.sceneBoss(S, t); else if (sc === 'spark') this.sceneSpark(S, t); else if (sc === 'launch') this.sceneLaunch(S, t);
     // particulas flutuando (poeira de luz)
     if (!S.motes) S.motes = Array.from({ length: 70 }, () => ({ x: rand(0, W), y: rand(0, H), v: rand(10, 40), r: rand(2, 6), ph: rand(0, 6) }));
     const mc = sc === 'void' ? '#b98cff' : sc === 'heart' || sc === 'lumi' ? '#ffe9a8' : sc === 'boss' ? '#ffb340' : '#cdb8ff';
@@ -153,10 +230,10 @@ const Screens = {
       ctx.fillStyle = lin(0, y0, 0, y1, [[0, 'rgba(8,2,26,0)'], [.3, 'rgba(8,2,26,.82)'], [1, 'rgba(8,2,26,.96)']]); ctx.fillRect(0, y0, W, y1 - y0);
       const jit = mood === 'angry' ? 1.4 : mood === 'fade' ? .8 : 0, wh = pg.who === 'V' ? .78 + Math.random() * .22 : 1;
       if (narr) {
-        const lines = this.wrapLines(text, 920, 32, 700);
-        ctx.fillStyle = '#ffb340'; ctx.fillRect(W / 2 - 40, y0 + 52, 80, 3);
-        ctx.save(); ctx.globalAlpha = Math.min(1, S.t / .3); this.typed(lines, shown, W / 2, y0 + 78, 46, 32, '#e2d4ff', 'center', 700); ctx.restore();
-        if (!talking) { ctx.globalAlpha = .5 + .5 * Math.sin(t * 6); txt('▼', W / 2, y1 - 40, 20, '#cdb8ff', 'center'); ctx.globalAlpha = 1; }
+        const f = this.fit(text, 960, H - 64 - 36 - (y0 + 56), [34, 30, 26, 23]);
+        ctx.fillStyle = '#ffb340'; ctx.fillRect(W / 2 - 40, y0 + 34, 80, 3);
+        ctx.save(); ctx.globalAlpha = Math.min(1, S.t / .3); this.typed(f.lines, shown, W / 2, y0 + 56, f.lh, f.size, '#e2d4ff', 'center', 700); ctx.restore();
+        if (!talking) { ctx.globalAlpha = .5 + .5 * Math.sin(t * 6); txt('▼', W - 120, y1 - 30, 20, '#cdb8ff', 'center'); ctx.globalAlpha = 1; }
       } else {
         // o outro personagem da conversa, apagado, do lado direito
         if (S.other && CHARS[S.other.who]) { ctx.save(); ctx.globalAlpha = .5; Portraits.draw(S.other.who, W - 140, 540, 120, { mood: S.other.mood, t }); ctx.restore(); }
@@ -165,12 +242,12 @@ const Screens = {
         ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(0, 0, 170, ch.c, talking ? .5 + Math.sin(t * 14) * .08 : .25); ctx.restore(); ctx.globalAlpha = 1;
         Portraits.draw(pg.who, 0, 0, 190, { mood, talk: talking, t });
         ctx.restore();
-        txt(ch.name, 272, y0 + 46, 22, ch.c, 'left', 900);
-        ctx.fillStyle = ch.c; ctx.fillRect(272, y0 + 76, 54, 3);
-        const lines = this.wrapLines(text, 830, 30, 700);
+        txt(ch.name, 272, y0 + 36, 22, ch.c, 'left', 900);
+        ctx.fillStyle = ch.c; ctx.fillRect(272, y0 + 66, 54, 3);
+        const f = this.fit(text, 830, H - 64 - 36 - (y0 + 82), [30, 27, 24, 21]);
         ctx.save(); ctx.globalAlpha = wh; if (jit) ctx.translate(rand(-jit, jit), rand(-jit, jit));
-        this.typed(lines, shown, 272, y0 + 92, 40, 30, '#ffffff', 'left', 700); ctx.restore();
-        if (!talking) { ctx.globalAlpha = .5 + .5 * Math.sin(t * 6); txt('▼', 1130, y1 - 40, 20, ch.c, 'center'); ctx.globalAlpha = 1; }
+        this.typed(f.lines, shown, 272, y0 + 82, f.lh, f.size, '#ffffff', 'left', 700); ctx.restore();
+        if (!talking) { ctx.globalAlpha = .5 + .5 * Math.sin(t * 6); txt('▼', 1150, y1 - 30, 20, ch.c, 'center'); ctx.globalAlpha = 1; }
       }
       if (adv && S.t > .1) { if (talking) S.t = len / sp + .01; else if (now - S.doneAt > .3) next(); }
     }
@@ -428,7 +505,7 @@ const Screens = {
   pause() {
     this.dim(.6);
     txt('PAUSADO', W / 2, 190, 64, '#fff', 'center');
-    if (UI.button('resume', W / 2 - 190, 290, 380, 62, 'CONTINUAR', { size: 28, color: '#9a63ff' }) || Input.pressed('escape') || Input.pressed('p')) { G.state = 'play'; Snd.play('uiSelect'); }
+    if (UI.button('resume', W / 2 - 190, 290, 380, 62, 'CONTINUAR', { size: 28, color: '#9a63ff' }) || ((Input.pressed('escape') || Input.pressed('p')) && !G.pausedThisFrame)) { G.state = 'play'; Snd.play('uiSelect'); }
     if (UI.button('opt', W / 2 - 190, 368, 380, 56, 'OPÇÕES', { size: 24 })) { G.setBack = 'pause'; G.state = 'settings'; }
     if (UI.button('quit', W / 2 - 190, 440, 380, 56, 'SAIR PARA O MAPA', { size: 22, sub: 'as estrelas coletadas ficam com você' })) Game.quitRun();
   },

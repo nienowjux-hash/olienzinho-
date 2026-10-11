@@ -262,7 +262,7 @@ const Game = {
     }
     if (G.clearT > 0) { G.clearT -= rdt; if (G.clearT <= 0) { this.stageClear(); return; } }
     if (G.pendingLevels > 0 && !p.dead && G.state === 'play' && !G.bossDone && !(G.boss && G.boss.state === 'dying')) this.openLevelUp();
-    if ((Input.pressed('escape') || Input.pressed('p')) && !G.cut) { G.state = 'pause'; Snd.play('uiBack'); }
+    if ((Input.pressed('escape') || Input.pressed('p')) && !G.cut) { G.state = 'pause'; G.pausedThisFrame = true; Snd.play('uiBack'); }
   },
 
   updatePlayer(dt) {

@@ -48,6 +48,7 @@ let lastT = performance.now();
 function frame(now) {
   const dt = Math.min(.05, (now - lastT) / 1000); lastT = now;
   try {
+    G.pausedThisFrame = false;
     UI.begin();
     Game.update(dt);
     Trans.t += dt;

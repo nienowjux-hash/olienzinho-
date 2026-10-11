@@ -210,7 +210,7 @@ const Game = {
     // o vilao (o chefe da fase ou o Vazio) fala com o jogador
     const D = STORY.defeat, inBoss = !!G.boss, bc = ['C', 'P', 'E', 'S', 'X', 'V', 'H', 'Y', 'R'][G.stageIdx];
     const pages = [{ music: 'sad' },
-      inBoss ? { who: bc, scene: 'boss', mood: 'angry', text: pick(D.boss[G.stageIdx]) } : { who: 'V', scene: 'void', mood: 'angry', text: pick(D.void) }];
+      (inBoss || G.stageIdx >= 6 || Math.random() < .6) && D.boss[G.stageIdx] ? { who: bc, scene: 'boss', mood: 'angry', text: pick(D.boss[G.stageIdx]) } : { who: 'V', scene: 'void', mood: 'angry', text: pick(D.void) }];
     if (Math.random() < .5) pages.push({ who: 'B', mood: 'worry', text: pick(D.orbi) });
     pages.push({ who: 'O', mood: 'sad', text: pick(D.reply) });
     this.startStory(pages, toOver, { music: null });

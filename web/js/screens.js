@@ -615,7 +615,9 @@ const Screens = {
     if (isO) { this.hangarOrbi(); return; }
     txt('HANGAR', W / 2, 26, 42, '#fff', 'center'); txt(this.stars(), W - 40, 36, 30, '#ffcf6b', 'right');
     txt('ARMAS', 74, 92, 18, '#ffb340', 'left', 900);
-    WEAPON_ORDER.forEach((id, i) => {
+    { const np = Math.ceil(WEAPON_ORDER.length / 4); if (np > 1) { txt('PÁGINA ' + (((G.wpage || 0) % np) + 1) + '/' + np, 470, 94, 13, '#8a7fb0', 'right', 800); if (UI.button('wpL', 484, 86, 44, 28, '◀', { size: 14 })) G.wpage = ((G.wpage || 0) + np - 1) % np; if (UI.button('wpR', 536, 86, 44, 28, '▶', { size: 14 })) G.wpage = ((G.wpage || 0) + 1) % np; } }
+    const wp0 = ((G.wpage || 0) % Math.ceil(WEAPON_ORDER.length / 4)) * 4;
+    WEAPON_ORDER.slice(wp0, wp0 + 4).forEach((id, i) => {
       const w = WEAPONS[id], x = 70, y = 118 + i * 104, cw = 580, ch = 94, has = !!own.weapons[id], eq = ld.weapon === id, fid = 'w_' + id, f = UI.focus(fid);
       const ek = Screens.enterK(i); ctx.save(); ctx.translate((1 - ek) * -80, 0); ctx.globalAlpha = clamp(ek, 0, 1);
       if (UI.hit(fid, x, y, has ? cw - 180 : cw, ch, { sound: 'buy' })) {
@@ -723,7 +725,7 @@ const Screens = {
     let x = 90;
     if (this.menuItem('go', locked ? 'BLOQUEADA' : 'JOGAR', x, 580, 44, '', { disabled: locked })) { Game.enter(G.sel); return; }
     x += this.menuW(locked ? 'BLOQUEADA' : 'JOGAR', 44) + 56;
-    const row = [['hang', 'HANGAR', () => { G.skinIdx = Math.max(0, SKINS.findIndex(q => q.id === Save.data.loadout.skin)); G.state = 'hangar'; }], ['shop2', 'LOJA', () => { G.shopBack = 'select'; G.state = 'shop'; }], ['ach', 'CONQUISTAS', () => { G.state = 'achievements'; }], ['orbi', 'ORBI', () => { G.state = 'chatOrbi'; }]];
+    const row = [['hang', 'HANGAR', () => { G.skinIdx = Math.max(0, SKINS.findIndex(q => q.id === Save.data.loadout.skin)); G.state = 'hangar'; }], ['shop2', 'LOJA', () => { G.shopBack = 'select'; G.state = 'shop'; }], ['codex', 'CODEX', () => { G.codexTab = 0; G.codexPage = 0; G.state = 'codex'; }], ['orbi', 'ORBI', () => { G.state = 'chatOrbi'; }]];
     for (const [id, lb, fn] of row) { if (this.menuItem(id, lb, x, 592, 24, '')) fn(); x += this.menuW(lb, 24) + 44; }
     if (this.menuItem('back', 'VOLTAR', W - 90 - this.menuW('VOLTAR', 24), 592, 24, '') || Input.pressed('escape')) { Snd.play('uiBack'); Game.goTitle(); }
     this.bars();
@@ -811,7 +813,7 @@ const Screens = {
       txt(rar.name, x + cw / 2, y0 + 26, 15, rar.c, 'center', 900);
       txt(String(i + 1), x + 18, y0 + 24, 22, '#8a7fb0');
       ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(x + cw / 2, y0 + 96, 60, rar.c, .7); ctx.restore(); ctx.globalAlpha = 1;
-      Visual2.upIcon(u.id, x + cw / 2, y0 + 96, 30, rar.c, f);
+      Visual2.upIcon(u.id, x + cw / 2, y0 + 96, 30, rar.c, f); Visual11.chipDraw(u.id, x + cw / 2, y0 + 42);
       txt(u.name, x + cw / 2, y0 + 150, 26, '#fff', 'center');
       UI.wrap(u.desc, x + cw / 2, y0 + 194, cw - 44, 24, 18, '#cdb8ff', 'center');
       const have = G.upCounts[u.id] || 0;

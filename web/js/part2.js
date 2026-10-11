@@ -329,7 +329,7 @@ Screens.victory = function () {
 };
 Screens.credits = function () {
   G.credT = (G.credT || 0) + 1 / 60; const t = G.credT;
-  ctx.fillStyle = 'rgba(3,1,11,.78)'; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = 'rgba(3,1,11,.5)'; ctx.fillRect(0, 0, W, H);
   if (G.credT < 1.5) Snd.musicPlay('credits', 0);
   let y = H + 40 - t * 52;
   for (const [k, s] of CREDITS) {

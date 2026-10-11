@@ -12,7 +12,7 @@ const ACH = [
   { id: 'wave10', name: 'Sobrevivente', desc: 'Chegue à onda 10 no Modo Infinito.', ok: () => (Save.data.bestWave || 0) >= 10 },
   { id: 'collector4', name: 'Caçador de Fragmentos', desc: 'Ache 4 fragmentos escondidos.', ok: () => Extras.fragCount() >= 4 },
   { id: 'collector6', name: 'Coração Completo', desc: 'Ache os 6 fragmentos escondidos.', ok: () => Extras.fragCount() >= 6 },
-  { id: 'arsenal', name: 'Arsenal Completo', desc: 'Tenha as 4 armas.', ok: () => WEAPON_ORDER.every(w => Save.data.owned.weapons[w]) },
+  { id: 'arsenal', name: 'Arsenal Completo', desc: 'Tenha todas as armas.', ok: () => WEAPON_ORDER.every(w => Save.data.owned.weapons[w]) },
   { id: 'dash50', name: 'Esquiva Mestre', desc: 'Use a esquiva 50 vezes.', ok: () => (Save.data.stats.dashes || 0) >= 50 },
   { id: 'chat5', name: 'Melhor Amigo', desc: 'Converse 5 vezes com o Orbi.', ok: () => (Save.data.stats.chats || 0) >= 5 },
   { id: 'mini5', name: 'Caçador de Capitães', desc: 'Derrote 5 minichefes.', ok: () => (Save.data.stats.minis || 0) >= 5 },

@@ -147,8 +147,8 @@ const Events = {
         if (h.rot) { // retangulo girado (laser do chefe)
           const dx = p.x - h.cx, dy = p.y - h.cy, ca = Math.cos(-h.rot), sa = Math.sin(-h.rot);
           const lx = dx * ca - dy * sa, ly = dx * sa + dy * ca;
-          hx = Math.abs(lx) < h.w / 2 + 12 && Math.abs(ly) < h.h / 2 + 12;
-        } else hx = Math.abs(p.x - h.cx) < h.w / 2 + 12 && Math.abs(p.y - h.cy) < h.h / 2 + 12;
+          hx = Math.abs(lx) < h.w / 2 + 6 && Math.abs(ly) < h.h / 2 + 6;
+        } else hx = Math.abs(p.x - h.cx) < h.w / 2 + 6 && Math.abs(p.y - h.cy) < h.h / 2 + 6;
         if (hx) { h.hit = true; hurtPlayer(1); }
       }
     }

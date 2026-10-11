@@ -12,7 +12,7 @@ const SRC_TIP = {
   hazard: 'As marcações com "!" avisam onde vai atingir: saia da área antes de acender.', boss: 'Em chefes, mire no ponto fraco dourado e use o especial nas fúrias.',
 };
 function srcInfo(raw) {
-  let r = String(raw || 'outro'), kind = 'Tiro de ';
+  let r = String(raw || 'outro'), kind = 'Tiro de '; if (r === 'bullet:undefined' || r === 'bullet:null') return { name: 'Tiros inimigos', tip: 'Fique de olho na tela inteira, não só na nave.' };
   if (r.startsWith('bullet:')) { r = r.slice(7); kind = 'Tiros de '; } else if (r.startsWith('contact:')) { r = r.slice(8); kind = 'Batida de '; }
   if (r === 'hazard') return { name: 'Raios e lasers do cenário', tip: SRC_TIP.hazard };
   if (r.startsWith('boss:')) return { name: kind.replace('Tiro ', 'Tiros ') + r.slice(5), tip: SRC_TIP.boss };
@@ -137,11 +137,11 @@ Visual8.spStart = function () {
   sp.on = true; sp.t = 0; sp.type = type; sp.dur = d[3]; sp.hits0 = G.stats.hits; sp.n = 0; Events.banner = { t: 0, title: d[0], sub: d[1], c: d[2] }; Snd.play('bossWarn');
 };
 Visual8.spRun = function (dt) {
-  const sp = G.sp; sp.t += dt; const every = { asteroids: .24, lasergrid: 2.5, swarm: .55 }[sp.type];
+  const sp = G.sp; sp.t += dt; const every = { asteroids: .5, lasergrid: 3.4, swarm: .55 }[sp.type];
   if (sp.t >= sp.n * every + 1.2) {
     sp.n++;
-    if (sp.type === 'asteroids') { Events.spawnMeteor(); if (sp.t > 4) Events.spawnMeteor(); }
-    else if (sp.type === 'lasergrid') { const gap = rand(200, W - 200), gw = 130, l = gap - gw, r = W - (gap + gw); if (l > 20) Events.hazardRect(l / 2, H / 2, l, H, 1.15, .7, '#ff7ac8', 'beam'); if (r > 20) Events.hazardRect(W - r / 2, H / 2, r, H, 1.15, .7, '#ff7ac8', 'beam'); }
+    if (sp.type === 'asteroids') { Events.spawnMeteor(); if (sp.t > 6 && Math.random() < .4) Events.spawnMeteor(); }
+    else if (sp.type === 'lasergrid') { const gap = rand(240, W - 240), gw = 165, l = gap - gw, r = W - (gap + gw); if (l > 20) Events.hazardRect(l / 2, H / 2, l, H, 1.5, .7, '#ff7ac8', 'beam'); if (r > 20) Events.hazardRect(W - r / 2, H / 2, r, H, 1.5, .7, '#ff7ac8', 'beam'); }
     else { const x0 = sp.n % 2 ? rand(120, 420) : rand(W - 420, W - 120); for (let i = 0; i < 6; i++) spawnEnemy('bit', clamp(x0 + (i % 2 ? 24 : -24), 60, W - 60), -30 - i * 36, { bx: x0, noElite: true }); if (sp.n === 6) spawnEnemy('shooter', W / 2, -40, { noElite: true }); }
   }
   if (sp.t >= sp.dur + 1.2) {

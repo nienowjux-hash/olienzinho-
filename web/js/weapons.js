@@ -13,7 +13,7 @@ const WEAPONS = {
     special: 'starfall', specName: 'Chuva de Estrelas', specDesc: 'Dispara 20 estrelas que perseguem os inimigos.',
     fire(p) {
       const n = p.shots;
-      for (let i = 0; i < n; i++) { const k = i - (n - 1) / 2; mkBullet(p, p.x + k * 14, p.y - 36, -Math.PI / 2 + k * .09, 920, 1); }
+      for (let i = 0; i < n; i++) { const k = i - (n - 1) / 2; mkBullet(p, p.x + k * 14, p.y - 36, -Math.PI / 2 + k * .09, 920, 1.3); }
       muzzle(p); Snd.play('shoot', { lv: n - 1, pan: Snd.panX(p.x) * .5 });
     },
   },
@@ -22,7 +22,7 @@ const WEAPONS = {
     special: 'burst', specName: 'Explosão Solar', specDesc: 'Dois anéis de tiros em todas as direções.',
     fire(p) {
       const n = 5 + (p.shots - 1) * 2;
-      for (let i = 0; i < n; i++) mkBullet(p, p.x, p.y - 30, -Math.PI / 2 + (i / (n - 1) - .5) * .95, 830, .62, { life: .52 });
+      for (let i = 0; i < n; i++) mkBullet(p, p.x, p.y - 30, -Math.PI / 2 + (i / (n - 1) - .5) * .95, 830, .74, { life: .52 });
       muzzle(p, '#ffe9a8', 26); Snd.play('shoot', { lv: 0, wpn: 'fan', pan: Snd.panX(p.x) * .5 });
     },
   },
@@ -36,7 +36,7 @@ const WEAPONS = {
     special: 'bomb', specName: 'Bomba Estelar', specDesc: 'Uma bomba gigante que destrói tudo em volta.',
     fire(p) {
       const n = p.shots;
-      mkBullet(p, p.x, p.y - 44, -Math.PI / 2, 640, 5.5, { kind: 'cannon', r: 22, aoe: 125, life: 1.4, pierce: 0 });
+      mkBullet(p, p.x, p.y - 44, -Math.PI / 2, 640, 4.4, { kind: 'cannon', r: 22, aoe: 125, life: 1.4, pierce: 0 });
       for (let i = 1; i < n; i++) { const s = i % 2 ? -1 : 1, k = Math.ceil(i / 2); mkBullet(p, p.x + s * 22 * k, p.y - 30, -Math.PI / 2 + s * .1 * k, 600, 2.4, { kind: 'cannon', r: 12, aoe: 70, life: 1.4, pierce: 0 }); }
       muzzle(p, '#ffb340', 34); shake(2); Snd.play('cannon', { pan: Snd.panX(p.x) * .5 });
     },
@@ -50,7 +50,7 @@ function laserTick(p) {
   p.beams = beams; p.beamT = .1;
   for (const bx of beams) for (let k = 0; k < 2; k++) G.parts.push({ x: bx + rand(-10, 10), y: rand(60, p.y - 50), vx: rand(-90, 90), vy: rand(-60, 20), life: .28, max: .28, r: rand(1.5, 3), c: k ? '#ffffff' : '#7fe0ff', drag: 2 });
   for (const bx of beams) {
-    const crit = Math.random() < p.crit, dmg = p.dmg * .5 * (crit ? p.critMul : 1);
+    const crit = Math.random() < p.crit, dmg = p.dmg * .38 * (crit ? p.critMul : 1);
     for (const e of G.enemies) if (!e.dead && e.y < p.y - 30 && Math.abs(e.x - bx) < e.rad + 14) beamHit(e, dmg, crit);
     const bo = G.boss;
     if (bo && bo.targetable()) for (let yy = p.y - 60; yy > 20; yy -= 36) if (bo.hitTest(bx, yy, 12)) { bo.damage(dmg * Visual5.weakMul(bo, bx, yy, 12), crit); break; }

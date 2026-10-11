@@ -321,7 +321,7 @@ const Game = {
     const p = G.player;
     G.t += dt; G.intro += dt;
     World.update(dt, p.vy);
-    Events.update(dt); Events.updateHazards(dt); Extras.update(dt); Visual.update(dt); Visual2.update(dt); Visual5.update(dt); Visual6.update(dt); Visual8.update(dt); Extras.tutUpdate(dt); if (G.training) Extras.trainUpdate(dt);
+    Events.update(dt); Events.updateHazards(dt); Extras.update(dt); Visual.update(dt); Visual2.update(dt); Visual5.update(dt); Visual6.update(dt); Visual8.update(dt); Visual11.update(dt); Visual12.beamReset(); Extras.tutUpdate(dt); if (G.training) Extras.trainUpdate(dt);
     Snd.setLayers(p.dead ? 0 : G.combo >= 25 ? 2 : G.combo >= 10 ? 1 : 0, !p.dead && p.hp <= Math.max(1, p.maxHp * .25) ? 1 : 0);
     this.director(dt);
     if (!p.dead) this.updatePlayer(dt); else if (!G.p2 || G.p2.dead) { G.overT -= rdt; if (G.overT <= 0) { this.gameOver(); return; } }
@@ -448,7 +448,7 @@ const Game = {
         ctx.fillStyle = '#ff8a1f'; ctx.beginPath(); ctx.arc(o[0], o[1], 4, 0, 7); ctx.fill();
       }
     }
-    Visual6.drawP2(); drawDark(); Visual.overlay(); Visual2.flares();
+    Visual6.drawP2(); Visual12.fg(); drawDark(); Visual.overlay(); Visual2.flares();
     this.drawFinisherBeam();
     for (const q of G.parts) if (q.k === 'smoke') {
       const k = clamp(q.life / q.max, 0, 1);
@@ -479,7 +479,7 @@ const Game = {
     for (const o of G.pops) { ctx.globalAlpha = clamp(o.life, 0, 1); txt(o.text, o.x, o.y, o.size, o.c, 'center'); }
     ctx.globalAlpha = 1;
     ctx.restore();
-    Visual5.hud(); Visual6.hud(); Visual3.furyDraw(); Visual4.cutinDraw(); Visual4.faceDraw(); Visual4.introDraw();
+    Visual5.hud(); Visual6.hud(); Visual11.hud(); Visual3.furyDraw(); Visual4.cutinDraw(); Visual4.faceDraw(); Visual4.introDraw();
     if (G.hurtFlash > 0) {
       const g = ctx.createRadialGradient(W / 2, H / 2, H * .3, W / 2, H / 2, H * .85);
       g.addColorStop(0, 'rgba(255,40,90,0)'); g.addColorStop(1, `rgba(255,40,90,${G.hurtFlash * 1.2})`); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);

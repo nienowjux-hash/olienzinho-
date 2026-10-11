@@ -213,6 +213,7 @@ Screens.settings = function () {
   DIFF.forEach((d, i) => { if (UI.button('diff' + i, 360 + i * 192, 304, 176, 40, d.name, { size: 17, color: (s.diff ?? 1) === i ? '#9a63ff' : undefined })) { s.diff = i; Save.save(); } });
   UI.wrap(DIFF[s.diff ?? 1].desc, 360, 352, 560, 20, 14, '#cdb8ff');
   txt('GRÁFICOS', 360, 392, 21, '#e2d4ff');
+  if (UI.button('res', 700, 386, 220, 32, 'RESOLUÇÃO: ' + Math.round((s.res || 1) * 100) + '%', { size: 13 })) { s.res = (s.res || 1) === 1 ? .75 : (s.res === .75 ? .5 : 1); Save.save(); resize(); }
   ['BAIXO', 'MÉDIO', 'ALTO'].forEach((n, i) => { if (UI.button('ql' + i, 360 + i * 192, 424, 176, 40, n, { size: 17, color: (s.quality ?? 2) === i ? '#9a63ff' : undefined })) { s.quality = i; Save.save(); } });
   UI.wrap(['Sem brilho extra nem efeitos pesados: para PCs mais fracos.', 'Sem distorção de tela nem granulado.', 'Todos os efeitos visuais ligados.'][s.quality ?? 2], 360, 472, 560, 20, 14, '#cdb8ff');
   txt('ACESSIBILIDADE', 360, 510, 21, '#e2d4ff');

@@ -50,7 +50,7 @@ const DIFF = [
   { name: 'NORMAL', desc: 'A experiência pensada para o jogo.', hp: 1, bul: 1, php: 0, score: 1, coin: 1 },
   { name: 'DIFÍCIL', desc: 'Inimigos mais fortes e tiros rápidos. -1 de vida. Mais pontos e estrelas.', hp: 1.3, bul: 1.12, php: -1, score: 1.3, coin: 1.25 },
 ];
-const dif = () => DIFF[Save.data.settings.diff ?? 1] || DIFF[1];
+const dif = () => { const d = DIFF[Save.data.settings.diff ?? 1] || DIFF[1]; return Save.data.ngpOn ? { ...d, hp: d.hp * 1.5, bul: d.bul * 1.1, score: d.score * 1.5, coin: d.coin * 1.4 } : d; };
 
 // ---------- inimigos ----------
 const ENEMY_DEF = {

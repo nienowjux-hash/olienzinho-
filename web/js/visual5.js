@@ -155,7 +155,7 @@ Visual5.relicStats = function (p) {
 Visual5.pickRelic = function (next) {
   if (Game.noStory || G.training || Extras.tut || Game._skipRelic) { next(); return; }
   if (Visual5.rushRelic !== undefined) { G.relic = Visual5.rushRelic; next(); return; }
-  const pool = RELICS.slice().sort(() => Math.random() - .5).slice(0, 3);
+  const pool = RELICS.filter(r => !r.ng || Save.data.ngpOn).sort(() => Math.random() - .5).slice(0, 3);
   G.relicOpts = pool; G.relicNext = next; G.state = 'relic'; G.relicAt = undefined;
 };
 Visual5.applyRelic = function (id) {

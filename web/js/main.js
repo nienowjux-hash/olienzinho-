@@ -59,7 +59,7 @@ function frame(now) {
   } catch (e) {
     console.error(e);
     window.__err = (window.__err || 0) + 1;
-    if (window.__err > 3) { ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#300'; ctx.fillRect(0, 0, 900, 60); ctx.fillStyle = '#fff'; ctx.font = '16px monospace'; ctx.fillText('Erro: ' + e.message, 10, 30); return; }
+    if (window.__err > 3) { ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#300'; ctx.fillRect(0, 0, 900, 60); ctx.fillStyle = '#fff'; ctx.font = '16px monospace'; ctx.fillText('Erro: ' + e.message, 10, 30); }
   }
   Input.endFrame();
   requestAnimationFrame(frame);

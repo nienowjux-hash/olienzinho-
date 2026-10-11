@@ -360,6 +360,8 @@ const Game = {
 
   updatePlayer(dt) {
     const p = G.player; p.t += dt;
+    if (G.finisher && !G.boss) G.finisher = null; // rede de seguranca: nunca deixa a nave presa
+    if (G.cut && !G.bossDone) G.cut = null;
     if (G.finisher || G.cut) { // nas cenas o Olienzinho vai para o centro e fica invulneravel
       p.inv = 9; p.vx = p.vy = 0; p.recoil = 0; p.mood = G.cut ? 'happy' : p.mood;
       p.x += (W / 2 - p.x) * Math.min(1, 3 * dt); p.y += (H * .72 - p.y) * Math.min(1, 3 * dt);

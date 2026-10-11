@@ -62,7 +62,7 @@ const Game = {
     G.player = newPlayer();
     { const ld = Save.data.loadout; G.player.weapon = Save.data.owned.weapons[ld.weapon] ? ld.weapon : 'violet'; if (ld.char === 'orbi' && Save.data.cleared[3]) G.player.weapon = 'orbi'; }
     G.stats = { hits: 0, bossHit: 0, maxCombo: 0, minis: 0 }; G.timers = []; G.hitstop = 0; G.mega = null; G.miniDone = false; G.endless = false; G.daily = false; G.training = false; G.dmod = null; G.well = null; G.relic = null; G.grazeN = 0; G.rush = false; G.sanct = false; G.fragSpawned = false; G.encSpawned = false; Extras.reset(); Extras.tutStart();
-    recalcStats(G.player); G.player.hp = G.player.maxHp;
+    recalcStats(G.player); G.player.hp = G.player.maxHp; Visual6.initP2();
     Events.banner = { t: 0, title: G.stage.name.toUpperCase(), sub: 'FASE ' + (idx + 1), c: G.stage.tint };
     G.finisher = null; G.cut = null; G.story = null;
     Save.data.runs++; Save.save();
@@ -322,10 +322,10 @@ const Game = {
     const p = G.player;
     G.t += dt; G.intro += dt;
     World.update(dt, p.vy);
-    Events.update(dt); Events.updateHazards(dt); Extras.update(dt); Visual.update(dt); Visual2.update(dt); Visual5.update(dt); Extras.tutUpdate(dt); if (G.training) Extras.trainUpdate(dt);
+    Events.update(dt); Events.updateHazards(dt); Extras.update(dt); Visual.update(dt); Visual2.update(dt); Visual5.update(dt); Visual6.update(dt); Extras.tutUpdate(dt); if (G.training) Extras.trainUpdate(dt);
     Snd.setLayers(p.dead ? 0 : G.combo >= 25 ? 2 : G.combo >= 10 ? 1 : 0, !p.dead && p.hp <= Math.max(1, p.maxHp * .25) ? 1 : 0);
     this.director(dt);
-    if (!p.dead) this.updatePlayer(dt); else { G.overT -= rdt; if (G.overT <= 0) { this.gameOver(); return; } }
+    if (!p.dead) this.updatePlayer(dt); else if (!G.p2 || G.p2.dead) { G.overT -= rdt; if (G.overT <= 0) { this.gameOver(); return; } }
 
     for (const e of G.enemies) updateEnemy(e, dt);
     updatePlayerWeapons(dt);
@@ -337,6 +337,7 @@ const Game = {
       if (b.life <= 0 || b.x < -60 || b.x > W + 60 || b.y < -60 || b.y > H + 60) b.dead = true;
       else if (!p.dead && Math.hypot(b.x - p.x, b.y - p.y - 6) < b.r + 10) { b.dead = true; hurtPlayer(1); }
       else if (!p.dead && !b.grazed && Math.hypot(b.x - p.x, b.y - p.y - 6) < b.r + 30) Visual5.graze(b);
+      if (!b.dead && G.p2 && !G.p2.dead && Math.hypot(b.x - G.p2.x, b.y - G.p2.y - 6) < b.r + 10) { b.dead = true; Visual6.hurtP2(1); }
     }
     for (const k of G.pickups) updatePickup(k, dt);
     for (const tm of G.timers) { tm.t -= dt; if (tm.t <= 0) { tm.fn(); tm.dead = true; } }
@@ -378,12 +379,13 @@ const Game = {
       return;
     }
     let ax = 0, ay = 0;
-    if (Input.down('a') || Input.down('arrowleft')) ax -= 1; if (Input.down('d') || Input.down('arrowright')) ax += 1;
-    if (Input.down('w') || Input.down('arrowup')) ay -= 1; if (Input.down('s') || Input.down('arrowdown')) ay += 1;
+    const AR = !G.p2; // no cooperativo as setas sao do P2
+    if (Input.down('a') || (AR && Input.down('arrowleft'))) ax -= 1; if (Input.down('d') || (AR && Input.down('arrowright'))) ax += 1;
+    if (Input.down('w') || (AR && Input.down('arrowup'))) ay -= 1; if (Input.down('s') || (AR && Input.down('arrowdown'))) ay += 1;
     if (Input.pressed('shift')) tryDash(ax, ay);
     p.dashCd = Math.max(0, p.dashCd - dt); p.specCd = Math.max(0, p.specCd - dt);
     p.ghosts = p.ghosts.filter(g => (g.t -= dt) > 0);
-    const useMouse = !(ax || ay) && performance.now() - Input.mouse.moved < 1800;
+    const useMouse = !(ax || ay) && !G.p2 && performance.now() - Input.mouse.moved < 1800;
     if (p.dashT > 0) {
       p.dashT -= dt; const [ddx, ddy] = p.dashDir; p.vx = ddx * 500; p.vy = ddy * 500;
       p.x = clamp(p.x + ddx * 1500 * dt, 50, W - 50); p.y = clamp(p.y + ddy * 1500 * dt, 90, H - 70);
@@ -447,7 +449,7 @@ const Game = {
         ctx.fillStyle = '#ff8a1f'; ctx.beginPath(); ctx.arc(o[0], o[1], 4, 0, 7); ctx.fill();
       }
     }
-    drawDark(); Visual.overlay(); Visual2.flares();
+    Visual6.drawP2(); drawDark(); Visual.overlay(); Visual2.flares();
     this.drawFinisherBeam();
     for (const q of G.parts) if (q.k === 'smoke') {
       const k = clamp(q.life / q.max, 0, 1);
@@ -478,7 +480,7 @@ const Game = {
     for (const o of G.pops) { ctx.globalAlpha = clamp(o.life, 0, 1); txt(o.text, o.x, o.y, o.size, o.c, 'center'); }
     ctx.globalAlpha = 1;
     ctx.restore();
-    Visual5.hud(); Visual3.furyDraw(); Visual4.cutinDraw(); Visual4.faceDraw(); Visual4.introDraw();
+    Visual5.hud(); Visual6.hud(); Visual3.furyDraw(); Visual4.cutinDraw(); Visual4.faceDraw(); Visual4.introDraw();
     if (G.hurtFlash > 0) {
       const g = ctx.createRadialGradient(W / 2, H / 2, H * .3, W / 2, H / 2, H * .85);
       g.addColorStop(0, 'rgba(255,40,90,0)'); g.addColorStop(1, `rgba(255,40,90,${G.hurtFlash * 1.2})`); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);

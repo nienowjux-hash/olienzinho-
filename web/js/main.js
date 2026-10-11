@@ -48,7 +48,7 @@ function render() {
   if (s === 'play' || s === 'pause' || s === 'levelup' || s === 'clear' || s === 'over' || s === 'celebrate') Game.drawPlay(); else if (s === 'story') Screens.storyBackdrop(); else if (s === 'title') Screens.titleBackdrop(); else World.draw(0);
   ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
   if (Screens[s]) Screens[s]();
-  Ach.draw();
+  Visual6.menuOverlay(s); Ach.draw(); Visual6.toastDraw();
   cv.style.cursor = s === 'play' ? 'none' : 'default';
 
   // bloom: realca so o que e claro
@@ -79,6 +79,7 @@ function frame(now) {
   const dt = Math.min(.05, (now - lastT) / 1000); lastT = now;
   try {
     G.pausedThisFrame = false;
+    Visual6.pollPads();
     UI.begin();
     Game.update(dt);
     Trans.t += dt;

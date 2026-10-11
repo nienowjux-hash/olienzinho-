@@ -52,7 +52,7 @@ class Boss {
     if (np > this.phase) { this.phase = np; this.onPhase(); }
   }
   onPhase() {
-    this.stun = 1.4; G.eb.forEach(b => { b.dead = true; });
+    this.stun = 1.4; G.hitstop = .12; G.eb.forEach(b => { b.dead = true; });
     G.hazards = [];
     shockwave(this.x, this.y, 520, this.col); shockwave(this.x, this.y, 340, '#ffffff'); shake(16); flashScreen(.35);
     Snd.play('rumble', { dur: 1.2 }); Snd.play('bossWarn');
@@ -62,7 +62,7 @@ class Boss {
   die() {
     this.state = 'dying'; this.dyingT = 0;
     G.eb.forEach(b => { b.dead = true; }); G.hazards = [];
-    G.pendingLevels = 0; // o que faltava de XP nao vale mais
+    G.pendingLevels = 0; G.hitstop = .22; // o que faltava de XP nao vale mais
     G.finisher = { t: 0 }; Snd.play('special'); // golpe final do Olienzinho
     G.enemies.forEach(e => { if (!e.dead) killEnemy(e, true); });
     Snd.play('bossDie'); Snd.musicStop();

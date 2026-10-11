@@ -109,7 +109,22 @@ const Snd = (() => {
 
   // ---------- efeitos ----------
   const SFX = {
+    laser(o) { const t = now(); voice('sine', 520, 500, t, .12, .03, { pan: o.pan }); noiseV(t, .1, .02, { type: 'bandpass', f0: 3000, pan: o.pan }); },
+    cannon(o) {
+      const t = now(), p = o.pan;
+      voice('sine', 130, 40, t, .32, .34, { pan: p }); voice('sawtooth', 200, 60, t, .16, .08, { lp: 600, pan: p });
+      noiseV(t, .22, .16, { type: 'lowpass', f0: 1800, f1: 200, pan: p, rev: .2 });
+    },
+    dash() { const t = now(); noiseV(t, .2, .12, { type: 'bandpass', f0: 700, f1: 4200, q: 1.2, a: .02 }); voice('sine', 300, 900, t, .16, .06, { rev: .2 }); },
+    specialFire(o) {
+      const t = now();
+      voice('sine', 110, 30, t, .5, .32); noiseV(t, .5, .2, { type: 'lowpass', f0: 400, f1: 5000, a: .1, rev: .3 });
+      if (o.w === 'violet') [76, 83, 88, 95].forEach((m, i) => voice('triangle', mtof(m), mtof(m), t + i * .05, .4, .08, { rev: .5, del: .2 }));
+      if (o.w === 'fan') voice('sawtooth', 220, 880, t, .35, .06, { lp: 1800, rev: .3 });
+    },
+    stamp() { const t = now(); voice('sine', 150, 45, t, .4, .45); noiseV(t, .2, .2, { type: 'lowpass', f0: 1600, f1: 200 }); voice('triangle', mtof(88), mtof(88), t + .06, .5, .1, { rev: .5 }); },
     shoot(o) {
+      if (o.wpn === 'fan') { const t = now(), p = o.pan; noiseV(t, .12, .1, { type: 'bandpass', f0: 1800, f1: 600, pan: p }); voice('sine', 700, 280, t, .1, .07, { pan: p }); return; }
       // "plim" curto e macio, em vez de laser serrilhado
       const t = now(), f = (980 + (o.lv || 0) * 90) * rnd(.97, 1.03), p = o.pan;
       voice('sine', f * 1.15, f * .55, t, .09, .11, { pan: p, rev: .1, a: .003 });

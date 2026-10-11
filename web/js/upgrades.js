@@ -14,6 +14,8 @@ const RUN_UPGRADES = [
   { id: 'hp', name: 'Casco Reforçado', r: 'comum', max: 5, desc: '+1 de vida máxima e cura 1.' },
   { id: 'heal', name: 'Reparo', r: 'comum', max: 99, desc: 'Recupera 2 de vida.', cond: () => G.player.hp < G.player.maxHp },
   { id: 'magnet', name: 'Ímã Estelar', r: 'comum', max: 4, desc: 'Atrai itens de mais longe.' },
+  { id: 'dash', name: 'Esquiva Ágil', r: 'comum', max: 3, desc: 'A esquiva recarrega 20% mais rápido.' },
+  { id: 'spec', name: 'Mestre da Arma', r: 'raro', max: 3, desc: 'O especial da arma recarrega mais rápido e causa +25% de dano.' },
   { id: 'pulse', name: 'Pulso Veloz', r: 'comum', max: 4, desc: 'Pulso Olien recarrega 15% mais rápido.' },
   { id: 'xp', name: 'Mente Brilhante', r: 'comum', max: 4, desc: '+15% de experiência.' },
   { id: 'lucky', name: 'Faro de Estrelas', r: 'comum', max: 4, desc: '+20% de estrelas ao derrotar inimigos.' },

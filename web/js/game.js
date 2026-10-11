@@ -18,6 +18,7 @@ function newPlayer() {
   const p = {
     x: W / 2, y: H - 130, vx: 0, vy: 0, hp: 5, maxHp: 5, inv: 0, fireT: 0, pulseT: 0, t: 0, blink: 3, blinkT: 0, lookx: 0, looky: 0,
     orbAng: 0, orbPos: [], missT: 2, shieldReady: false, shieldT: 0, dead: false, mood: null, moodT: 0, recoil: 0,
+    weapon: 'violet', dashT: 0, dashCd: 0, dashDir: [0, -1], specCd: 6, ghosts: [], beams: [], beamT: 0,
   };
   return p;
 }
@@ -37,6 +38,7 @@ function recalcStats(p) {
   p.xpMul = (1 + .1 * L('xp')) * (1 + .15 * U('xp'));
   p.missiles = U('missile'); p.orbitals = U('orbit');
   p.shieldCd = [0, 20, 15, 10][U('shield')] || 10;
+  p.dashCdMax = 1.6 * Math.pow(.8, U('dash')); p.specCdMax = 16 * Math.pow(.8, U('spec')); p.specPow = 1 + .25 * U('spec');
 }
 
 const Game = {
@@ -51,7 +53,10 @@ const Game = {
     G.spawnT = 1.5; G.bossDone = false; G.bossPending = false; G.bossPendingT = 0; G.clearT = 0; G.overT = 0; G.result = null; G.intro = 0;
     this.slowmo = 0;
     World.setStage(G.stage.pal); Events.reset(G.stage);
-    G.player = newPlayer(); recalcStats(G.player); G.player.hp = G.player.maxHp;
+    G.player = newPlayer();
+    { const ld = Save.data.loadout; G.player.weapon = Save.data.owned.weapons[ld.weapon] ? ld.weapon : 'violet'; }
+    G.stats = { hits: 0, bossHit: 0, maxCombo: 0 }; G.timers = []; G.hitstop = 0; G.mega = null;
+    recalcStats(G.player); G.player.hp = G.player.maxHp;
     Events.banner = { t: 0, title: G.stage.name.toUpperCase(), sub: 'FASE ' + (idx + 1), c: G.stage.tint };
     G.finisher = null; G.cut = null; G.story = null;
     Save.data.runs++; Save.save();
@@ -84,7 +89,7 @@ const Game = {
     const d = Save.data;
     d.coins += G.runCoins + bonus;
     const prev = d.best[G.stageIdx] || 0; if (G.score > prev) d.best[G.stageIdx] = G.score;
-    if (cleared) d.unlocked = Math.max(d.unlocked, Math.min(STAGES.length, G.stageIdx + 2));
+    if (cleared) { d.unlocked = Math.max(d.unlocked, Math.min(STAGES.length, G.stageIdx + 2)); d.cleared[G.stageIdx] = true; }
     Save.save();
   },
 
@@ -109,10 +114,14 @@ const Game = {
   },
 
   stageClear() {
-    const bonus = 80 + G.stageIdx * 50;
+    const par = G.stage.duration * 20 * (1 + G.stageIdx * .3), ratio = G.score / par, st = G.stats;
+    let gi = ratio >= .9 ? 3 : ratio >= .65 ? 2 : ratio >= .4 ? 1 : 0;
+    if (st.hits === 0) gi = Math.min(3, gi + 1);
+    const grade = 'CBAS'[gi], bonus = Math.round((80 + G.stageIdx * 50) * [1, 1.2, 1.5, 2][gi]);
+    const prevG = Save.data.grades[G.stageIdx]; if (prevG === undefined || gi > prevG) Save.data.grades[G.stageIdx] = gi;
     this.endRunSave(bonus, true);
-    G.result = { bonus, coins: G.runCoins, score: G.score, kills: G.kills, level: G.level, best: Save.data.best[G.stageIdx], newStage: G.stageIdx + 1 < STAGES.length };
-    const toClear = () => { G.state = 'clear'; Snd.musicPlay('menu', 0); Snd.play('stageClear'); };
+    G.result = { bonus, grade, gi, hits: st.hits, maxCombo: st.maxCombo, time: G.t, coins: G.runCoins, score: G.score, kills: G.kills, level: G.level, best: Save.data.best[G.stageIdx], newStage: G.stageIdx + 1 < STAGES.length };
+    const toClear = () => { G.clearAt = World.t; G.state = 'clear'; Snd.musicPlay('menu', 0); Snd.play('stageClear'); };
     if (G.stageIdx + 1 >= STAGES.length) this.maybeStory('epi', STORY.epilogue, toClear); else toClear();
   },
 
@@ -219,6 +228,7 @@ const Game = {
   },
 
   updatePlay(rdt) {
+    if (G.hitstop > 0) { G.hitstop -= rdt; return; }
     let dt = rdt;
     if (this.slowmo) dt *= .45;
     const p = G.player;
@@ -239,6 +249,8 @@ const Game = {
       else if (!p.dead && Math.hypot(b.x - p.x, b.y - p.y - 6) < b.r + 10) { b.dead = true; hurtPlayer(1); }
     }
     for (const k of G.pickups) updatePickup(k, dt);
+    for (const tm of G.timers) { tm.t -= dt; if (tm.t <= 0) { tm.fn(); tm.dead = true; } }
+    G.timers = G.timers.filter(tm => !tm.dead);
 
     // fx
     for (const q of G.parts) { q.life -= dt; if (q.k === 'debris') { q.rot += q.vr * dt; q.vy += 380 * dt; } q.x += q.vx * dt; q.y += q.vy * dt; const d = Math.max(0, 1 - q.drag * dt); q.vx *= d; q.vy *= d; }
@@ -276,11 +288,18 @@ const Game = {
     let ax = 0, ay = 0;
     if (Input.down('a') || Input.down('arrowleft')) ax -= 1; if (Input.down('d') || Input.down('arrowright')) ax += 1;
     if (Input.down('w') || Input.down('arrowup')) ay -= 1; if (Input.down('s') || Input.down('arrowdown')) ay += 1;
+    if (Input.pressed('shift')) tryDash(ax, ay);
+    p.dashCd = Math.max(0, p.dashCd - dt); p.specCd = Math.max(0, p.specCd - dt);
+    p.ghosts = p.ghosts.filter(g => (g.t -= dt) > 0);
     const useMouse = !(ax || ay) && performance.now() - Input.mouse.moved < 1800;
-    if (ax || ay) { const m = Math.hypot(ax, ay); p.vx += (ax / m * p.speed - p.vx) * Math.min(1, 10 * dt); p.vy += (ay / m * p.speed - p.vy) * Math.min(1, 10 * dt); }
+    if (p.dashT > 0) {
+      p.dashT -= dt; const [ddx, ddy] = p.dashDir; p.vx = ddx * 500; p.vy = ddy * 500;
+      p.x = clamp(p.x + ddx * 1500 * dt, 50, W - 50); p.y = clamp(p.y + ddy * 1500 * dt, 90, H - 70);
+      p.ghosts.push({ x: p.x, y: p.y, t: .28, vx: p.vx });
+    } else if (ax || ay) { const m = Math.hypot(ax, ay); p.vx += (ax / m * p.speed - p.vx) * Math.min(1, 10 * dt); p.vy += (ay / m * p.speed - p.vy) * Math.min(1, 10 * dt); }
     else if (useMouse) { const tx = Input.mouse.x, ty = Input.mouse.y; p.vx += (clamp((tx - p.x) * 9, -p.speed * 1.3, p.speed * 1.3) - p.vx) * Math.min(1, 12 * dt); p.vy += (clamp((ty - p.y) * 9, -p.speed * 1.3, p.speed * 1.3) - p.vy) * Math.min(1, 12 * dt); }
     else { p.vx *= 1 - Math.min(1, 6 * dt); p.vy *= 1 - Math.min(1, 6 * dt); }
-    p.x = clamp(p.x + p.vx * dt, 50, W - 50); p.y = clamp(p.y + p.vy * dt, 90, H - 70);
+    if (p.dashT <= 0) { p.x = clamp(p.x + p.vx * dt, 50, W - 50); p.y = clamp(p.y + p.vy * dt, 90, H - 70); }
 
     // olhar
     let tx = p.vx / 500, ty = p.vy / 500; const tg = nearestTarget(p.x, p.y);
@@ -291,13 +310,15 @@ const Game = {
 
     // tiro e chama
     p.recoil = Math.max(0, p.recoil - dt * 9); if (p.moodT > 0) { p.moodT -= dt; if (p.moodT <= 0) p.mood = null; }
-    p.fireT -= dt; if (p.fireT <= 0) { playerShoot(); p.fireT = p.fireDelay; }
+    p.fireT -= dt; if (p.fireT <= 0) { playerShoot(); p.fireT = p.fireDelay * WEAPONS[p.weapon].delay; }
     for (let i = 0; i < 2; i++) G.parts.push({ x: p.x + rand(-4, 4), y: p.y + 27, vx: rand(-30, 30), vy: rand(150, 280), life: rand(.25, .5), max: .5, r: rand(3, 7), c: Math.random() < .5 ? '#ffb340' : '#ffe9a8', drag: 1 });
 
     // pulso e escudo
     const wasCd = p.pulseT > 0; p.pulseT = Math.max(0, p.pulseT - dt);
     if (wasCd && p.pulseT <= 0) Snd.play('specialReady');
-    if (Input.pressed(' ') || Input.pressed('shift') || Input.pressed('e')) usePulse();
+    if (Input.pressed(' ')) usePulse();
+    if (Input.pressed('q') || Input.pressed('e')) useSpecial();
+    { const was = p.specCd > 0; if (was && p.specCd <= 0) Snd.play('specialReady'); }
     if ((G.upCounts.shield || 0) > 0 && !p.shieldReady) { p.shieldT -= dt; if (p.shieldT <= 0) { p.shieldReady = true; Snd.play('shield'); } }
   },
 
@@ -312,10 +333,14 @@ const Game = {
     if (G.boss) { const b = G.boss, br = 1 + Math.sin(b.t * 2) * .012; ctx.save(); ctx.translate(b.shx || 0, b.shy || 0); ctx.translate(b.x, b.y); ctx.scale(br, br); ctx.translate(-b.x, -b.y); b.draw(); ctx.restore(); }
     for (const e of G.enemies) Art.enemy(e);
     for (const b of G.pb) Art.pbullet(b);
+    this.drawBeams();
     for (const b of G.eb) Art.ebullet(b);
     if (p && !p.dead && !G.cut) {
       const sp = Math.hypot(p.vx, p.vy) / 500, bob = Math.sin(p.t * 3) * 2.5 * (1 - Math.min(1, sp));
-      Art.ship(p.x, p.y + bob, { vx: p.vx, t: p.t, lookx: p.lookx, looky: p.looky, blinkT: p.blinkT, inv: p.inv, shield: p.shieldReady, scale: SHIP_S, mood: p.mood,
+      const pal = skinOf(Save.data.loadout.skin).pal;
+      for (const g of p.ghosts) { ctx.globalAlpha = g.t / .28 * .45; Art.ship(g.x, g.y, { vx: g.vx, t: p.t, lookx: 0, looky: -1, blinkT: 0, inv: 0, scale: SHIP_S, pal }); }
+      ctx.globalAlpha = 1;
+      Art.ship(p.x, p.y + bob, { pal, vx: p.vx, t: p.t, lookx: p.lookx, looky: p.looky, blinkT: p.blinkT, inv: p.inv, shield: p.shieldReady, scale: SHIP_S, mood: p.mood,
         sx: 1 + p.recoil * .05 - Math.abs(p.vx) / 500 * .05, sy: 1 - p.recoil * .08 + Math.abs(p.vy) / 500 * .04 });
       for (const o of p.orbPos) {
         ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(o[0], o[1], 26, '#ffb340', .9); ctx.restore();
@@ -365,6 +390,23 @@ const Game = {
     if (!G.cut) this.drawHud();
     this.drawCinematic();
     this.drawCut();
+  },
+
+  // feixes do Laser Prisma e do Raio Total
+  drawBeams() {
+    const p = G.player; if (!p || p.dead) return;
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    if (p.beamT > 0 && p.beams) for (const bx of p.beams) {
+      const w = 13 + Math.sin(World.t * 60) * 3;
+      ctx.fillStyle = lin(bx - w, 0, bx + w, 0, [[0, 'rgba(127,224,255,0)'], [.5, 'rgba(225,250,255,.95)'], [1, 'rgba(127,224,255,0)']]);
+      ctx.fillRect(bx - w, 0, w * 2, p.y - 36); drawGlow(bx, p.y - 36, 40, '#7fe0ff', .9);
+    }
+    if (G.mega) {
+      const m = G.mega, k = Math.min(1, m.t / .18) * Math.min(1, (m.dur - m.t) / .3), w = (82 + Math.sin(World.t * 40) * 10) * k;
+      ctx.fillStyle = lin(p.x - w, 0, p.x + w, 0, [[0, 'rgba(127,224,255,0)'], [.25, 'rgba(255,122,200,.55)'], [.5, 'rgba(255,255,255,1)'], [.75, 'rgba(255,211,106,.55)'], [1, 'rgba(127,224,255,0)']]);
+      ctx.fillRect(p.x - w, 0, w * 2, p.y - 20); drawGlow(p.x, p.y - 30, 170 * k, '#ffffff', .9);
+    }
+    ctx.restore(); ctx.globalAlpha = 1;
   },
 
   // raio gigante do Olienzinho no chefe que esta morrendo
@@ -466,7 +508,7 @@ const Game = {
     if (G.score !== G.scorePrev) { G.scorePop = 1; G.scorePrev = G.score; } G.scorePop = Math.max(0, G.scorePop - dtH * 4);
     ctx.save(); ctx.translate(W - 24, 35); ctx.scale(1 + G.scorePop * .22, 1 + G.scorePop * .22); txt(Math.round(G.scoreShown) + ' pts', 0, -13, 26, G.scorePop > 0 ? '#ffffff' : '#e2d4ff', 'right'); ctx.restore();
     txt('★ ' + G.runCoins, W - 24, 56, 22, '#ffcf6b', 'right');
-    if (G.combo >= 3) txt('COMBO x' + G.combo, W - 24, 84, 20, '#ffe9a8', 'right');
+    if (G.combo >= 3) txt('COMBO ' + G.combo + '  (x' + (1 + Math.min(G.combo, 60) * .03).toFixed(1) + ')', W - 24, 84, 20, '#ffe9a8', 'right');
     // progresso / chefe
     if (G.boss && G.boss.state !== 'intro') {
       const b = G.boss, w = 560, x = W / 2 - w / 2, y = 52;
@@ -483,13 +525,17 @@ const Game = {
       ctx.fillStyle = '#ff5a3c'; ctx.beginPath(); ctx.arc(x + w, y + 4, 9, 0, 7); ctx.fill();
       ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(x + w - 3, y + 2, 2, 0, 7); ctx.arc(x + w + 3, y + 2, 2, 0, 7); ctx.fill();
     }
-    // pulso
-    const rdy = p.pulseT <= 0, k = rdy ? 1 : 1 - p.pulseT / p.pulseCd, cx = 60, cy = H - 60;
-    ctx.fillStyle = 'rgba(20,8,50,.6)'; ctx.beginPath(); ctx.arc(cx, cy, 30, 0, 7); ctx.fill();
-    ctx.lineWidth = 6; ctx.strokeStyle = rdy ? '#ffe9a8' : '#8b4dff'; ctx.beginPath(); ctx.arc(cx, cy, 26, -Math.PI / 2, -Math.PI / 2 + TAU * k); ctx.stroke();
-    if (rdy) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(cx, cy, 44, '#ffb340', .5 + Math.sin(World.t * 6) * .2); ctx.restore(); ctx.globalAlpha = 1; }
-    txt('PULSO', cx + 44, cy - 20, 15, '#e2d4ff', 'left', 800); txt('ESPAÇO', cx + 44, cy, 15, rdy ? '#ffe9a8' : '#8a7fb0', 'left', 800);
+    // habilidades: pulso (Espaço), esquiva (Shift) e especial da arma (Q)
+    const wp = WEAPONS[p.weapon];
+    [['PULSO', 'ESPAÇO', p.pulseT, p.pulseCd, '#ffb340'], ['ESQUIVA', 'SHIFT', p.dashCd, p.dashCdMax, '#7fe0ff'], [wp.specName.toUpperCase(), 'Q', p.specCd, p.specCdMax, wp.c]].forEach(([name, key, cd, mx, col], i) => {
+      const cx = 56 + i * 112, cy = H - 66, rdy = cd <= 0, k = rdy ? 1 : 1 - cd / mx;
+      ctx.fillStyle = 'rgba(20,8,50,.65)'; ctx.beginPath(); ctx.arc(cx, cy, 28, 0, 7); ctx.fill();
+      ctx.lineWidth = 5; ctx.strokeStyle = rdy ? col : '#6a5aa8'; ctx.beginPath(); ctx.arc(cx, cy, 24, -Math.PI / 2, -Math.PI / 2 + TAU * k); ctx.stroke();
+      if (rdy) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(cx, cy, 42, col, .45 + Math.sin(World.t * 6 + i) * .15); ctx.restore(); ctx.globalAlpha = 1; }
+      txt(key === 'ESPAÇO' ? 'ESP' : key, cx, cy, key === 'ESPAÇO' ? 15 : 18, rdy ? '#ffffff' : '#8a7fb0', 'center', 900, 'middle');
+      txt(name, cx, cy + 36, 12, rdy ? '#e2d4ff' : '#8a7fb0', 'center', 800);
+    });
     // tutorial
-    if (Save.data.runs <= 1 && G.t < 8) { ctx.globalAlpha = Math.min(1, (8 - G.t) / 1.5); txt('Mova com WASD, setas ou mouse  •  O tiro é automático  •  ESPAÇO usa o Pulso Olien', W / 2, H - 56, 20, '#e2d4ff', 'center', 700); ctx.globalAlpha = 1; }
+    if (Save.data.runs <= 1 && G.t < 8) { ctx.globalAlpha = Math.min(1, (8 - G.t) / 1.5); txt('Mova com WASD, setas ou mouse  •  O tiro é automático  •  ESPAÇO pulso  •  SHIFT esquiva  •  Q especial', W / 2, H - 56, 20, '#e2d4ff', 'center', 700); ctx.globalAlpha = 1; }
   },
 };

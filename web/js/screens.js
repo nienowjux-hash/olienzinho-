@@ -596,6 +596,57 @@ const Screens = {
     if (tt < 1.6) { ctx.globalAlpha = 1 - easeOut(tt / 1.6); ctx.fillStyle = '#03010b'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; }
   },
 
+  // glifo de cada arma (icone dos cartoes do hangar)
+  weaponGlyph(id, x, y, c, t) {
+    ctx.save(); ctx.translate(x, y); ctx.globalCompositeOperation = 'lighter';
+    drawGlow(0, 0, 44, c, .5); ctx.globalCompositeOperation = 'source-over'; ctx.strokeStyle = c; ctx.fillStyle = '#fff'; ctx.lineCap = 'round'; ctx.lineWidth = 5;
+    if (id === 'violet') for (const dx of [-14, 0, 14]) { ctx.beginPath(); ctx.moveTo(dx, 16 - ((t * 40 + dx) % 10)); ctx.lineTo(dx, -14); ctx.stroke(); }
+    else if (id === 'fan') for (let i = 0; i < 5; i++) { const a = -Math.PI / 2 + (i - 2) * .38; ctx.beginPath(); ctx.moveTo(Math.cos(a) * 8, 14 + Math.sin(a) * 8); ctx.lineTo(Math.cos(a) * 30, 14 + Math.sin(a) * 30); ctx.stroke(); }
+    else if (id === 'laser') { ctx.lineWidth = 9; ctx.beginPath(); ctx.moveTo(0, 22); ctx.lineTo(0, -24); ctx.stroke(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(0, 22); ctx.lineTo(0, -24); ctx.stroke(); }
+    else { ctx.beginPath(); ctx.arc(0, -2, 15 + Math.sin(t * 5) * 1.5, 0, 7); ctx.fill(); ctx.stroke(); }
+    ctx.restore();
+  },
+
+  hangar() {
+    const t = World.t, ld = Save.data.loadout, own = Save.data.owned;
+    txt('HANGAR', W / 2, 26, 42, '#fff', 'center'); txt(this.stars(), W - 40, 36, 30, '#ffcf6b', 'right');
+    txt('ARMAS', 74, 92, 18, '#ffb340', 'left', 900);
+    WEAPON_ORDER.forEach((id, i) => {
+      const w = WEAPONS[id], x = 70, y = 118 + i * 104, cw = 580, ch = 94, has = !!own.weapons[id], eq = ld.weapon === id, fid = 'w_' + id, f = UI.focus(fid);
+      if (UI.hit(fid, x, y, cw, ch, { sound: 'buy' })) {
+        if (has) { ld.weapon = id; Save.save(); }
+        else if (Save.data.coins >= w.price) { Save.data.coins -= w.price; own.weapons[id] = true; ld.weapon = id; Save.save(); }
+        else Snd.play('uiDeny');
+      }
+      ctx.save(); if (f) { ctx.shadowColor = w.c; ctx.shadowBlur = 24; }
+      UI.panel(x, y, cw, ch, { fill: eq ? 'rgba(60,34,140,.88)' : f ? 'rgba(50,28,120,.8)' : 'rgba(20,8,55,.72)', stroke: eq ? w.c : f ? '#e2d4ff' : 'rgba(190,160,255,.3)', r: 18 }); ctx.restore();
+      this.weaponGlyph(id, x + 56, y + 47, w.c, t);
+      txt(w.name, x + 112, y + 12, 24, '#fff'); txt(w.desc, x + 112, y + 42, 15, '#cdb8ff', 'left', 700);
+      txt('Especial: ' + w.specName, x + 112, y + 66, 14, w.c, 'left', 800);
+      if (eq) txt('EQUIPADA', x + cw - 20, y + 14, 16, '#7fe0a0', 'right'); else if (has) txt('equipar', x + cw - 20, y + 14, 15, '#8a7fb0', 'right', 700);
+      else txt('★ ' + w.price, x + cw - 20, y + 12, 24, Save.data.coins >= w.price ? '#ffcf6b' : '#7a70a0', 'right');
+    });
+    // direita: nave e skins
+    const sk = SKINS[G.skinIdx || 0], unlocked = sk.ok(), eqs = ld.skin === sk.id;
+    UI.panel(700, 92, 520, 430, { r: 24 });
+    txt('SKINS', 726, 110, 18, '#ffb340', 'left', 900);
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(960, 290, 230, sk.pal.glow, .4); ctx.restore(); ctx.globalAlpha = 1;
+    ctx.save(); ctx.globalAlpha = unlocked ? 1 : .35;
+    Art.ship(960, 290 + Math.sin(t * 1.6) * 8, { vx: Math.sin(t * .8) * 80, t, pal: sk.pal, scale: 1.55, boost: .4, lookx: clamp((Input.mouse.x - 960) / 400, -1, 1), looky: clamp((Input.mouse.y - 290) / 400, -1, 1), blinkT: this.blinkAt(t) });
+    ctx.restore();
+    if (!unlocked) this.lock(960, 290, 2);
+    txt(sk.name, 960, 440, 28, '#fff', 'center');
+    txt(unlocked ? (eqs ? 'EQUIPADA' : 'liberada') : '🔒 ' + sk.how, 960, 478, 16, unlocked ? '#7fe0a0' : '#ffb340', 'center', 800);
+    const n = SKINS.length;
+    if (UI.button('skL', 726, 250, 54, 80, '◀', { size: 30 })) { G.skinIdx = (G.skinIdx + n - 1) % n; }
+    if (UI.button('skR', 1140, 250, 54, 80, '▶', { size: 30 })) { G.skinIdx = (G.skinIdx + 1) % n; }
+    if (unlocked && !eqs && (UI.hit('skEquip', 870, 486, 180, 30))) { ld.skin = sk.id; Save.save(); Snd.play('buy'); }
+    if (unlocked && !eqs) { ctx.fillStyle = UI.focus('skEquip') ? '#9a63ff' : 'rgba(70,40,150,.9)'; ctx.beginPath(); ctx.roundRect(870, 486, 180, 30, 15); ctx.fill(); txt('EQUIPAR', 960, 501, 15, '#fff', 'center', 900, 'middle'); }
+    if (UI.button('back', W / 2 - 160, 600, 320, 56, 'VOLTAR', { size: 24 }) || Input.pressed('escape')) { Snd.play('uiBack'); Game.goSelect(); }
+    const wp = WEAPONS[ld.weapon];
+    txt('Arma equipada: ' + wp.name + '  •  Especial (Q): ' + wp.specName + ' — ' + wp.specDesc, W / 2, 556, 16, '#cdb8ff', 'center', 700);
+  },
+
   lock(x, y, s) {
     ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
     ctx.strokeStyle = '#cdb8ff'; ctx.lineWidth = 5; ctx.beginPath(); ctx.arc(0, -8, 11, Math.PI, 0); ctx.stroke();
@@ -635,9 +686,10 @@ const Screens = {
     UI.wrap(locked ? 'Derrote o chefe da fase anterior para desbloquear.' : s.desc, 176, 454, 560, 26, 21, '#cdb8ff');
     txt('CHEFE', 800, 380, 18, '#ff8a5f'); txt(locked ? '???' : s.bossName, 800, 402, 28, '#fff');
     txt('MELHOR', 800, 454, 18, '#ffcf6b'); txt(String(Save.data.best[G.sel] || 0) + ' pts', 800, 476, 28, '#fff');
-    if (UI.button('go', 140, 580, 330, 62, locked ? 'BLOQUEADA' : 'JOGAR', { size: 28, disabled: locked, color: '#9a63ff' })) { Game.startStage(G.sel); return; }
-    if (UI.button('shop2', 490, 580, 330, 62, 'LOJA', { size: 24, sub: this.stars() })) { G.shopBack = 'select'; G.state = 'shop'; }
-    if (UI.button('back', 840, 580, 300, 62, 'VOLTAR', { size: 24 })) { Snd.play('uiBack'); Game.goTitle(); }
+    if (UI.button('go', 140, 580, 250, 62, locked ? 'BLOQUEADA' : 'JOGAR', { size: 26, disabled: locked, color: '#9a63ff' })) { Game.startStage(G.sel); return; }
+    if (UI.button('hang', 413, 580, 240, 62, 'HANGAR', { size: 24, sub: WEAPONS[Save.data.loadout.weapon].name })) { G.skinIdx = Math.max(0, SKINS.findIndex(s => s.id === Save.data.loadout.skin)); G.state = 'hangar'; }
+    if (UI.button('shop2', 676, 580, 240, 62, 'LOJA', { size: 24, sub: this.stars() })) { G.shopBack = 'select'; G.state = 'shop'; }
+    if (UI.button('back', 939, 580, 201, 62, 'VOLTAR', { size: 24 })) { Snd.play('uiBack'); Game.goTitle(); }
     if (Input.pressed('escape')) { Snd.play('uiBack'); Game.goTitle(); }
   },
 
@@ -730,16 +782,30 @@ const Screens = {
   },
 
   clear() {
-    const r = G.result; this.dim(.7);
-    txt('FASE COMPLETA!', W / 2, 90, 78, '#ffe9a8', 'center');
-    txt(G.stage.name, W / 2, 180, 28, '#fff', 'center');
-    UI.panel(380, 230, 520, 270);
-    const rows = [['Pontuação', r.score + ' pts'], ['Inimigos derrotados', String(r.kills)], ['Nível alcançado', String(r.level)], ['Estrelas coletadas', '★ ' + r.coins], ['Bônus do chefe', '★ ' + r.bonus]];
-    rows.forEach(([a, b], i) => { txt(a, 420, 254 + i * 44, 22, '#cdb8ff', 'left', 700); txt(b, 860, 252 + i * 44, 26, i > 2 ? '#ffcf6b' : '#fff', 'right'); });
-    if (r.best === r.score) txt('NOVO RECORDE!', W / 2, 472, 18, '#ffb340', 'center');
+    const r = G.result, t = World.t - (G.clearAt ?? World.t); this.dim(.72);
+    txt('FASE COMPLETA!', W / 2, 60, 76, '#ffe9a8', 'center');
+    txt(G.stage.name, W / 2, 148, 26, '#fff', 'center');
+    UI.panel(230, 200, 820, 320);
+    const rows = [['Pontuação', r.score + ' pts'], ['Inimigos derrotados', String(r.kills)], ['Maior combo', String(r.maxCombo)], ['Dano sofrido', r.hits === 0 ? 'nenhum!' : r.hits + ' golpes'], ['Nível alcançado', String(r.level)], ['Estrelas coletadas', '★ ' + r.coins], ['Bônus da nota', '★ ' + r.bonus]];
+    rows.forEach(([a, b], i) => { const e = easeOut((t - .15 - i * .12) / .3); ctx.globalAlpha = clamp(e, 0, 1); txt(a, 266 + (1 - e) * -30, 226 + i * 40, 21, '#cdb8ff', 'left', 700); txt(b, 640, 224 + i * 40, 24, i > 4 ? '#ffcf6b' : (i === 3 && r.hits === 0 ? '#7fe0a0' : '#fff'), 'right'); });
+    ctx.globalAlpha = 1;
+    // carimbo da nota
+    const cols = { S: '#ffd36a', A: '#7fe0a0', B: '#7fc4ff', C: '#c8b8e8' }, gc = cols[r.grade], k = easeBack((t - 1.3) / .45);
+    if (t > 1.3) {
+      if (!G.stamped) { G.stamped = true; Snd.play('stamp'); shake(6); }
+      ctx.save(); ctx.translate(850, 340); ctx.rotate(-.12); const sc = k * (1 + Math.max(0, (1.75 - t)) * 1.4); ctx.scale(sc, sc);
+      ctx.globalAlpha = clamp((t - 1.3) / .15, 0, 1);
+      ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(0, 0, 170, gc, .6); ctx.restore(); ctx.globalAlpha = 1;
+      ctx.strokeStyle = gc; ctx.lineWidth = 8; ctx.beginPath(); ctx.arc(0, 0, 100, 0, TAU); ctx.stroke();
+      ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(0, 0, 112, 0, TAU); ctx.stroke();
+      ctx.save(); ctx.shadowColor = gc; ctx.shadowBlur = 30; txt(r.grade, 0, 4, 140, gc, 'center', 900, 'middle'); ctx.restore();
+      txt('NOTA', 0, -120, 18, gc, 'center', 900);
+      ctx.restore();
+    }
+    if (r.best === r.score) txt('NOVO RECORDE!', 640, 540, 18, '#ffb340', 'center');
     const last = G.stageIdx + 1 >= STAGES.length;
-    if (UI.button('next', 340, 540, 300, 62, last ? 'MAPA' : 'PRÓXIMA FASE', { size: 26, color: '#9a63ff', sub: last ? 'você zerou tudo!' : '' })) { G.sel = last ? 0 : G.stageIdx + 1; Game.goSelect(); }
-    if (UI.button('shop', 660, 540, 280, 62, 'LOJA', { size: 24, sub: this.stars() })) { G.shopBack = 'clear'; G.state = 'shop'; }
+    if (UI.button('next', 340, 570, 300, 62, last ? 'MAPA' : 'PRÓXIMA FASE', { size: 26, color: '#9a63ff', sub: last ? 'você zerou tudo!' : '' })) { G.sel = last ? 0 : G.stageIdx + 1; G.stamped = false; Game.goSelect(); }
+    if (UI.button('shop', 660, 570, 280, 62, 'LOJA', { size: 24, sub: this.stars() })) { G.shopBack = 'clear'; G.state = 'shop'; }
   },
 
   over() {

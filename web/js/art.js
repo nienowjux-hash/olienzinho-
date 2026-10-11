@@ -3,11 +3,11 @@
 const Art = {
   // Olienzinho. o = { vx, t, lookx, looky, blinkT, inv, shield, boost, scale }
   ship(x, y, o) {
-    const U = 112 * (o.scale || 1);
+    const U = 112 * (o.scale || 1), P = o.pal || SKIN_DEFAULT;
     ctx.save(); ctx.translate(x, y); ctx.rotate(clamp((o.vx || 0) / 520, -1, 1) * 0.24); ctx.scale(o.sx || 1, o.sy || 1);
     if (o.inv > 0 && Math.floor(o.inv * 14) % 2 === 0) ctx.globalAlpha = .4;
     const X = v => v * U, Y = v => -(v - .75) * U;
-    ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(0, 0, U * .98, '#8b4dff', .3); ctx.restore();
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(0, 0, U * .98, P.glow, .3); ctx.restore();
     // chama
     const fl = (0.55 + Math.sin(o.t * 60) * .06 + Math.random() * .12) * (1 + (o.boost || 0));
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
@@ -18,19 +18,19 @@ const Art = {
     ctx.quadraticCurveTo(X(.13), Y(.2 - fl * .55), X(.1), Y(.22)); ctx.closePath(); ctx.fill(); ctx.restore();
     // aletas
     for (const s of [-1, 1]) {
-      ctx.fillStyle = '#5b2fc0'; ctx.beginPath(); ctx.moveTo(X(s * .15), Y(.78)); ctx.lineTo(X(s * .44), Y(.25)); ctx.lineTo(X(s * .15), Y(.30)); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = P.fin; ctx.beginPath(); ctx.moveTo(X(s * .15), Y(.78)); ctx.lineTo(X(s * .44), Y(.25)); ctx.lineTo(X(s * .15), Y(.30)); ctx.closePath(); ctx.fill();
       ctx.fillStyle = 'rgba(255,255,255,.12)'; ctx.beginPath(); ctx.moveTo(X(s * .15), Y(.78)); ctx.lineTo(X(s * .3), Y(.52)); ctx.lineTo(X(s * .15), Y(.5)); ctx.closePath(); ctx.fill();
     }
-    ctx.fillStyle = '#3f2290'; ctx.beginPath(); ctx.roundRect(X(-.085), Y(.27), X(.17), U * .1, 4); ctx.fill();
+    ctx.fillStyle = P.nozzle; ctx.beginPath(); ctx.roundRect(X(-.085), Y(.27), X(.17), U * .1, 4); ctx.fill();
     const body = () => {
       ctx.beginPath(); ctx.moveTo(X(-.17), Y(.25)); ctx.lineTo(X(-.2), Y(.8));
       ctx.bezierCurveTo(X(-.2), Y(1.15), X(-.08), Y(1.38), 0, Y(1.45));
       ctx.bezierCurveTo(X(.08), Y(1.38), X(.2), Y(1.15), X(.2), Y(.8)); ctx.lineTo(X(.17), Y(.25)); ctx.closePath();
     };
     const bg = ctx.createLinearGradient(X(-.2), 0, X(.2), 0);
-    bg.addColorStop(0, '#c6a6ff'); bg.addColorStop(.35, '#9a63ff'); bg.addColorStop(1, '#5326b8');
+    bg.addColorStop(0, P.g0); bg.addColorStop(.35, P.g1); bg.addColorStop(1, P.g2);
     body(); ctx.fillStyle = bg; ctx.fill();
-    ctx.save(); body(); ctx.clip(); ctx.fillStyle = 'rgba(226,212,255,.95)'; ctx.fillRect(X(-.3), Y(.56), X(.6), U * .06); ctx.restore();
+    ctx.save(); body(); ctx.clip(); ctx.fillStyle = P.stripe; ctx.fillRect(X(-.3), Y(.56), X(.6), U * .06); ctx.restore();
     // olho (com humor: normal, machucado, feliz)
     const ey = Y(.98), mood = o.mood;
     let eh = o.blinkT > 0 ? Math.max(.08, Math.abs(o.blinkT - .08) / .08) : 1;
@@ -150,6 +150,18 @@ const Art = {
   pbullet(b) {
     const c = b.c || '#b98cff';
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    if (b.kind === 'cannon' || b.kind === 'bomb') {
+      const r = b.r || 20; drawGlow(b.x, b.y, r * 2.4, b.c || '#ff7a4a', .9); drawGlow(b.x, b.y, r * 1.2, '#fff2c0', .8);
+      ctx.restore(); ctx.globalAlpha = 1; ctx.fillStyle = '#fff2c0'; ctx.beginPath(); ctx.arc(b.x, b.y, r * .62, 0, 7); ctx.fill();
+      ctx.strokeStyle = b.c || '#ff7a4a'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(b.x, b.y, r * .8, 0, 7); ctx.stroke();
+      return;
+    }
+    if (b.kind === 'missile' && b.star) {
+      drawGlow(b.x, b.y, 24, '#ffe9a8', .9);
+      ctx.restore(); ctx.globalAlpha = 1; ctx.fillStyle = '#ffffff'; ctx.save(); ctx.translate(b.x, b.y); ctx.rotate(World.t * 8);
+      ctx.beginPath(); for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4, r = i % 2 ? 3.5 : 9; ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r); } ctx.closePath(); ctx.fill(); ctx.restore();
+      return;
+    }
     if (b.kind === 'missile') {
       const ang = Math.atan2(b.vy, b.vx) + Math.PI / 2;
       drawGlow(b.x, b.y, 30, '#ffb340', .8);

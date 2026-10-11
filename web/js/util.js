@@ -69,13 +69,18 @@ addEventListener('pointerup', () => { Input.mouse.down = false; });
 // ---------- save ----------
 const Save = (() => {
   const KEY = 'olienzinho_save_v1';
-  const def = () => ({ coins: 0, unlocked: 1, best: {}, shop: {}, settings: { sfx: .8, music: .55 }, runs: 0 });
+  const def = () => ({ coins: 0, unlocked: 1, best: {}, shop: {}, settings: { sfx: .8, music: .55 }, runs: 0,
+    cleared: [], grades: {}, owned: { weapons: { violet: true }, skins: { violet: true } }, loadout: { weapon: 'violet', skin: 'violet' },
+    ach: {}, frags: [], stats: { dashes: 0, kills: 0, stars: 0, chats: 0 }, rank: [], bestWave: 0, seen: {} });
   let d = def();
   function load() {
     try {
       const o = JSON.parse(localStorage.getItem(KEY) || '{}');
       d = Object.assign(def(), o);
       d.settings = Object.assign(def().settings, o.settings || {});
+      d.stats = Object.assign(def().stats, o.stats || {});
+      d.loadout = Object.assign(def().loadout, o.loadout || {});
+      d.owned = { weapons: Object.assign({ violet: true }, (o.owned || {}).weapons), skins: Object.assign({ violet: true }, (o.owned || {}).skins) };
     } catch (e) { d = def(); }
   }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) { /* sem storage */ } }

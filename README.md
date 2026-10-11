@@ -12,6 +12,8 @@ Abra o arquivo `web/index.html` no navegador (Chrome ou Edge). Não precisa inst
 | WASD / setas / mouse | mover |
 | (automático) | atirar |
 | Espaço | Pulso Olien (limpa a tela) |
+| Shift | Esquiva (dash, invulnerável por um instante) |
+| Q / E | Habilidade especial da arma equipada |
 | Esc / P | pausar |
 | Enter / clique | avançar nas cenas |
 

@@ -149,8 +149,10 @@ function killEnemy(e, byPlayer) {
   shake(big ? 9 : 4);
   if (e.type === 'mine' && byPlayer) mineBlast(e);
   if (!byPlayer) return;
-  G.kills++; G.score += e.score;
-  G.combo = G.comboT > 0 ? G.combo + 1 : 1; G.comboT = 2.2;
+  G.kills++;
+  G.combo = G.comboT > 0 ? G.combo + 1 : 1; G.comboT = 2.2; G.stats.maxCombo = Math.max(G.stats.maxCombo, G.combo);
+  G.score += Math.round(e.score * (1 + Math.min(G.combo, 60) * .03));
+  if (big) G.hitstop = Math.max(G.hitstop || 0, .05);
   const xpv = e.xp;
   if (!xpClosed()) for (let i = 0; i < Math.min(3, xpv); i++) dropPickup('xp', e.x + rand(-14, 14), e.y + rand(-10, 10), Math.ceil(xpv / Math.min(3, xpv)));
   const pl = G.player;
@@ -201,7 +203,8 @@ function hurtPlayer(dmg = 1) {
     Snd.play('shield'); shockwave(p.x, p.y, 160, '#7fe0ff'); burst(p.x, p.y, ['#7fe0ff', '#ffffff'], 20, 300, 5); shake(5);
     return;
   }
-  p.hp -= dmg; p.inv = 1.4; G.hurtFlash = .35; p.mood = 'hurt'; p.moodT = .7;
+  p.hp -= dmg; p.inv = 1.4; G.hurtFlash = .35; p.mood = 'hurt'; p.moodT = .7; G.hitstop = Math.max(G.hitstop || 0, .08);
+  G.stats.hits++; if (G.boss) G.stats.bossHit++;
   Snd.play('playerHit'); shake(14); flashScreen(.3);
   burst(p.x, p.y, ['#e2d4ff', '#ff7ac8'], 22, 320, 6); shockwave(p.x, p.y, 180, '#ff7ac8');
   G.combo = 0; G.comboT = 0;
@@ -219,17 +222,8 @@ function addXp(v) {
 }
 
 function playerShoot() {
-  const p = G.player, n = p.shots; p.recoil = 1;
-  for (let i = 0; i < n; i++) {
-    const k = i - (n - 1) / 2, ang = -Math.PI / 2 + k * .09;
-    const crit = Math.random() < p.crit;
-    G.pb.push({
-      x: p.x + k * 14, y: p.y - 36, vx: Math.cos(ang) * 920, vy: Math.sin(ang) * 920,
-      dmg: p.dmg * (crit ? p.critMul : 1), crit, pierce: p.pierce, hits: [], c: crit ? '#ffe9a8' : '#b98cff',
-    });
-  }
-  G.parts.push({ k: 'flash', x: p.x, y: p.y - 34, vx: 0, vy: 0, life: .07, max: .07, r: 18, c: '#e2d4ff', drag: 1 });
-  Snd.play('shoot', { lv: n - 1, pan: Snd.panX(p.x) * .5 });
+  const p = G.player; p.recoil = 1;
+  WEAPONS[p.weapon].fire(p);
 }
 
 function nearestTarget(x, y, skip) {
@@ -249,16 +243,19 @@ function fireMissile() {
   Snd.play('missile', { pan: Snd.panX(p.x) * .5 });
 }
 
-function missileBoom(x, y, dmg, except) {
-  burst(x, y, ['#ffb340', '#ff6a1a', '#ffffff'], 22, 300, 6); shockwave(x, y, 120, '#ffb340'); shockwave(x, y, 70, '#ffffff');
-  Snd.play('explode', { size: .9, pan: Snd.panX(x) });
-  for (const e of G.enemies) if (!e.dead && e !== except && Math.hypot(e.x - x, e.y - y) < 110 + e.rad) damageEnemy(e, dmg * .6, false);
-  if (G.boss && G.boss !== except && G.boss.targetable() && G.boss.hitTest(x, y, 90)) G.boss.damage(dmg * .6);
+function missileBoom(x, y, dmg, except, radius = 110, f = .6) {
+  const big = radius > 120;
+  burst(x, y, ['#ffb340', '#ff6a1a', '#ffffff'], big ? 34 : 22, big ? 380 : 300, big ? 8 : 6); shockwave(x, y, radius + 10, '#ffb340'); shockwave(x, y, radius * .6, '#ffffff');
+  Snd.play('explode', { size: big ? 1.4 : .9, pan: Snd.panX(x) });
+  for (const e of G.enemies) if (!e.dead && e !== except && Math.hypot(e.x - x, e.y - y) < radius + e.rad) damageEnemy(e, dmg * f, false);
+  if (G.boss && G.boss !== except && G.boss.targetable() && G.boss.hitTest(x, y, radius * .8)) G.boss.damage(dmg * f);
+  if (big) { shake(7); G.hitstop = Math.max(G.hitstop || 0, .04); }
 }
 
-// aplicado a cada frame: balas do jogador, drones orbitais, pulso
 function updatePlayerWeapons(dt) {
   const p = G.player;
+  p.beamT = Math.max(0, (p.beamT || 0) - dt);
+  if (G.mega) { const m = G.mega; m.t += dt; m.tick -= dt; if (m.tick <= 0) { m.tick = .06; megaTick(p); } if (m.t >= m.dur) G.mega = null; }
   for (const b of G.pb) {
     if (b.kind === 'missile') {
       b.life -= dt;
@@ -270,24 +267,49 @@ function updatePlayerWeapons(dt) {
         b.vx = Math.cos(na) * sp; b.vy = Math.sin(na) * sp;
       }
       if (b.life <= 0) b.dead = true;
-      G.parts.push({ x: b.x - b.vx * .012, y: b.y - b.vy * .012, vx: rand(-20, 20), vy: rand(-20, 20), life: .35, max: .35, r: rand(4, 7), c: Math.random() < .5 ? '#ffb340' : '#ff6a1a', drag: 2 });
-      if (Math.random() < .5) G.parts.push({ k: 'smoke', x: b.x - b.vx * .02, y: b.y - b.vy * .02, vx: rand(-15, 15), vy: rand(-15, 15), life: .5, max: .5, r: rand(3, 5), c: '#3a2060', drag: 1 });
+      G.parts.push({ x: b.x - b.vx * .012, y: b.y - b.vy * .012, vx: rand(-20, 20), vy: rand(-20, 20), life: .35, max: .35, r: rand(4, 7), c: b.star ? '#ffe9a8' : (Math.random() < .5 ? '#ffb340' : '#ff6a1a'), drag: 2 });
+      if (!b.star && Math.random() < .5) G.parts.push({ k: 'smoke', x: b.x - b.vx * .02, y: b.y - b.vy * .02, vx: rand(-15, 15), vy: rand(-15, 15), life: .5, max: .5, r: rand(3, 5), c: '#3a2060', drag: 1 });
+    } else if (b.kind === 'bomb') {
+      b.life -= dt; if (b.life <= 0) { bombBoom(b); continue; }
+      G.parts.push({ x: b.x + rand(-6, 6), y: b.y + 20, vx: rand(-30, 30), vy: rand(60, 140), life: .4, max: .4, r: rand(6, 11), c: Math.random() < .5 ? '#ffb340' : '#ff6a1a', drag: 2 });
+    } else if (b.life !== undefined) {
+      b.life -= dt; if (b.life <= 0) { b.dead = true; continue; }
+      if (b.kind === 'cannon') G.parts.push({ x: b.x, y: b.y + 14, vx: rand(-20, 20), vy: rand(40, 100), life: .3, max: .3, r: rand(5, 9), c: '#ff9a4a', drag: 2 });
     }
     b.x += b.vx * dt; b.y += b.vy * dt;
     if (b.y < -60 || b.y > H + 60 || b.x < -60 || b.x > W + 60) { b.dead = true; continue; }
     for (const e of G.enemies) {
       if (e.dead || b.hits.includes(e)) continue;
-      if (Math.hypot(e.x - b.x, e.y - b.y) < e.rad + 10) {
-        if (b.kind === 'missile') { damageEnemy(e, b.dmg, false); missileBoom(b.x, b.y, b.dmg, e); b.dead = true; break; }
+      if (Math.hypot(e.x - b.x, e.y - b.y) < e.rad + (b.r || 10)) {
+        if (e.shield > 0 && b.y > e.y && b.kind !== 'bomb') { // o escudo do inimigo segura tiros vindos de baixo
+          e.shield -= b.dmg; e.hit = .06; sparks(b.x, b.y, '#7fe0ff', 4);
+          if (e.shield <= 0) { Snd.play('shield'); burst(e.x, e.y + e.rad, ['#7fe0ff', '#ffffff'], 14, 240, 4); }
+          if (b.aoe) missileBoom(b.x, b.y, b.dmg, e, b.aoe, .35);
+          b.dead = true; break;
+        }
+        if (b.kind === 'bomb') { bombBoom(b); break; }
+        if (b.kind === 'missile') {
+          if (b.star) { damageEnemy(e, b.dmg, false); burst(b.x, b.y, ['#ffe9a8', '#ffffff'], 8, 200, 4); b.dead = true; break; }
+          damageEnemy(e, b.dmg, false); missileBoom(b.x, b.y, b.dmg, e); b.dead = true; break;
+        }
         damageEnemy(e, b.dmg, b.crit);
+        if (b.aoe) { missileBoom(b.x, b.y, b.dmg, e, b.aoe, .5); b.dead = true; break; }
         b.hits.push(e);
         if (b.pierce > 0) b.pierce--; else { b.dead = true; break; }
       }
     }
     const bo = G.boss;
-    if (!b.dead && bo && bo.targetable() && !b.hits.includes(bo) && bo.hitTest(b.x, b.y, 8)) {
-      if (b.kind === 'missile') { bo.damage(b.dmg); missileBoom(b.x, b.y, b.dmg, bo); b.dead = true; }
-      else { bo.damage(b.dmg, b.crit); b.hits.push(bo); burst(b.x, b.y, ['#e2d4ff', '#ffe9a8'], 3, 160, 3); if (b.pierce > 0) b.pierce--; else b.dead = true; }
+    if (!b.dead && bo && bo.targetable() && !b.hits.includes(bo) && bo.hitTest(b.x, b.y, b.r ? b.r * .6 : 8)) {
+      if (b.kind === 'bomb') bombBoom(b);
+      else if (b.kind === 'missile') {
+        bo.damage(b.dmg);
+        if (b.star) burst(b.x, b.y, ['#ffe9a8', '#ffffff'], 8, 200, 4); else missileBoom(b.x, b.y, b.dmg, bo);
+        b.dead = true;
+      } else {
+        bo.damage(b.dmg, b.crit);
+        if (b.aoe) { missileBoom(b.x, b.y, b.dmg, bo, b.aoe, .5); b.dead = true; }
+        else { b.hits.push(bo); burst(b.x, b.y, ['#e2d4ff', '#ffe9a8'], 3, 160, 3); if (b.pierce > 0) b.pierce--; else b.dead = true; }
+      }
     }
   }
   // drones orbitais

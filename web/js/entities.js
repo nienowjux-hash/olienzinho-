@@ -74,6 +74,7 @@ function spawnEnemy(type, x, y, o = {}) {
 function updateEnemy(e, dt) {
   e.age += dt; e.hit = Math.max(0, e.hit - dt); e.orbCd = Math.max(0, e.orbCd - dt);
   const p = G.player;
+  e.look = clamp((p.x - e.x) / 160, -1, 1) * e.rad * .12;
   switch (e.type) {
     case 'drone':
     case 'bit':
@@ -178,6 +179,7 @@ function updatePickup(k, dt) {
     k.mag = true;
     const sp = 380 + (1 - Math.min(1, d / 400)) * 700;
     k.x += (p.x - k.x) / (d || 1) * sp * dt; k.y += (p.y - k.y) / (d || 1) * sp * dt;
+    if (Math.random() < .6) G.parts.push({ x: k.x, y: k.y, vx: 0, vy: 0, life: .22, max: .22, r: 4, c: k.type === 'coin' ? '#ffcf6b' : k.type === 'heart' ? '#ff9ac0' : '#7fe0ff', drag: 1 });
   } else {
     k.x += k.vx * dt; k.y += k.vy * dt; k.vx *= 1 - 2 * dt; k.vy += (70 - k.vy) * Math.min(1, 1.5 * dt);
   }
@@ -185,7 +187,7 @@ function updatePickup(k, dt) {
     k.dead = true;
     if (k.type === 'xp') { G.chain = G.chainT > 0 ? G.chain + 1 : 0; G.chainT = .5; Snd.play('xp', { combo: G.chain, pan: Snd.panX(k.x) }); addXp(k.val * p.xpMul); }
     else if (k.type === 'coin') { G.cchain = G.cchainT > 0 ? G.cchain + 1 : 0; G.cchainT = .7; Snd.play('coin', { combo: G.cchain, pan: Snd.panX(k.x) }); G.runCoins += k.val; popup(k.x, k.y - 14, '+' + k.val, '#ffcf6b', 18); }
-    else if (k.type === 'heart') { Snd.play('heart'); if (p.hp < p.maxHp) { p.hp++; popup(p.x, p.y - 60, '+1 vida', '#ff9ac0'); } else { G.runCoins += 3; popup(p.x, p.y - 60, '+3', '#ffcf6b'); } }
+    else if (k.type === 'heart') { Snd.play('heart'); p.mood = 'happy'; p.moodT = .9; if (p.hp < p.maxHp) { p.hp++; popup(p.x, p.y - 60, '+1 vida', '#ff9ac0'); } else { G.runCoins += 3; popup(p.x, p.y - 60, '+3', '#ffcf6b'); } }
   }
   if (k.y > H + 40) k.dead = true;
 }
@@ -199,7 +201,7 @@ function hurtPlayer(dmg = 1) {
     Snd.play('shield'); shockwave(p.x, p.y, 160, '#7fe0ff'); burst(p.x, p.y, ['#7fe0ff', '#ffffff'], 20, 300, 5); shake(5);
     return;
   }
-  p.hp -= dmg; p.inv = 1.4; G.hurtFlash = .35;
+  p.hp -= dmg; p.inv = 1.4; G.hurtFlash = .35; p.mood = 'hurt'; p.moodT = .7;
   Snd.play('playerHit'); shake(14); flashScreen(.3);
   burst(p.x, p.y, ['#e2d4ff', '#ff7ac8'], 22, 320, 6); shockwave(p.x, p.y, 180, '#ff7ac8');
   G.combo = 0; G.comboT = 0;
@@ -214,7 +216,7 @@ function addXp(v) {
 }
 
 function playerShoot() {
-  const p = G.player, n = p.shots;
+  const p = G.player, n = p.shots; p.recoil = 1;
   for (let i = 0; i < n; i++) {
     const k = i - (n - 1) / 2, ang = -Math.PI / 2 + k * .09;
     const crit = Math.random() < p.crit;

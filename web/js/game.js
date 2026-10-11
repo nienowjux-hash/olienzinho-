@@ -16,7 +16,7 @@ function txt(s, x, y, size, color = '#e2d4ff', align = 'left', weight = 900, bas
 function newPlayer() {
   const p = {
     x: W / 2, y: H - 130, vx: 0, vy: 0, hp: 5, maxHp: 5, inv: 0, fireT: 0, pulseT: 0, t: 0, blink: 3, blinkT: 0, lookx: 0, looky: 0,
-    orbAng: 0, orbPos: [], missT: 2, shieldReady: false, shieldT: 0, dead: false,
+    orbAng: 0, orbPos: [], missT: 2, shieldReady: false, shieldT: 0, dead: false, mood: null, moodT: 0, recoil: 0,
   };
   return p;
 }
@@ -45,6 +45,7 @@ const Game = {
     G.stageIdx = idx; G.stage = STAGES[idx];
     G.t = 0; G.enemies = []; G.pb = []; G.eb = []; G.pickups = []; G.parts = []; G.rings = []; G.pops = []; G.hazards = []; G.boss = null; G.pulse = null;
     G.score = 0; G.kills = 0; G.runCoins = 0; G.level = 1; G.xp = 0; G.xpNeed = 7; G.pendingLevels = 0; G.upCounts = {}; G.options = [];
+    G.scoreShown = 0; G.scorePrev = 0; G.scorePop = 0; G.hpPrev = undefined; G.hpPulse = 0; G.xpPrev = 0; G.xpFlash = 0; G.lvPop = 0; G.hudT = undefined;
     G.shake = 0; G.flash = 0; G.hurtFlash = 0; G.combo = 0; G.comboT = 0; G.chain = 0; G.chainT = 0; G.cchain = 0; G.cchainT = 0;
     G.spawnT = 1.5; G.bossDone = false; G.bossPending = false; G.bossPendingT = 0; G.clearT = 0; G.overT = 0; G.result = null; G.intro = 0;
     this.slowmo = 0;
@@ -80,6 +81,7 @@ const Game = {
   },
 
   bossDefeated() {
+    G.player.mood = 'happy'; G.player.moodT = 3;
     G.bossDone = true; G.clearT = 2.8;
     for (const k of G.pickups) k.mag = true;
     Events.banner = { t: 0, title: 'CHEFE DERROTADO!', sub: G.stage.bossName, c: '#ffe9a8' };
@@ -102,7 +104,7 @@ const Game = {
   openLevelUp() {
     G.pendingLevels--;
     const p = G.player;
-    Snd.play('levelUp'); shockwave(p.x, p.y, 380, '#b98cff'); burst(p.x, p.y, ['#b98cff', '#ffb340', '#ffffff'], 50, 440, 6); flashScreen(.2);
+    Snd.play('levelUp'); p.mood = 'happy'; p.moodT = 1.4; G.lvPop = 1; shockwave(p.x, p.y, 380, '#b98cff'); burst(p.x, p.y, ['#b98cff', '#ffb340', '#ffffff'], 50, 440, 6); flashScreen(.2);
     const avail = RUN_UPGRADES.filter(u => (G.upCounts[u.id] || 0) < u.max && (!u.cond || u.cond()));
     const picks = [];
     while (picks.length < 3 && avail.length) {
@@ -239,6 +241,7 @@ const Game = {
     p.inv = Math.max(0, p.inv - dt);
 
     // tiro e chama
+    p.recoil = Math.max(0, p.recoil - dt * 9); if (p.moodT > 0) { p.moodT -= dt; if (p.moodT <= 0) p.mood = null; }
     p.fireT -= dt; if (p.fireT <= 0) { playerShoot(); p.fireT = p.fireDelay; }
     for (let i = 0; i < 2; i++) G.parts.push({ x: p.x + rand(-4, 4), y: p.y + 27, vx: rand(-30, 30), vy: rand(150, 280), life: rand(.25, .5), max: .5, r: rand(3, 7), c: Math.random() < .5 ? '#ffb340' : '#ffe9a8', drag: 1 });
 
@@ -257,12 +260,14 @@ const Game = {
     World.draw(cx);
     Events.drawHazards();
     for (const k of G.pickups) Art.pickup(k);
-    if (G.boss) G.boss.draw();
+    if (G.boss) { const b = G.boss, br = 1 + Math.sin(b.t * 2) * .012; ctx.save(); ctx.translate(b.x, b.y); ctx.scale(br, br); ctx.translate(-b.x, -b.y); b.draw(); ctx.restore(); }
     for (const e of G.enemies) Art.enemy(e);
     for (const b of G.pb) Art.pbullet(b);
     for (const b of G.eb) Art.ebullet(b);
     if (p && !p.dead) {
-      Art.ship(p.x, p.y, { vx: p.vx, t: p.t, lookx: p.lookx, looky: p.looky, blinkT: p.blinkT, inv: p.inv, shield: p.shieldReady, scale: SHIP_S });
+      const sp = Math.hypot(p.vx, p.vy) / 500, bob = Math.sin(p.t * 3) * 2.5 * (1 - Math.min(1, sp));
+      Art.ship(p.x, p.y + bob, { vx: p.vx, t: p.t, lookx: p.lookx, looky: p.looky, blinkT: p.blinkT, inv: p.inv, shield: p.shieldReady, scale: SHIP_S, mood: p.mood,
+        sx: 1 + p.recoil * .05 - Math.abs(p.vx) / 500 * .05, sy: 1 - p.recoil * .08 + Math.abs(p.vy) / 500 * .04 });
       for (const o of p.orbPos) {
         ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(o[0], o[1], 26, '#ffb340', .9); ctx.restore();
         ctx.globalAlpha = 1; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(o[0], o[1], 7, 0, 7); ctx.fill();
@@ -296,23 +301,59 @@ const Game = {
       const g = ctx.createRadialGradient(W / 2, H / 2, H * .3, W / 2, H / 2, H * .85);
       g.addColorStop(0, 'rgba(255,40,90,0)'); g.addColorStop(1, `rgba(255,40,90,${G.hurtFlash * 1.2})`); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
     }
+    if (p && !p.dead && p.hp <= Math.max(1, p.maxHp * .25) && G.state === 'play') {
+      const a = (.5 + .5 * Math.sin(World.t * 7)) * .22, g = ctx.createRadialGradient(W / 2, H / 2, H * .35, W / 2, H / 2, H * .9);
+      g.addColorStop(0, 'rgba(255,40,70,0)'); g.addColorStop(1, `rgba(255,40,70,${a})`); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    }
     Events.drawOverlay();
     if (G.flash > 0) { ctx.globalAlpha = Math.min(.7, G.flash * .35); ctx.fillStyle = '#e9e0ff'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; }
     this.drawHud();
+    this.drawCinematic();
+  },
+
+  // faixas de cinema e cartao de nome na chegada do chefe
+  drawCinematic() {
+    let k = 0, name = null, it = 0;
+    if (G.bossPending) k = easeOut((3.2 - G.bossPendingT) / .6);
+    else if (G.boss && G.boss.state === 'intro') { it = G.boss.introT || 0; k = 1 - easeOut((it - 2.4) / .6); name = G.boss.name; }
+    if (k <= 0) return;
+    const h = 64 * k;
+    ctx.globalAlpha = 1; ctx.fillStyle = '#05010f'; ctx.fillRect(0, 0, W, h); ctx.fillRect(0, H - h, W, h);
+    if (name && it > .4 && it < 2.8) {
+      const a = clamp((it - .4) / .4, 0, 1) * clamp((2.8 - it) / .3, 0, 1), sc = .88 + .12 * easeBack((it - .4) / .5);
+      ctx.save(); ctx.globalAlpha = a; ctx.translate(W / 2, H * .7); ctx.scale(sc, sc);
+      txt('C H E F E', 0, -58, 22, '#ff8a5f', 'center', 900);
+      ctx.shadowColor = '#ff8a5f'; ctx.shadowBlur = 30; txt(name.toUpperCase(), 0, -26, 62, '#ffffff', 'center', 900); ctx.restore();
+    }
   },
 
   drawHud() {
     const p = G.player, st = G.stage;
     ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
-    // xp
+    const nowS = performance.now() / 1000, dtH = Math.min(.05, nowS - (G.hudT ?? nowS)); G.hudT = nowS;
+    // xp (com brilho quando ganha)
+    if (G.xp > G.xpPrev) G.xpFlash = 1; G.xpPrev = G.xp; G.xpFlash = Math.max(0, G.xpFlash - dtH * 3);
     ctx.fillStyle = 'rgba(255,255,255,.12)'; ctx.fillRect(0, 0, W, 8);
-    ctx.fillStyle = '#8b4dff'; ctx.fillRect(0, 0, W * clamp(G.xp / G.xpNeed, 0, 1), 8);
-    // esquerda
-    txt('NÍVEL ' + G.level, 24, 22, 26);
-    for (let i = 0; i < p.maxHp; i++) { ctx.fillStyle = i < p.hp ? '#ff5f8f' : 'rgba(255,255,255,.15)'; ctx.beginPath(); ctx.roundRect(24 + i * 38, 60, 30, 12, 6); ctx.fill(); }
+    const xw = W * clamp(G.xp / G.xpNeed, 0, 1);
+    ctx.fillStyle = '#8b4dff'; ctx.fillRect(0, 0, xw, 8);
+    if (G.xpFlash > 0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = G.xpFlash * .8; ctx.fillStyle = '#e2d4ff'; ctx.fillRect(0, 0, xw, 8); drawGlow(xw, 4, 30, '#b98cff', G.xpFlash); ctx.restore(); ctx.globalAlpha = 1; }
+    // esquerda: nivel e vida
+    G.lvPop = Math.max(0, G.lvPop - dtH * 2.5);
+    ctx.save(); ctx.translate(24, 35); ctx.scale(1 + G.lvPop * .35, 1 + G.lvPop * .35); txt('NÍVEL ' + G.level, 0, -13, 26); ctx.restore();
+    if (G.hpPrev === undefined) G.hpPrev = p.hp;
+    if (p.hp !== G.hpPrev) { G.hpPulse = 1; G.hpIdx = Math.min(p.hp, G.hpPrev); G.hpPrev = p.hp; }
+    G.hpPulse = Math.max(0, G.hpPulse - dtH * 3);
+    const low = p.hp <= Math.max(1, p.maxHp * .25);
+    for (let i = 0; i < p.maxHp; i++) {
+      const sc = i === G.hpIdx ? 1 + G.hpPulse * .6 : 1, cxh = 24 + i * 38 + 15;
+      ctx.save(); ctx.translate(cxh, 66); ctx.scale(sc, sc * (low && i < p.hp ? 1 + Math.sin(World.t * 9) * .12 : 1));
+      ctx.fillStyle = i < p.hp ? (low ? '#ff3b5f' : '#ff5f8f') : 'rgba(255,255,255,.15)'; ctx.beginPath(); ctx.roundRect(-15, -6, 30, 12, 6); ctx.fill(); ctx.restore();
+    }
     if (p.shieldReady) { ctx.strokeStyle = '#7fe0ff'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(24 + p.maxHp * 38 + 10, 66, 9, 0, 7); ctx.stroke(); }
     // direita
-    txt(G.score + ' pts', W - 24, 22, 26, '#e2d4ff', 'right');
+    G.scoreShown += (G.score - G.scoreShown) * Math.min(1, 10 * dtH); if (Math.abs(G.score - G.scoreShown) < 1) G.scoreShown = G.score;
+    if (G.score !== G.scorePrev) { G.scorePop = 1; G.scorePrev = G.score; } G.scorePop = Math.max(0, G.scorePop - dtH * 4);
+    ctx.save(); ctx.translate(W - 24, 35); ctx.scale(1 + G.scorePop * .22, 1 + G.scorePop * .22); txt(Math.round(G.scoreShown) + ' pts', 0, -13, 26, G.scorePop > 0 ? '#ffffff' : '#e2d4ff', 'right'); ctx.restore();
     txt('★ ' + G.runCoins, W - 24, 56, 22, '#ffcf6b', 'right');
     if (G.combo >= 3) txt('COMBO x' + G.combo, W - 24, 84, 20, '#ffe9a8', 'right');
     // progresso / chefe

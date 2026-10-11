@@ -35,16 +35,22 @@ function render() {
   ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = .28;
   ctx.drawImage(bloom, 0, 0, cv.width, cv.height);
   ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+  if (Trans.t < .4) { ctx.setTransform(K, 0, 0, K, 0, 0); ctx.globalAlpha = 1 - easeOut(Trans.t / .4); ctx.fillStyle = '#0b0422'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; }
 }
 
 document.addEventListener('visibilitychange', () => { if (document.hidden && G.state === 'play') G.state = 'pause'; });
 
+const Trans = { t: 9 };
+let prevS = G.state;
+const QUIET = ['play', 'pause', 'levelup'];
 let lastT = performance.now();
 function frame(now) {
   const dt = Math.min(.05, (now - lastT) / 1000); lastT = now;
   try {
     UI.begin();
     Game.update(dt);
+    Trans.t += dt;
+    if (G.state !== prevS) { if (!(QUIET.includes(prevS) && QUIET.includes(G.state))) { Trans.t = 0; UI.enter(); } prevS = G.state; }
     render();
     UI.end();
   } catch (e) {

@@ -1,7 +1,7 @@
 'use strict';
 // ---------- UI em modo imediato (mouse + teclado) ----------
 const UI = {
-  prev: [], cur: [], focusId: null, act: null, last: { x: -1, y: -1 }, drag: null,
+  enterAt: 0, prev: [], cur: [], focusId: null, act: null, last: { x: -1, y: -1 }, drag: null,
 
   begin() {
     this.act = null;
@@ -25,6 +25,7 @@ const UI = {
     this.cur = [];
   },
   end() { this.prev = this.cur; },
+  enter() { this.enterAt = World.t; },
   reset(focus) { this.prev = []; this.cur = []; this.focusId = focus || null; this.act = null; },
   focus(id) { return this.focusId === id; },
 
@@ -41,7 +42,9 @@ const UI = {
 
   button(id, x, y, w, h, label, o = {}) {
     const f = this.focusId === id, dis = !!o.disabled;
+    const ent = easeBack((World.t - this.enterAt - this.cur.length * .05) / .4);
     const fired = this.hit(id, x, y, w, h, o);
+    ctx.save(); ctx.globalAlpha = clamp(ent, 0, 1); ctx.translate(0, (1 - ent) * 28);
     ctx.save();
     const pulse = f ? 1 + Math.sin(World.t * 8) * .01 : 1;
     ctx.translate(x + w / 2, y + h / 2); ctx.scale(pulse, pulse); ctx.translate(-w / 2, -h / 2);
@@ -56,6 +59,7 @@ const UI = {
     const sz = o.size || 26;
     txt(label, x + w / 2, y + h / 2 - (o.sub ? 10 : 0), sz, dis ? '#8a7fb0' : '#fff', 'center', 900, 'middle');
     if (o.sub) txt(o.sub, x + w / 2, y + h / 2 + 15, 15, dis ? '#7a70a0' : '#cdb8ff', 'center', 700, 'middle');
+    ctx.restore();
     return fired;
   },
 

@@ -4,7 +4,7 @@ const Art = {
   // Olienzinho. o = { vx, t, lookx, looky, blinkT, inv, shield, boost, scale }
   ship(x, y, o) {
     const U = 112 * (o.scale || 1);
-    ctx.save(); ctx.translate(x, y); ctx.rotate(clamp((o.vx || 0) / 520, -1, 1) * 0.24);
+    ctx.save(); ctx.translate(x, y); ctx.rotate(clamp((o.vx || 0) / 520, -1, 1) * 0.24); ctx.scale(o.sx || 1, o.sy || 1);
     if (o.inv > 0 && Math.floor(o.inv * 14) % 2 === 0) ctx.globalAlpha = .4;
     const X = v => v * U, Y = v => -(v - .75) * U;
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(0, 0, U * .98, '#8b4dff', .3); ctx.restore();
@@ -31,12 +31,21 @@ const Art = {
     bg.addColorStop(0, '#c6a6ff'); bg.addColorStop(.35, '#9a63ff'); bg.addColorStop(1, '#5326b8');
     body(); ctx.fillStyle = bg; ctx.fill();
     ctx.save(); body(); ctx.clip(); ctx.fillStyle = 'rgba(226,212,255,.95)'; ctx.fillRect(X(-.3), Y(.56), X(.6), U * .06); ctx.restore();
-    // olho
-    const ey = Y(.98), eh = o.blinkT > 0 ? Math.max(.08, Math.abs(o.blinkT - .08) / .08) : 1;
+    // olho (com humor: normal, machucado, feliz)
+    const ey = Y(.98), mood = o.mood;
+    let eh = o.blinkT > 0 ? Math.max(.08, Math.abs(o.blinkT - .08) / .08) : 1;
+    if (mood === 'hurt') eh = .5;
     const lx = o.lookx || 0, ly = o.looky || 0;
-    ctx.fillStyle = '#f5eeff'; ctx.beginPath(); ctx.ellipse(0, ey, U * .125, U * .125 * eh, 0, 0, 7); ctx.fill();
-    ctx.fillStyle = '#1b0b3d'; ctx.beginPath(); ctx.ellipse(lx * U * .03, ey + ly * U * .03, U * .088, U * .088 * eh, 0, 0, 7); ctx.fill();
-    if (eh > .5) { ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(lx * U * .03 + U * .03, ey + ly * U * .03 - U * .03, U * .025, 0, 7); ctx.fill(); }
+    if (mood === 'happy') {
+      ctx.strokeStyle = '#1b0b3d'; ctx.lineWidth = U * .055; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.arc(0, ey + U * .05, U * .1, Math.PI * 1.1, Math.PI * 1.9); ctx.stroke();
+      ctx.fillStyle = 'rgba(255,120,170,.5)'; for (const s of [-1, 1]) { ctx.beginPath(); ctx.ellipse(s * U * .16, ey + U * .08, U * .05, U * .03, 0, 0, 7); ctx.fill(); }
+    } else {
+      ctx.fillStyle = mood === 'hurt' ? '#ffd0d8' : '#f5eeff'; ctx.beginPath(); ctx.ellipse(0, ey, U * .125, U * .125 * eh, 0, 0, 7); ctx.fill();
+      const pr = mood === 'hurt' ? U * .06 : U * .088;
+      ctx.fillStyle = '#1b0b3d'; ctx.beginPath(); ctx.ellipse(lx * U * .03, ey + ly * U * .03, pr, pr * eh, 0, 0, 7); ctx.fill();
+      if (eh > .5) { ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(lx * U * .03 + U * .03, ey + ly * U * .03 - U * .03, U * .025, 0, 7); ctx.fill(); }
+    }
     // escudo
     if (o.shield) {
       ctx.globalAlpha = .55 + .2 * Math.sin(o.t * 6);
@@ -53,21 +62,24 @@ const Art = {
     ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, r, 0, 7); ctx.fill();
     ctx.strokeStyle = 'rgba(40,10,60,.35)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(0, 0, r - 1.5, 0, 7); ctx.stroke();
   },
-  visor(r, eyeC) {
+  visor(r, eyeC, look = 0) {
     ctx.fillStyle = '#2a0f5e'; ctx.beginPath(); ctx.roundRect(-r * .68, -r * .18, r * 1.36, r * .42, 7); ctx.fill();
     ctx.fillStyle = eyeC || '#ffe9a8';
-    for (const s of [-1, 1]) { ctx.beginPath(); ctx.arc(s * r * .3, r * .03, Math.max(2.6, r * .13), 0, 7); ctx.fill(); }
+    for (const s of [-1, 1]) { ctx.beginPath(); ctx.arc(s * r * .3 + look, r * .03, Math.max(2.6, r * .13), 0, 7); ctx.fill(); }
   },
 
   enemy(e) {
     ctx.save(); ctx.translate(e.x, e.y);
     const r = e.rad, t = e.age, hit = e.hit > 0;
+    // entrada com pop, respiracao e esmagadinha ao levar tiro
+    const pop = easeBack(e.age / .35), sq = 1 + (hit ? e.hit * 1.6 : 0);
+    ctx.translate(0, Math.sin(e.age * 3 + e.ph) * 2.5); ctx.scale(pop * sq, pop / sq);
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
     drawGlow(0, 0, r * 1.9, e.glow || '#ff8a1f', .3); ctx.restore(); ctx.globalAlpha = 1;
     switch (e.type) {
       case 'drone':
         ctx.rotate(Math.sin(t * 3 + e.ph) * .15);
-        this.ball(r, '#ffd37a', '#ff7a1a', hit); this.visor(r);
+        this.ball(r, '#ffd37a', '#ff7a1a', hit); this.visor(r, undefined, e.look || 0);
         ctx.strokeStyle = '#ffb340'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(0, -r); ctx.lineTo(0, -r - 10); ctx.stroke();
         ctx.fillStyle = '#ffe9a8'; ctx.beginPath(); ctx.arc(0, -r - 11, 4, 0, 7); ctx.fill();
         break;
@@ -92,7 +104,7 @@ const Art = {
         break;
       }
       case 'shooter': {
-        this.ball(r, '#ff9ad0', '#c2185b', hit); this.visor(r, '#ffd6e8');
+        this.ball(r, '#ff9ad0', '#c2185b', hit); this.visor(r, '#ffd6e8', e.look || 0);
         ctx.save(); ctx.rotate(e.aim || Math.PI / 2); ctx.fillStyle = '#4a1060';
         ctx.beginPath(); ctx.roundRect(r * .6, -5, r * .7, 10, 4); ctx.fill(); ctx.restore();
         break;
@@ -162,7 +174,7 @@ const Art = {
   },
 
   pickup(p) {
-    ctx.save(); ctx.translate(p.x, p.y + Math.sin(p.age * 5) * 2);
+    ctx.save(); ctx.translate(p.x, p.y + Math.sin(p.age * 5) * 2); { const sc = easeBack(p.age / .3); ctx.scale(sc, sc); }
     ctx.globalCompositeOperation = 'lighter';
     if (p.type === 'xp') {
       drawGlow(0, 0, 16, '#7fe0ff', .8); ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;

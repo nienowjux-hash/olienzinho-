@@ -114,7 +114,7 @@ const Game = {
   nextWave() {
     G.wave++; G.waveT = 0; G.waveMini = false; G.bossPending = false;
     Save.data.bestWave = Math.max(Save.data.bestWave || 0, G.wave);
-    const b = Math.floor((G.wave - 1) / 5) % 4; if (b !== G.biome) this.setBiome(b);
+    const b = Math.floor((G.wave - 1) / 5) % STAGES.length; if (b !== G.biome) this.setBiome(b);
     Events.banner = { t: 0, title: 'ONDA ' + G.wave, sub: STAGES[G.biome].name, c: STAGES[G.biome].tint };
   },
   addRank() {
@@ -145,7 +145,7 @@ const Game = {
     }
     if (!G.waveMini && G.wave % 5 === 3 && G.waveT > 10) {
       G.waveMini = true; spawnEnemy('captain', rand(300, W - 300), -80);
-      Events.banner = { t: 0, title: 'MINICHEFE', sub: CAPTAINS[G.biome % 4], c: '#ff8a5f' }; Snd.play('bossWarn');
+      Events.banner = { t: 0, title: 'MINICHEFE', sub: CAPTAINS[G.biome % CAPTAINS.length], c: '#ff8a5f' }; Snd.play('bossWarn');
     }
     const w = G.wave, pool = { drone: 3, zig: 2 };
     if (w >= 2) { pool.kami = 2; pool.shooter = 1; }
@@ -188,7 +188,9 @@ const Game = {
     this.endRunSave(bonus, true);
     G.result = { bonus, grade, gi, hits: st.hits, maxCombo: st.maxCombo, time: G.t, coins: G.runCoins, score: G.score, kills: G.kills, level: G.level, best: Save.data.best[G.stageIdx], newStage: G.stageIdx + 1 < STAGES.length };
     const toClear = () => { G.clearAt = World.t; G.state = 'clear'; Snd.musicPlay('menu', 0); Snd.play('stageClear'); };
-    if (G.stageIdx + 1 >= STAGES.length) this.maybeStory('epi', STORY.epilogue, toClear); else toClear();
+    if (G.stageIdx === 3) this.maybeStory('epi', STORY.epilogue, toClear);
+    else if (G.stageIdx === 5) { Save.data.won = true; Save.save(); Ach.check(); this.maybeStory('finale', STORY.finale, toClear); }
+    else toClear();
   },
 
   gameOver() {
@@ -198,7 +200,7 @@ const Game = {
     if (G.endless) G.result.wave = G.wave;
     if (this.noStory || G.endless) { toOver(); return; }
     // o vilao (o chefe da fase ou o Vazio) fala com o jogador
-    const D = STORY.defeat, inBoss = !!G.boss, bc = ['C', 'P', 'E', 'S'][G.stageIdx];
+    const D = STORY.defeat, inBoss = !!G.boss, bc = ['C', 'P', 'E', 'S', 'X', 'V'][G.stageIdx];
     const pages = [{ music: 'sad' },
       inBoss ? { who: bc, scene: 'boss', mood: 'angry', text: pick(D.boss[G.stageIdx]) } : { who: 'V', scene: 'void', mood: 'angry', text: pick(D.void) }];
     if (Math.random() < .5) pages.push({ who: 'B', mood: 'worry', text: pick(D.orbi) });
@@ -276,7 +278,7 @@ const Game = {
     }
     if (!G.miniDone && G.t >= st.duration * .5) {
       G.miniDone = true; spawnEnemy('captain', rand(300, W - 300), -80);
-      Events.banner = { t: 0, title: 'MINICHEFE', sub: CAPTAINS[G.stageIdx % 4], c: '#ff8a5f' }; Snd.play('bossWarn');
+      Events.banner = { t: 0, title: 'MINICHEFE', sub: CAPTAINS[G.stageIdx % CAPTAINS.length], c: '#ff8a5f' }; Snd.play('bossWarn');
     }
     if (G.t >= st.duration) {
       G.bossPending = true; G.bossPendingT = 3.2;
@@ -432,6 +434,7 @@ const Game = {
         ctx.fillStyle = '#ff8a1f'; ctx.beginPath(); ctx.arc(o[0], o[1], 4, 0, 7); ctx.fill();
       }
     }
+    drawDark();
     this.drawFinisherBeam();
     for (const q of G.parts) if (q.k === 'smoke') {
       const k = clamp(q.life / q.max, 0, 1);

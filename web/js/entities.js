@@ -71,7 +71,7 @@ const CAPTAINS = ['Capitão Zangão', 'Perfuratriz', 'Para-raios', 'Sentinela So
 
 function spawnEnemy(type, x, y, o = {}) {
   const d = ENEMY_DEF[type], st = G.stage.id;
-  const dm = dif().hp, mul = dm * (G.endless ? 1 + st * .2 + ((G.wave || 1) - 1) * .17 : 1 + st * .45 + (G.t / G.stage.duration) * .35);
+  const dm = dif().hp, stm = st <= 3 ? st : 3 + (st - 3) * .5, mul = dm * (G.endless ? 1 + st * .2 + ((G.wave || 1) - 1) * .17 : 1 + stm * .45 + (G.t / G.stage.duration) * .35);
   const e = {
     type, x, y, bx: x, rad: d.rad, hp: Math.max(1, Math.ceil(d.hp * mul)), spd: d.spd * (1 + st * .06) * (G.dmod === 'fast' ? 1.25 : 1),
     xp: d.xp, score: d.score, coin: d.coin, glow: d.glow, age: 0, ph: rand(0, TAU), hit: 0,
@@ -80,7 +80,7 @@ function spawnEnemy(type, x, y, o = {}) {
   };
   e.maxHp = e.hp;
   if (type === 'shield') e.shield = e.maxShield = Math.ceil(5 * mul);
-  if (type === 'captain') { e.mini = true; e.name = CAPTAINS[st % 4]; e.stopY = 150; e.pat = 0; e.shootT = 2; }
+  if (type === 'captain') { e.mini = true; e.name = CAPTAINS[st % CAPTAINS.length]; e.stopY = 150; e.pat = 0; e.shootT = 2; }
   Object.assign(e, o);
   G.enemies.push(e);
   return e;

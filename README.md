@@ -19,7 +19,8 @@ Abra o arquivo `web/index.html` no navegador (Chrome ou Edge). Não precisa inst
 
 ## O que tem
 
-- 4 fases com bioma, música e eventos próprios, cada uma com um chefe de 3 fases de fúria.
+- 6 fases (Parte 1 e Parte 2) com bioma, música e eventos próprios, cada uma com minichefe e um chefe de 3 fases de fúria, até o Vazio.
+- 4 armas, 6 skins, esquiva, especiais, Orbi jogável, Modo Infinito, Desafio do Dia, Modo Treino, conquistas e fragmentos escondidos.
 - RPG: upgrades ao subir de nível, loja permanente, progresso salvo no navegador.
 - História com cenas animadas, retratos dos personagens e música para cada emoção.
 - Áudio 100% sintetizado por código (Web Audio), sem arquivos de som.
@@ -39,7 +40,7 @@ Assets/ ...     projeto Unity 2D (parado; o jogo atual é a versão web)
 
 `web/index.html?stage=1&boss=1&god=1&rich=1&story=1`
 
-- `stage=N` começa direto na fase N (0 a 3)
+- `stage=N` começa direto na fase N (0 a 5)
 - `boss=1` vai direto para o chefe
 - `god=1` vida enorme
 - `rich=1` muitas estrelas na loja

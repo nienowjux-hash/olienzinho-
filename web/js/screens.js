@@ -590,7 +590,7 @@ const Screens = {
       ctx.globalAlpha = .55; txt('↑ ↓  navegar     ENTER  escolher', X0 + 2, 596, 15, '#8f84c4', 'left', 700); ctx.globalAlpha = 1;
     } else if (tt > 2.3 && !Snd.ready) { ctx.globalAlpha = .5 + .5 * Math.sin(t * 4); txt('PRESSIONE QUALQUER TECLA', X0 + 4, 330, 22, '#e2d4ff', 'left', 800); ctx.globalAlpha = 1; }
     txt('olien.digital', X0 + 4, H - bh - 34, 15, '#8f84c4', 'left', 800);
-    txt('Parte 1 — O Coração Partido', W - 44, H - bh - 34, 15, '#a89dd8', 'right', 800);
+    txt(Save.data.unlocked >= 5 ? 'Parte 2 — O Coração do Vazio' : 'Parte 1 — O Coração Partido', W - 44, H - bh - 34, 15, '#a89dd8', 'right', 800);
     // vinheta, barras de cinema e fade inicial
     ctx.fillStyle = '#03010b'; ctx.fillRect(0, 0, W, bh); ctx.fillRect(0, H - bh, W, bh);
     if (tt < 1.6) { ctx.globalAlpha = 1 - easeOut(tt / 1.6); ctx.fillStyle = '#03010b'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; }
@@ -662,12 +662,12 @@ const Screens = {
     const t = World.t, unlocked = Save.data.unlocked;
     txt('ESCOLHA A FASE', W / 2, 36, 40, '#fff', 'center');
     txt(this.stars(), W - 26, 40, 26, '#ffcf6b', 'right');
-    const pos = i => [200 + i * 293, 215 + (i % 2 ? 46 : -6)];
+    const pos = i => [150 + i * 196, 215 + (i % 2 ? 46 : -6)];
     // trilha
     ctx.save(); ctx.strokeStyle = 'rgba(190,160,255,.4)'; ctx.lineWidth = 4; ctx.setLineDash([4, 14]); ctx.lineCap = 'round';
     ctx.beginPath(); STAGES.forEach((s, i) => { const [x, y] = pos(i); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.stroke(); ctx.restore();
     STAGES.forEach((s, i) => {
-      const [x, y0] = pos(i), locked = i >= unlocked, sel = i === G.sel, y = y0 + (sel ? Math.sin(t * 3) * 5 : 0), R = sel ? 62 : 52;
+      const [x, y0] = pos(i), locked = i >= unlocked, sel = i === G.sel, y = y0 + (sel ? Math.sin(t * 3) * 5 : 0), R = sel ? 56 : 46;
       if (UI.hit('stage' + i, x - R, y - R, R * 2, R * 2, { disabled: false })) { if (!locked) { Game.enter(i); return; } Snd.play('uiDeny'); }
       if (UI.focus('stage' + i) && G.sel !== i) { G.sel = i; World.setStage(STAGES[i].pal); }
       ctx.save(); ctx.translate(x, y);
@@ -813,7 +813,7 @@ const Screens = {
     }
     if (r.best === r.score) txt('NOVO RECORDE!', 640, 540, 18, '#ffb340', 'center');
     const last = G.stageIdx + 1 >= STAGES.length;
-    if (UI.button('next', 340, 570, 300, 62, last ? 'MAPA' : 'PRÓXIMA FASE', { size: 26, color: '#9a63ff', sub: last ? 'você zerou tudo!' : '' })) { G.sel = last ? 0 : G.stageIdx + 1; G.stamped = false; Game.goSelect(); }
+    if (UI.button('next', 340, 570, 300, 62, last ? 'VER O FINAL' : 'PRÓXIMA FASE', { size: 26, color: '#9a63ff', sub: last ? 'você zerou tudo!' : '' })) { G.stamped = false; if (last) { G.victT = undefined; G.state = 'victory'; } else { G.sel = G.stageIdx + 1; Game.goSelect(); } }
     if (UI.button('shop', 660, 570, 280, 62, 'LOJA', { size: 24, sub: this.stars() })) { G.shopBack = 'clear'; G.state = 'shop'; }
   },
 

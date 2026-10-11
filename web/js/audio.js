@@ -129,6 +129,9 @@ const Snd = (() => {
     },
     stamp() { const t = now(); voice('sine', 150, 45, t, .4, .45); noiseV(t, .2, .2, { type: 'lowpass', f0: 1600, f1: 200 }); voice('triangle', mtof(88), mtof(88), t + .06, .5, .1, { rev: .5 }); },
     shoot(o) {
+      if (o.wpn === 'bee') { const t = now(), p = o.pan, f = rnd(190, 240); voice('sawtooth', f, f * 1.25, t, .14, .05, { lp: 1500, pan: p, a: .01 }); voice('sine', f * 2, f * 2.4, t + .02, .1, .03, { pan: p }); noiseV(t, .1, .03, { type: 'bandpass', f0: 2600, pan: p }); return; }
+      if (o.wpn === 'rock') { const t = now(), p = o.pan; voice('square', 150, 70, t, .14, .1, { lp: 600, pan: p }); noiseV(t, .16, .12, { type: 'lowpass', f0: 1400, f1: 300, pan: p }); return; }
+      if (o.wpn === 'fire') { const t = now(), p = o.pan; noiseV(t, .22, .13, { type: 'bandpass', f0: 800, f1: 2600, q: .8, a: .02, pan: p }); voice('sine', 260, 130, t, .16, .06, { pan: p }); return; }
       if (o.wpn === 'fan') { const t = now(), p = o.pan; noiseV(t, .12, .1, { type: 'bandpass', f0: 1800, f1: 600, pan: p }); voice('sine', 700, 280, t, .1, .07, { pan: p }); return; }
       // "plim" curto e macio, em vez de laser serrilhado
       const t = now(), f = (980 + (o.lv || 0) * 90) * rnd(.97, 1.03), p = o.pan;

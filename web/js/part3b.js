@@ -93,7 +93,7 @@ const leave = (e, dt, at, v = 190) => { if (e.age > at) { e.y -= v * dt; if (e.y
 {
   const ue = updateEnemy;
   updateEnemy = function (e, dt) {
-    const t = e.type;
+    const t = e.type; G.__src = t;
     if (P3.on()) dt *= 1 + (P3.heat() - 1) * .12 + .08;
     switch (t) {
       case 'prism':
@@ -277,11 +277,11 @@ const countOf = ty => G.enemies.filter(e => !e.dead && e.type === ty).length;
 addAI(Herald, function (dt) {
   const ph = this.phase;
   if (this.tick('halo', dt, ph === 0 ? 7 : ph === 1 ? 6 : 4.8)) { // halo: anel de luz que fecha em volta do jogador, com uma passagem
-    const cx = G.player.x, cy = G.player.y, n = 30, gap = Math.floor(rand(0, n)), R = 400; popup(cx, cy - 70, 'HALO!', '#ffe9a8', 26); shockwave(cx, cy, 160, '#ffe9a8'); Snd.play('bossWarn');
+    const cx = G.player.x, cy = G.player.y, n = 30, gap = Math.floor(rand(0, n)), R = 400; popup(cx, cy - 70, 'HALO!', '#ffe9a8', 26); Visual16.tip('bs_halo', 'Halo', 'Um anel de luz fecha em volta de você. Passe pela abertura.'); shockwave(cx, cy, 160, '#ffe9a8'); Snd.play('bossWarn');
     for (let i = 0; i < n; i++) { const d = ((i - gap + n) % n); if (d < 4) continue; const a = i / n * TAU; ebullet(cx + Math.cos(a) * R, cy + Math.sin(a) * R, a + Math.PI, 125 + ph * 12, { r: 6, life: 6 }); }
   }
   if (ph >= 1 && this.tick('grid', dt, ph === 1 ? 10 : 8)) { // vitral: grade de colunas e linhas de luz
-    popup(W / 2, 240, 'VITRAL!', '#ffe9a8', 26); const cols = 3 + ph, xs = []; for (let i = 0; i < cols; i++) xs.push(70 + (i + rand(.1, .9)) * (W - 140) / cols);
+    popup(W / 2, 240, 'VITRAL!', '#ffe9a8', 26); Visual16.tip('bs_grid', 'Vitral', 'Linhas e colunas de luz piscam antes de disparar. Fique numa célula vazia.'); const cols = 3 + ph, xs = []; for (let i = 0; i < cols; i++) xs.push(70 + (i + rand(.1, .9)) * (W - 140) / cols);
     for (const x of xs) Events.hazardRect(x, H / 2, 64, H, 1.35, .5, '#ffe9a8', 'bolt');
     for (const y of [rand(260, 360), rand(420, 560)]) Events.hazardRect(W / 2, y, W + 40, 58, 1.35, .5, '#ffe9a8', 'beam');
   }
@@ -291,11 +291,11 @@ addAI(Herald, function (dt) {
 addAI(Leviathan, function (dt) {
   const ph = this.phase;
   if (this.tick('tide', dt, ph === 0 ? 6.5 : ph === 1 ? 5.2 : 4.4)) { // maré: parede de bolhas com vão
-    popup(W / 2, 230, 'MARÉ!', '#9fefff', 26); Snd.play('bossWarn'); const gx = rand(150, W - 150), gw = 2;
+    popup(W / 2, 230, 'MARÉ!', '#9fefff', 26); Visual16.tip('bs_tide', 'Maré', 'Uma parede de bolhas desce com um vão. Alinhe-se com ele.'); Snd.play('bossWarn'); const gx = rand(150, W - 150), gw = 2;
     for (let row = 0; row < 2; row++) P3.at(row * .75, () => { for (let i = 0; i < 20; i++) { const x = 30 + i * 62; if (Math.abs(x - gx) < gw * 62 / 2 + 30 + (row ? 20 : 0)) continue; ebullet(x, 60, Math.PI / 2, 150, { r: 8, life: 9 }); } });
   }
   if (ph >= 1 && this.tick('current', dt, ph === 1 ? 13 : 10)) { // correnteza empurra a nave para o lado
-    const dir = Math.random() < .5 ? -1 : 1; popup(W / 2, 230, dir > 0 ? 'CORRENTEZA >>>' : '<<< CORRENTEZA', '#9fefff', 28); Snd.play('bossWarn'); P3.at(.7, () => { P3.cur = { dir, t: 2.6 }; });
+    const dir = Math.random() < .5 ? -1 : 1; popup(W / 2, 230, dir > 0 ? 'CORRENTEZA >>>' : '<<< CORRENTEZA', '#9fefff', 28); Visual16.tip('bs_cur', 'Correnteza', 'A água empurra a nave para o lado por alguns segundos. Reme contra ela.'); Snd.play('bossWarn'); P3.at(.7, () => { P3.cur = { dir, t: 2.6 }; });
   }
   if (this.tick('jellySum', dt, 10) && countOf('jelly') < 3) { const x = rand(150, W - 150); spawnEnemy('jelly', x, -40, { bx: x, noElite: true }); }
   if (ph === 2 && this.tick('eelSum', dt, 13) && countOf('eel') < 2) { const l = Math.random() < .5; spawnEnemy('eel', l ? -50 : W + 50, rand(130, 320), { noElite: true }); }
@@ -303,12 +303,12 @@ addAI(Leviathan, function (dt) {
 addAI(Mirror, function (dt) {
   const ph = this.phase;
   if (this.tick('echo', dt, ph === 0 ? 7.5 : ph === 1 ? 6.4 : 5.4)) { // eco: golpes caem onde o jogador estava
-    popup(W / 2, 230, 'ECO!', '#e8d0ff', 26); Snd.play('bossWarn'); const n = 7, past = [];
+    popup(W / 2, 230, 'ECO!', '#e8d0ff', 26); Visual16.tip('bs_echo', 'Eco', 'Os golpes caem onde você ESTAVA. Não repita o caminho.'); Snd.play('bossWarn'); const n = 7, past = [];
     for (let i = 0; i < n; i++) { const tt = World.t - 2.2 + i * .3, s = P3.hist.find(h => h[0] >= tt) || P3.hist[P3.hist.length - 1]; if (s) past.push(s[1]); }
     past.forEach((x, i) => P3.at(.6 + i * .3, () => Events.hazardRect(x, H / 2, 58, H, .85, .25, '#e8d0ff', 'bolt')));
   }
   if (ph >= 1 && this.tick('invert', dt, ph === 1 ? 14 : 11) && !Save.data.settings.assist) { // espelhado: controles invertidos por instantes
-    popup(G.player.x, G.player.y - 80, 'ESPELHADO! CONTROLES INVERTIDOS', '#e8d0ff', 22); Snd.play('bossWarn'); shockwave(G.player.x, G.player.y, 200, '#e8d0ff'); P3.at(.8, () => { G.invT = 2.4; });
+    popup(G.player.x, G.player.y - 80, 'ESPELHADO! CONTROLES INVERTIDOS', '#e8d0ff', 22); Visual16.tip('bs_inv', 'Espelhado', 'Os controles ficam invertidos por 2 segundos. Fique parado se precisar.'); Snd.play('bossWarn'); shockwave(G.player.x, G.player.y, 200, '#e8d0ff'); P3.at(.8, () => { G.invT = 2.4; });
   }
   if (this.tick('shadeSum', dt, 10) && countOf('shade') < 2) spawnEnemy('shade', W - G.player.x, -40, { sy: rand(95, 130), noElite: true });
   if (ph === 2 && this.tick('wardSum', dt, 16) && countOf('warden') < 1) { const x = rand(200, W - 200); spawnEnemy('warden', x, -50, { bx: x, sy: 190, noElite: true }); }

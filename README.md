@@ -14,6 +14,9 @@ Abra o arquivo `web/index.html` no navegador (Chrome ou Edge). Não precisa inst
 | Espaço | Pulso Olien (limpa a tela) |
 | Shift | Esquiva (dash, invulnerável por um instante) |
 | Q / E | Habilidade especial da arma equipada |
+| R | arma secundária (escolhida no hangar) |
+| Tab | trocar de piloto durante a fase (guardiões libertos) |
+| N | ligar/desligar Novo Jogo+ (nos menus) |
 | Esc / P | pausar |
 | C | alternar 1 / 2 jogadores (nos menus) |
 | Setas + Enter / . | P2 no cooperativo: mover, especial, esquiva |
@@ -23,8 +26,8 @@ Abra o arquivo `web/index.html` no navegador (Chrome ou Edge). Não precisa inst
 
 ## O que tem
 
-- 6 fases (Parte 1 e Parte 2) com bioma, música e eventos próprios, cada uma com minichefe e um chefe de 3 fases de fúria, até o Vazio.
-- 4 armas, 6 skins, esquiva, especiais, Orbi jogável, Modo Infinito, Desafio do Dia, Modo Treino, conquistas e fragmentos escondidos.
+- 9 fases (Partes 1, 2 e 3: Cidade de Luz, Oceano de Estrelas e Espelho do Céu, com inimigos, tiros e ataques de chefe próprios) e com bioma, música e eventos próprios, cada uma com minichefe e um chefe de 3 fases de fúria, até o Vazio.
+- Armas, pilotos guardiões (Colmeia, Pétreo, Vigia, Solaris), armas secundárias, chefes secretos, aventuras, arena semanal, prática de chefes, recordes por fase, dificuldade Pesadelo, 6 skins, esquiva, especiais, Orbi jogável, Modo Infinito, Desafio do Dia, Modo Treino, conquistas e fragmentos escondidos.
 - RPG: upgrades ao subir de nível, loja permanente, progresso salvo no navegador.
 - História com cenas animadas, retratos dos personagens e música para cada emoção.
 - Áudio 100% sintetizado por código (Web Audio), sem arquivos de som.

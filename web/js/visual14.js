@@ -173,6 +173,7 @@ Screens.modes = function () {
     { id: 'sec', name: 'DESAFIOS SECRETOS', c: '#ffd36a', l: 'Chefes dourados que só aparecem com condições.', foot: (Save.data.secrets ? Object.keys(Save.data.secrets).length : 0) + ' / 3 vencidos', go: () => { G.state = 'secrets'; } },
     { id: 'adv', name: 'AVENTURAS', c: '#ffcf6b', l: 'Pequenas missões dos viajantes que você conheceu.', foot: (Save.data.adv ? Object.keys(Save.data.adv).length : 0) + ' / 3 concluídas', go: () => { G.state = 'adventures'; } },
     { id: 'prc', name: 'PRÁTICA DE CHEFES', c: '#c04aff', l: 'Treine qualquer chefe já visto, em qualquer fúria.', foot: 'Nada é salvo', go: () => { G.state = 'practice'; } },
+    { id: 'orb', name: 'ORBI', c: '#7fe0ff', l: 'Melhore as habilidades do Orbi com estrelas.', foot: 'Nível ' + ['shot', 'grav', 'shield'].reduce((n, k) => n + Visual16.orbiLv(k), 0) + ' / 13', go: () => { G.state = 'orbi'; } },
     { id: 'rec', name: 'RECORDES', c: '#ffd36a', l: 'Sua melhor pontuação em cada fase e o piloto usado.', foot: Object.keys(Save.data.rec || {}).length + ' / ' + STAGES.length + ' fases', go: () => { G.state = 'records'; } },
     { id: 'tr', name: 'TREINO', c: '#7fe0a0', l: 'Arena livre: armas, skins e inimigos.', foot: 'sem pressão :)', go: () => Game.startTraining() },
   ].filter(Boolean);

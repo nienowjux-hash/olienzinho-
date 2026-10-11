@@ -99,9 +99,9 @@ Visual4.faceDraw = function () {
 
 // ===== 5. barra de vida do chefe =====
 Visual4.bossBar = function (b) {
-  const w = 660, x = W / 2 - w / 2, y = 50, h = 18, r = b.ratio, t = World.t, ph = b.phase || 0;
+  const w = 660, x = W / 2 - w / 2, y = 78, h = 18, r = b.ratio, t = World.t, ph = b.phase || 0;
   b.gh = b.gh === undefined ? r : (b.gh > r ? lerp(b.gh, r, .05) : r);
-  txt(b.name.toUpperCase(), W / 2, 12, 24, '#ffe9a8', 'center', 900); const ep = EPITHET[b.name]; if (ep) txt(ep, W / 2, 38 - 1, 12, '#cdb8ff', 'center', 700);
+  ctx.save(); ctx.shadowColor = b.col || '#ffb340'; ctx.shadowBlur = 14; txt(b.name.toUpperCase(), W / 2, 22, 28, '#ffe9a8', 'center', 900); ctx.restore(); const ep = EPITHET[b.name]; if (ep) txt(ep, W / 2, 54, 13, '#cdb8ff', 'center', 700);
   ctx.save();
   ctx.fillStyle = 'rgba(8,2,24,.82)'; ctx.strokeStyle = '#d9a84a'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.roundRect(x - 8, y - 6, w + 16, h + 12, 12); ctx.fill(); ctx.stroke();
   const clipR = () => { ctx.beginPath(); ctx.roundRect(x, y, w, h, 7); };

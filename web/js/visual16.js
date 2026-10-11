@@ -182,3 +182,44 @@ Screens.records = function () {
   const up = Game.updatePlay;
   Game.updatePlay = function (dt) { up.call(this, dt); if (G.player && G.state === 'play') Visual16.update(dt); };
 }
+
+// ---------- habilidades do Orbi (evoluem com estrelas) ----------
+const ORBI_UP = [
+  { id: 'shot', name: 'Orbes Gêmeos', c: '#7fe0ff', desc: '+14% de dano dos orbes por nível.', max: 5, cost: l => 60 + l * 50 },
+  { id: 'grav', name: 'Poço Gravitacional', c: '#c8a0ff', desc: 'Poço maior e mais longo, recarga 8% menor por nível.', max: 5, cost: l => 70 + l * 55 },
+  { id: 'shield', name: 'Casco do Orbi', c: '#7fe0a0', desc: '+1 de vida por nível.', max: 3, cost: l => 90 + l * 80 },
+];
+Visual16.orbiLv = id => ((Save.data.orbiLv || {})[id]) || 0;
+{
+  const ss = Visual8.styleStats;
+  Visual8.styleStats = function (p) { ss.call(this, p); if (p.weapon === 'orbi') { p.dmg *= 1 + .14 * Visual16.orbiLv('shot'); p.specCdMax *= 1 - .08 * Visual16.orbiLv('grav'); p.maxHp += Visual16.orbiLv('shield'); } };
+  const sg = SPECIALS.gravity; SPECIALS.gravity = function (p) { sg(p); const l = Visual16.orbiLv('grav'); if (G.well && l) { G.well.R *= 1 + .12 * l; G.well.dur += .25 * l; } };
+}
+Screens.orbi = function () {
+  const t = World.t; txt('ORBI', W / 2, 24, 46, '#fff', 'center'); txt(Screens.stars(), W - 40, 36, 30, '#ffcf6b', 'right');
+  txt('As melhorias valem quando o Orbi joga: no cooperativo (P2) ou como arma escolhida.', W / 2, 86, 17, '#7fe0ff', 'center', 900);
+  ctx.save(); ctx.translate(W / 2, 214); ctx.globalCompositeOperation = 'lighter'; drawGlow(0, 0, 110, '#7fe0ff', .35); ctx.globalCompositeOperation = 'source-over'; Art.orbi(0, Math.sin(t * 2) * 6, { vx: 0, t, scale: 1.7, lookx: Math.sin(t) * .5, looky: -.2, blinkT: 0, inv: 0, sx: 1, sy: 1 }); ctx.restore();
+  ORBI_UP.forEach((u, i) => {
+    const x = 90 + i * 380, y = 330, w = 340, h = 230, l = Visual16.orbiLv(u.id), full = l >= u.max, cost = u.cost(l), can = !full && Save.data.coins >= cost;
+    UI.panel(x, y, w, h, { r: 22 }); txt(u.name, x + w / 2, y + 16, 24, u.c, 'center', w - 20); UI.wrap(u.desc, x + w / 2, y + 56, w - 40, 20, 15, '#cdb8ff', 'center');
+    for (let k = 0; k < u.max; k++) { ctx.fillStyle = k < l ? u.c : 'rgba(255,255,255,.14)'; ctx.beginPath(); ctx.arc(x + w / 2 + (k - (u.max - 1) / 2) * 34, y + 128, 11, 0, TAU); ctx.fill(); }
+    if (full) txt('NO MÁXIMO', x + w / 2, y + 168, 20, '#7fe0a0', 'center', 300);
+    else if (UI.button('ob' + u.id, x + 50, y + 166, w - 100, 46, '★ ' + cost, { size: 22, color: can ? '#9a63ff' : undefined })) { if (can) { Save.data.coins -= cost; Save.data.orbiLv = Save.data.orbiLv || {}; Save.data.orbiLv[u.id] = l + 1; Save.save(); Snd.play('buy'); shockwave(x + w / 2, y + 128, 120, u.c); } else Snd.play('uiBack'); }
+  });
+  if (UI.button('back', W / 2 - 160, 610, 320, 50, 'VOLTAR', { size: 22 }) || Input.pressed('escape')) { Snd.play('uiBack'); G.state = 'modes'; }
+  Screens.thinFrame();
+};
+
+// ---------- numeros de dano nos chefes, com a cor da arma ----------
+{
+  const bd = Boss.prototype.damage;
+  Boss.prototype.damage = function (n, crit) {
+    if (this.targetable() && G.player) { this._acc = (this._acc || 0) + n; this._accT = this._accT === undefined ? .4 : this._accT; if (crit) this._accC = true; }
+    return bd.call(this, n, crit);
+  };
+  const up = Game.updatePlay;
+  Game.updatePlay = function (dt) {
+    up.call(this, dt); const b = G.boss;
+    if (b && b._acc > 0 && G.state === 'play') { b._accT -= dt; if (b._accT <= 0) { const w = WEAPONS[G.player ? G.player.weapon : 'violet'], c = b._accC ? '#ffe9a8' : (w ? w.c : '#ffffff'); popup(b.x + rand(-60, 60), b.y - 90, String(Math.round(b._acc * 10) / 10), c, b._accC ? 26 : 20); b._acc = 0; b._accT = .4; b._accC = false; } }
+  };
+}

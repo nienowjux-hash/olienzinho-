@@ -109,10 +109,10 @@ const Snd = (() => {
   // ---------- efeitos ----------
   const SFX = {
     shoot(o) {
-      const t = now(), f = (1300 + (o.lv || 0) * 140) * rnd(.94, 1.06), p = o.pan;
-      voice('sawtooth', f * .85, f * .2, t, .12, .07, { lp: 3000, lp1: 700, q: 2, rev: .12, pan: p });
-      voice('triangle', f * .5, f * .12, t, .09, .05, { lp: 2200, pan: p });
-      noiseV(t, .025, .015, { type: 'bandpass', f0: 2500, pan: p });
+      // "plim" curto e macio, em vez de laser serrilhado
+      const t = now(), f = (980 + (o.lv || 0) * 90) * rnd(.97, 1.03), p = o.pan;
+      voice('sine', f * 1.15, f * .55, t, .09, .11, { pan: p, rev: .1, a: .003 });
+      voice('triangle', f * 2.3, f * 1.2, t, .06, .02, { pan: p, a: .003 });
     },
     enemyShoot(o) {
       const t = now(), p = o.pan;
@@ -121,8 +121,7 @@ const Snd = (() => {
     },
     hit(o) {
       const t = now();
-      noiseV(t, .04, .03, { type: 'bandpass', f0: 2200, pan: o.pan });
-      voice('triangle', 800 * rnd(.9, 1.1), 320, t, .06, .035, { pan: o.pan });
+      voice('sine', 620 * rnd(.92, 1.08), 300, t, .05, .065, { pan: o.pan, a: .002 });
     },
     bossHit(o) {
       const t = now();
@@ -130,11 +129,12 @@ const Snd = (() => {
       noiseV(t, .05, .06, { type: 'bandpass', f0: 1800, pan: o.pan });
     },
     explode(o) {
-      const t = now(), s = o.size ?? 1, d = .35 + s * .5, p = o.pan, pk = .26 + s * .11;
-      noiseV(t, d, pk, { type: 'lowpass', f0: 3200, f1: 120, q: 1.2, a: .004, pan: p, rev: .25 + s * .15 });
-      voice('sine', 150, 28, t, .3 + s * .25, pk * 1.1, { pan: p });
-      voice('sawtooth', 180, 50, t, .2 + s * .15, pk * .35, { lp: 900, lp1: 120, pan: p });
-      for (let i = 0; i < 3 + s * 3; i++) noiseV(t + rnd(.03, d * .8), rnd(.02, .06), pk * .2, { type: 'bandpass', f0: rnd(1200, 3000), pan: p });
+      // "pof" redondo: baque grave + sopro filtrado + estalo leve (sem serrilhado nem chiado)
+      const t = now(), sz = o.size ?? 1, d = .22 + sz * .26, p = o.pan, pk = .2 + sz * .09;
+      voice('sine', 135 - sz * 10, 40, t, .2 + sz * .18, pk * 1.25, { pan: p, a: .004 });
+      noiseV(t, d, pk * .85, { type: 'lowpass', f0: 2100, f1: 170, q: .6, a: .006, pan: p, rev: .1 + sz * .12 });
+      noiseV(t, .08, pk * .45, { type: 'bandpass', f0: 1300, f1: 500, q: .7, a: .002, pan: p });
+      if (sz >= 1.2) voice('sine', 70, 30, t + .03, .5 + sz * .2, pk * .8, { pan: p });
     },
     playerHit() {
       const t = now();
@@ -289,78 +289,102 @@ const Snd = (() => {
   // pan por posicao x do evento (0..W)
   const panX = x => ((x / 1280) * 2 - 1) * .7;
 
-  // ---------- musica procedural ----------
-  const MINOR = [0, 2, 3, 5, 7, 8, 10], PHRY = [0, 1, 3, 5, 7, 8, 10], DOR = [0, 2, 3, 5, 7, 9, 10], HARM = [0, 2, 3, 5, 7, 8, 11];
+  // ---------- musica: temas compostos (melodia fixa, tom maior, timbres macios) ----------
+  const MAJ = [0, 2, 4, 5, 7, 9, 11], MIN = [0, 2, 3, 5, 7, 8, 10];
+  // chords = grau da escala de cada compasso (8 compassos); mel = [passo(0-15), grau, duracao em passos]
   const THEMES = {
-    menu: { root: 45, scale: MINOR, bpm: 82, prog: [0, 5, 3, 4], arp: 'triangle', padLP: 700 },
-    s1: { root: 45, scale: MINOR, bpm: 100, prog: [0, 5, 3, 6], arp: 'triangle', padLP: 900 },
-    s2: { root: 38, scale: PHRY, bpm: 108, prog: [0, 1, 0, 6], arp: 'square', padLP: 700 },
-    s3: { root: 42, scale: DOR, bpm: 118, prog: [0, 3, 6, 4], arp: 'sawtooth', padLP: 1100 },
-    s4: { root: 40, scale: HARM, bpm: 126, prog: [0, 5, 2, 4], arp: 'sawtooth', padLP: 1400 },
+    s1: { root: 60, scale: MAJ, bpm: 112, chords: [0, 4, 5, 3, 0, 3, 4, 4], mel: [
+      [[0, 4, 2], [2, 2, 2], [4, 4, 2], [6, 7, 6]],
+      [[0, 8, 2], [2, 7, 2], [4, 6, 2], [6, 4, 6]],
+      [[0, 5, 2], [2, 7, 2], [4, 9, 2], [6, 7, 6]],
+      [[0, 8, 2], [2, 7, 2], [4, 5, 2], [6, 3, 6]],
+      [[0, 4, 2], [2, 7, 2], [4, 9, 4], [8, 7, 4]],
+      [[0, 5, 2], [2, 7, 2], [4, 10, 4], [8, 9, 4]],
+      [[0, 8, 2], [2, 9, 2], [4, 8, 2], [6, 6, 2], [8, 4, 8]],
+      [[8, 4, 2], [10, 6, 2], [12, 8, 4]]] },
+    s2: { root: 62, scale: MAJ, bpm: 104, chords: [0, 3, 0, 4, 5, 3, 4, 0], mel: [
+      [[0, 4, 3], [3, 7, 3], [6, 9, 2], [8, 7, 8]],
+      [[0, 8, 3], [3, 7, 3], [6, 5, 2], [8, 3, 8]],
+      [[0, 4, 3], [3, 7, 3], [6, 9, 2], [8, 11, 4], [12, 9, 4]],
+      [[0, 8, 4], [4, 6, 4], [8, 4, 8]],
+      [[0, 5, 3], [3, 7, 3], [6, 9, 2], [8, 9, 8]],
+      [[0, 10, 3], [3, 9, 3], [6, 7, 2], [8, 5, 8]],
+      [[0, 6, 3], [3, 8, 3], [6, 11, 2], [8, 9, 4], [12, 8, 4]],
+      [[0, 7, 8], [8, 4, 4], [12, 7, 4]]] },
+    s3: { root: 69, scale: MIN, bpm: 108, chords: [0, 5, 2, 6, 0, 5, 6, 6], mel: [
+      [[0, 0, 4], [4, 2, 4], [8, 4, 8]],
+      [[0, 5, 4], [4, 7, 4], [8, 5, 8]],
+      [[0, 6, 4], [4, 4, 4], [8, 2, 8]],
+      [[0, 3, 4], [4, 1, 4], [8, 6, 8]],
+      [[0, 2, 3], [3, 4, 3], [6, 7, 4], [10, 4, 6]],
+      [[0, 5, 3], [3, 7, 3], [6, 5, 4], [10, 3, 6]],
+      [[0, 3, 4], [4, 4, 4], [8, 6, 4], [12, 4, 4]],
+      [[0, 3, 8], [8, 1, 8]]] },
+    s4: { root: 64, scale: MAJ, bpm: 120, chords: [0, 4, 5, 3, 0, 4, 3, 4], mel: [
+      [[0, 4, 2], [2, 2, 2], [4, 4, 2], [6, 7, 2], [8, 4, 2], [10, 7, 2], [12, 9, 4]],
+      [[0, 8, 2], [2, 6, 2], [4, 4, 2], [6, 6, 2], [8, 8, 8]],
+      [[0, 9, 2], [2, 7, 2], [4, 5, 2], [6, 7, 2], [8, 9, 4], [12, 7, 4]],
+      [[0, 5, 4], [4, 7, 4], [8, 10, 8]],
+      [[0, 7, 4], [4, 4, 4], [8, 2, 4], [12, 4, 4]],
+      [[0, 8, 4], [4, 6, 4], [8, 4, 4], [12, 6, 4]],
+      [[0, 5, 2], [2, 7, 2], [4, 9, 2], [6, 10, 2], [8, 9, 4], [12, 7, 4]],
+      [[0, 8, 6], [8, 6, 4], [12, 8, 4]]] },
   };
-  const ARP = [
-    [0, -1, 1, -1, 2, -1, 1, -1, 0, -1, 1, -1, 2, -1, 3, -1],
-    [0, -1, -1, 1, -1, 2, -1, -1, 3, -1, 2, -1, 1, -1, -1, 0],
-    [0, 1, 2, 1, 0, 1, 2, 3, 0, 1, 2, 1, 3, 2, 1, 2],
-  ];
+  THEMES.menu = Object.assign({}, THEMES.s1, { bpm: 88 });
+  const mus = { on: false, key: null, th: null, inten: 0, step: 0, next: 0, timer: null };
   let pending = null;
-  const mus = { on: false, key: null, th: null, inten: 0, step: 0, next: 0, timer: null, gain: null };
 
-  function degNote(th, deg) {
-    const n = th.scale.length;
-    return th.root + th.scale[((deg % n) + n) % n] + 12 * Math.floor(deg / n);
+  const noteOf = (th, d) => { const n = th.scale.length; return th.root + th.scale[((d % n) + n) % n] + 12 * Math.floor(d / n); };
+  const stepDur = () => 60 / (mus.th.bpm * (mus.inten === 2 ? 1.1 : 1)) / 4;
+
+  function kick(t, v) { voice('sine', 140, 48, t, .22, v, { bus: musBus }); }
+  function clap(t, v) { noiseV(t, .09, v, { type: 'bandpass', f0: 1700, q: .9, bus: musBus, rev: .12 }); }
+  function hat(t, v) { noiseV(t, .03, v, { type: 'highpass', f0: 7000, bus: musBus }); }
+  function pluck(m, t, dur, v, o = {}) {
+    const f = mtof(m);
+    voice('sine', f, f, t, dur, v, Object.assign({ bus: musBus, a: .006, del: .3, rev: .3 }, o));
+    voice('sine', f * 2, f * 2, t, dur * .6, v * .35, Object.assign({ bus: musBus, a: .006, rev: .3 }, o));
   }
-  function seeded(seed) { let s = seed >>> 0; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
-
-  function stepDur() { return 60 / (mus.th.bpm * (mus.inten === 2 ? 1.16 : 1)) / 4; }
-
-  function kick(t, v) { voice('sine', 160, 42, t, .16, v, { bus: musBus }); noiseV(t, .02, v * .2, { type: 'lowpass', f0: 1500, bus: musBus }); }
-  function snare(t, v) { noiseV(t, .16, v, { type: 'bandpass', f0: 1900, q: .9, bus: musBus, rev: .15 }); voice('triangle', 200, 120, t, .09, v * .6, { bus: musBus }); }
-  function hat(t, v, open) { noiseV(t, open ? .14 : .035, v, { type: 'highpass', f0: 6500, bus: musBus }); }
 
   function scheduleStep(step, t) {
-    const th = mus.th, inten = mus.inten, bar = Math.floor(step / 16), s = step % 16;
-    const prog = th.prog, deg = prog[bar % prog.length], sd = stepDur();
-    const root = degNote(th, deg);
-    const tones = [deg, deg + 2, deg + 4, deg + 7].map(d => degNote(th, d));
+    const th = mus.th, inten = mus.inten, bar = Math.floor(step / 16) % 8, s = step % 16, sd = stepDur();
+    const deg = th.chords[bar];
+    const chord = [deg, deg + 2, deg + 4].map(d => noteOf(th, d));
 
-    if (s === 0) { // pad do compasso
-      [0, 1, 2].forEach(i => {
-        const f = mtof(tones[i] + 12);
-        [-7, 7].forEach(dt => voice('sawtooth', f, f, t, sd * 16 + .5, .022, { bus: musBus, lp: th.padLP, detune: dt, a: .9, hold: sd * 14, rev: .5 }));
+    if (s === 0) { // colchao de acordes (macio)
+      chord.forEach(m => {
+        const f = mtof(m - 12);
+        voice('triangle', f, f, t, sd * 16 + .4, .03, { bus: musBus, lp: 1100, a: .5, hold: sd * 14, rev: .5, detune: -5 });
+        voice('triangle', f, f, t, sd * 16 + .4, .03, { bus: musBus, lp: 1100, a: .5, hold: sd * 14, rev: .5, detune: 5 });
       });
     }
-    // baixo
-    const bassOn = inten === 2 ? (s % 2 === 0) : (s % 4 === 0 || (s === 10 && bar % 2) || (s === 14 && inten >= 1));
-    if (bassOn) {
-      const m = (s === 10 || s === 14) ? tones[2] - 12 : root - 12 + ((inten === 2 && s % 4 === 2) ? 12 : 0);
-      voice(inten === 2 ? 'sawtooth' : 'triangle', mtof(m), mtof(m), t, sd * 1.8, inten === 0 ? .08 : .13, { bus: musBus, lp: 380, q: 1.2 });
-    }
-    // arpejo
-    const pat = ARP[inten === 2 ? 2 : (bar % 2 ? 1 : 0)];
-    const ai = pat[s];
-    if (ai >= 0 && (inten >= 1 || s % 4 === 0 || s % 8 === 6)) {
-      const m = tones[ai] + 12 * (inten === 2 ? 2 : 1) + (s >= 8 && inten === 0 ? 0 : 0);
-      voice(th.arp, mtof(m), mtof(m), t, sd * 2.2, inten === 0 ? .03 : .045, { bus: musBus, lp: 2600, lp1: 800, q: 1, del: .45, rev: .25 });
-    }
-    // melodia
-    if (inten >= 1 && (inten === 2 || bar % 2 === 0)) {
-      const rng = seeded(th.bpm * 977 + (bar % 8) * 7919 + th.root);
-      const slots = [0, 3, 6, 10, 12];
-      slots.forEach(sl => {
-        const r = rng(), dg = deg + [0, 2, 4, 5, 7, 9][Math.floor(r * 6)];
-        if (s === sl && (rng() > .25)) {
-          const m = degNote(th, dg) + 24;
-          voice('square', mtof(m), mtof(m), t, sd * 3.5, .026, { bus: musBus, lp: 2000, del: .5, rev: .45, a: .01 });
-          voice('sine', mtof(m), mtof(m), t, sd * 3.5, .045, { bus: musBus, del: .5, rev: .45, a: .01 });
-        }
-      });
-    }
-    // bateria
+    // baixo redondo
+    const bass = (m, dur, v) => { voice('triangle', mtof(m - 12), mtof(m - 12), t, dur, v, { bus: musBus, lp: 700 }); voice('sine', mtof(m - 24), mtof(m - 24), t, dur, v * .7, { bus: musBus }); };
+    if (s === 0) bass(chord[0], sd * 6, inten === 0 ? .1 : .14);
     if (inten >= 1) {
-      if (inten === 2 ? (s % 4 === 0 || s === 10) : (s % 8 === 0 || s === 10 && bar % 2)) kick(t, inten === 2 ? .4 : .3);
-      if (s === 4 || s === 12) snare(t, inten === 2 ? .15 : .11);
-      if (inten === 2 ? true : s % 2 === 0) hat(t, s % 4 === 2 ? .04 : .025, s === 14);
+      if (s === 8) bass(chord[0], sd * 3.5, .11);
+      if (s === 12) bass(chord[2], sd * 3, .09);
+      if (inten === 2 && (s === 4 || s === 10)) bass(chord[0], sd * 2, .09);
+    }
+    // arpejo de "celesta"
+    const arpStep = inten === 0 ? s % 4 === 0 : s % 2 === 0;
+    if (arpStep) {
+      const i = (s / (inten === 0 ? 4 : 2)) % 4, m = chord[[0, 1, 2, 1][i]] + 12;
+      pluck(m, t, sd * 3, inten === 0 ? .016 : .022);
+    }
+    // melodia (tema)
+    for (const [ms, d, len] of th.mel[bar]) {
+      if (ms !== s) continue;
+      const f = mtof(noteOf(th, d)), dur = len * sd * .96 + .08, v = inten === 0 ? .052 : .072;
+      voice('triangle', f, f, t, dur, v, { bus: musBus, a: .018, del: .28, rev: .35 });
+      voice('sine', f * 2, f * 2, t, dur, v * .3, { bus: musBus, a: .018, rev: .3 });
+      if (inten === 2) voice('sawtooth', f, f, t, dur, .018, { bus: musBus, lp: 1500, a: .02, rev: .3 });
+    }
+    // bateria leve
+    if (inten >= 1) {
+      if (inten === 2 ? s % 4 === 0 : s % 8 === 0) kick(t, inten === 2 ? .3 : .22);
+      if (s === 4 || s === 12) clap(t, inten === 2 ? .07 : .045);
+      if (inten === 2 ? s % 2 === 0 : s % 4 === 2) hat(t, .016);
     }
   }
 

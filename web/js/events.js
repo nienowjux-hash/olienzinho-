@@ -70,13 +70,13 @@ const Events = {
         break;
       case 'rain':
         World.boost = .45;
-        if (c.t > 2.4 && c.t < c.dur - 1) { c.a -= dt; if (c.a <= 0) { this.spawnMeteor(); c.a = rand(.1, .2) / (1 + st * .1); } }
+        if (c.t > 2.4 && c.t < c.dur - 1) { c.a -= dt; if (c.a <= 0) { this.spawnMeteor(); c.a = rand(.2, .34) / (1 + st * .08); } }
         if (c.t >= c.dur) this.end();
         break;
       case 'mines':
         c.a -= dt;
         if (c.t > 1.5 && c.t < c.dur - 2 && c.a <= 0) {
-          c.a = 2.2; const n = randi(3, 5);
+          c.a = 3; const n = randi(2, 3);
           for (let i = 0; i < n; i++) spawnEnemy('mine', 140 + (W - 280) * (i + Math.random() * .6) / n, -30 - i * 40);
         }
         if (c.t >= c.dur) this.end();
@@ -107,8 +107,8 @@ const Events = {
         for (const l of c.lines) { l.r = l.r * (1 + 2.2 * dt * l.v) + 60 * dt; if (l.r > 1000) { l.r = rand(5, 40); l.a = rand(0, TAU); } }
         c.a -= dt;
         if (c.t > 1.2 && c.t < c.dur - .8 && c.a <= 0) {
-          c.a = .45;
-          const n = randi(4, 7), x0 = rand(160, W - 160), tp = pick(['bit', 'drone', 'zig']);
+          c.a = .85;
+          const n = randi(3, 5), x0 = rand(160, W - 160), tp = pick(['bit', 'drone', 'zig']);
           for (let i = 0; i < n; i++) spawnEnemy(tp, clamp(x0 + (i - (n - 1) / 2) * 70, 40, W - 40), -30 - Math.abs(i - (n - 1) / 2) * 40);
         }
         if (c.t >= c.dur) this.end();

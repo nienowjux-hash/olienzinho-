@@ -63,7 +63,7 @@ const Art = {
     ctx.save(); ctx.translate(e.x, e.y);
     const r = e.rad, t = e.age, hit = e.hit > 0;
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
-    drawGlow(0, 0, r * 2.2, e.glow || '#ff8a1f', .5); ctx.restore(); ctx.globalAlpha = 1;
+    drawGlow(0, 0, r * 1.9, e.glow || '#ff8a1f', .3); ctx.restore(); ctx.globalAlpha = 1;
     switch (e.type) {
       case 'drone':
         ctx.rotate(Math.sin(t * 3 + e.ph) * .15);

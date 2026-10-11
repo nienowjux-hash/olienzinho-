@@ -95,13 +95,13 @@ class MotherShip extends Boss {
       for (const s of [-1, 1]) fanAimed(this.x + s * 140, this.y + 30, ph === 2 ? 7 : 5, ph === 2 ? 1.2 : .9, 250);
       this.muzzle = .12; Snd.play('enemyShoot', { pan: Snd.panX(this.x) });
     }
-    if (ph >= 1 && this.tick('spiral', dt, .09)) {
-      this.spin += .38; ebullet(this.x, this.y + 20, this.spin, 215, { r: 6 }); if (ph === 2) ebullet(this.x, this.y + 20, this.spin + Math.PI, 215, { r: 6 });
+    if (ph >= 1 && this.tick('spiral', dt, .13)) {
+      this.spin += .42; ebullet(this.x, this.y + 20, this.spin, 215, { r: 6 }); if (ph === 2) ebullet(this.x, this.y + 20, this.spin + Math.PI, 215, { r: 6 });
     }
-    if (ph === 2 && this.tick('ring', dt, 2.4)) { ring(this.x, this.y + 20, 18, 190, rand(0, 6)); Snd.play('enemyShoot'); }
+    if (ph === 2 && this.tick('ring', dt, 2.8)) { ring(this.x, this.y + 20, 14, 180, rand(0, 6)); Snd.play('enemyShoot'); }
     if (this.tick('sum', dt, ph === 0 ? 6 : 5.5)) {
       this.bay = 1;
-      const n = ph === 0 ? 3 : 4;
+      const n = ph === 0 ? 2 : 3;
       for (let i = 0; i < n; i++) spawnEnemy(ph === 0 ? 'drone' : 'zig', this.x + (i - (n - 1) / 2) * 60, this.y + 60, { mode: 'enter', bx: this.x + (i - (n - 1) / 2) * 60 });
     }
     this.smoke(dt);
@@ -171,7 +171,7 @@ class RockGolem extends Boss {
     }
     if (this.tick('core', dt, 2)) { fanAimed(this.x, this.y + 10, ph === 0 ? 3 : 5, ph === 0 ? .5 : .9, 240); Snd.play('enemyShoot', { pan: Snd.panX(this.x) }); }
     if (ph >= 1 && this.tick('ring', dt, ph === 2 ? 2.2 : 3)) { ring(this.x, this.y + 10, ph === 2 ? 18 : 14, 180, rand(0, 6)); Snd.play('enemyShoot'); }
-    if (ph === 2 && this.tick('spiral', dt, .12)) { this.spin += .45; ebullet(this.x, this.y + 10, this.spin, 200, { r: 6 }); }
+    if (ph === 2 && this.tick('spiral', dt, .16)) { this.spin += .5; ebullet(this.x, this.y + 10, this.spin, 200, { r: 6 }); }
   }
   draw() {
     ctx.save(); ctx.translate(this.x, this.y);
@@ -235,7 +235,7 @@ class StormEye extends Boss {
       if (ph === 2) { this.laserAt(a + .5, 1.1, .8); this.laserAt(a - .5, 1.1, .8); }
     }
     if (ph >= 1 && this.tick('ring', dt, 2.4)) { ring(this.x, this.y, 16, 190, this.t); Snd.play('enemyShoot'); }
-    if (ph === 2 && this.tick('spiral', dt, .1)) { this.spin += .4; ebullet(this.x, this.y, this.spin, 210, { r: 6 }); ebullet(this.x, this.y, this.spin + Math.PI, 210, { r: 6 }); }
+    if (ph === 2 && this.tick('spiral', dt, .14)) { this.spin += .45; ebullet(this.x, this.y, this.spin, 210, { r: 6 }); ebullet(this.x, this.y, this.spin + Math.PI, 210, { r: 6 }); }
     if (this.tick('kami', dt, 7)) for (let i = 0; i < 2; i++) spawnEnemy('bit', this.x + (i ? 60 : -60), this.y + 60, { bx: this.x + (i ? 60 : -60) });
   }
   draw() {
@@ -300,8 +300,8 @@ class SunGuardian extends Boss {
       Events.hazardRect(W / 2, y, W + 40, 90, 1.1, .6, '#ffb340', 'beam');
     }
     if (this.tick('fan', dt, ph === 0 ? 1.9 : 1.5)) { fanAimed(this.x, this.y + 20, ph === 0 ? 5 : 7, 1, 240); Snd.play('enemyShoot', { pan: Snd.panX(this.x) }); }
-    if (ph >= 1 && this.tick('spiral', dt, .1)) {
-      this.spin += .33; for (let k = 0; k < 3; k++) ebullet(this.x, this.y, this.spin + k * TAU / 3, 210, { r: 6 });
+    if (ph >= 1 && this.tick('spiral', dt, .14)) {
+      this.spin += .38; for (let k = 0; k < 3; k++) ebullet(this.x, this.y, this.spin + k * TAU / 3, 210, { r: 6 });
     }
     if (ph >= 1 && this.tick('kami', dt, 6.5)) for (let i = 0; i < 3; i++) spawnEnemy('kami', this.x + (i - 1) * 70, this.y + 80, { mode: 'enter', bx: this.x + (i - 1) * 70 });
     if (ph === 2 && this.tick('nova', dt, 7)) { this.charge = 1.8; Snd.play('charge', { dur: 1.8 }); }

@@ -129,23 +129,23 @@ const Game = {
   wpick(pool) { const e = Object.entries(pool), tot = e.reduce((a, [, w]) => a + w, 0); let r = Math.random() * tot; for (const [k, w] of e) { r -= w; if (r <= 0) return k; } return e[0][0]; },
 
   spawnWave(pool) {
-    if (G.enemies.length > 26) return;
+    if (G.enemies.length > 13) return;
     const type = this.wpick(pool), m = 70;
     const rx = () => rand(m, W - m);
     switch (type) {
       case 'drone': {
         const r = Math.random();
-        if (r < .4) { const n = randi(3, 5), x0 = rx(); for (let i = 0; i < n; i++) spawnEnemy('drone', clamp(x0 + (i - (n - 1) / 2) * 90, m, W - m), -30); }
-        else if (r < .65) { const n = randi(3, 5), x0 = rx(); for (let i = 0; i < n; i++) spawnEnemy('drone', clamp(x0 + (i - (n - 1) / 2) * 80, m, W - m), -30 - Math.abs(i - (n - 1) / 2) * 55); }
+        if (r < .35) { const n = randi(2, 3), x0 = rx(); for (let i = 0; i < n; i++) spawnEnemy('drone', clamp(x0 + (i - (n - 1) / 2) * 110, m, W - m), -30); }
+        else if (r < .55) { const x0 = rx(); for (let i = 0; i < 3; i++) spawnEnemy('drone', clamp(x0 + (i - 1) * 100, m, W - m), -30 - Math.abs(i - 1) * 60); }
         else spawnEnemy('drone', rx(), -30);
         break;
       }
-      case 'zig': { const n = randi(1, 3); for (let i = 0; i < n; i++) spawnEnemy('zig', rx(), -30 - i * 70); break; }
-      case 'kami': { const n = randi(1, 3); for (let i = 0; i < n; i++) spawnEnemy('kami', rx(), -30 - i * 50); break; }
-      case 'shooter': { const n = randi(1, 2); for (let i = 0; i < n; i++) spawnEnemy('shooter', rx(), -30 - i * 60); break; }
+      case 'zig': { const n = randi(1, 2); for (let i = 0; i < n; i++) spawnEnemy('zig', rx(), -30 - i * 70); break; }
+      case 'kami': { const n = randi(1, 2); for (let i = 0; i < n; i++) spawnEnemy('kami', rx(), -30 - i * 50); break; }
+      case 'shooter': { const n = 1; for (let i = 0; i < n; i++) spawnEnemy('shooter', rx(), -30 - i * 60); break; }
       case 'tank': spawnEnemy('tank', rand(250, W - 250), -60); break;
-      case 'mine': { const n = randi(1, 3); for (let i = 0; i < n; i++) spawnEnemy('mine', rx(), -30 - i * 60); break; }
-      case 'bit': { const n = randi(6, 10), x0 = rx(); for (let i = 0; i < n; i++) spawnEnemy('bit', clamp(x0 + (i % 2 ? 30 : -30), m, W - m), -30 - i * 38); break; }
+      case 'mine': { const n = randi(1, 2); for (let i = 0; i < n; i++) spawnEnemy('mine', rx(), -30 - i * 60); break; }
+      case 'bit': { const n = randi(5, 7), x0 = rx(); for (let i = 0; i < n; i++) spawnEnemy('bit', clamp(x0 + (i % 2 ? 30 : -30), m, W - m), -30 - i * 38); break; }
     }
   },
 
@@ -170,7 +170,7 @@ const Game = {
     const ev = Events.active;
     const slow = ev === 'rain' || ev === 'storm' || ev === 'flare' ? 1.7 : ev === 'worm' ? 3 : ev === 'mines' ? 1.4 : 1;
     G.spawnT -= dt;
-    if (G.spawnT <= 0) { G.spawnT = ph.every * rand(.8, 1.2) * slow; this.spawnWave(ph.pool); }
+    if (G.spawnT <= 0) { G.spawnT = ph.every * 1.4 * rand(.85, 1.2) * slow; this.spawnWave(ph.pool); }
   },
 
   // ---------- update ----------
@@ -253,7 +253,7 @@ const Game = {
   drawPlay() {
     const p = G.player, cx = p ? p.x - W / 2 : 0;
     ctx.save();
-    if (G.shake > 0) ctx.translate(rand(-1, 1) * G.shake, rand(-1, 1) * G.shake);
+    if (G.shake > 0) ctx.translate(rand(-1, 1) * G.shake * .55, rand(-1, 1) * G.shake * .55);
     World.draw(cx);
     Events.drawHazards();
     for (const k of G.pickups) Art.pickup(k);

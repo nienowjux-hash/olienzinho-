@@ -20,9 +20,9 @@ const World = {
     this.stars = [];
     for (let l = 0; l < 3; l++) for (let i = 0; i < [80, 50, 28][l]; i++)
       this.stars.push({ x: rand(-60, W + 60), y: rand(0, H), l, ph: rand(0, 6.28), sp: [22, 60, 140][l], r: [0.9, 1.5, 2.3][l], par: [.012, .035, .08][l] });
-    this.dust = Array.from({ length: 26 }, () => ({ x: rand(-60, W + 60), y: rand(0, H), sp: rand(520, 900), len: rand(60, 170), a: rand(.06, .2) }));
+    this.dust = Array.from({ length: 12 }, () => ({ x: rand(-60, W + 60), y: rand(0, H), sp: rand(520, 900), len: rand(60, 170), a: rand(.04, .12) }));
     this.planets = [this.newPlanet(), this.newPlanet(), this.newPlanet()];
-    this.rocks = Array.from({ length: pal.rocks || 10 }, () => this.newRock());
+    this.rocks = Array.from({ length: Math.ceil((pal.rocks || 10) * .6) }, () => this.newRock());
     this.comet = null; this.cometT = rand(2, 5); this.warp = 0; this.boost = 0;
   },
 

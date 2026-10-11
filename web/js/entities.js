@@ -103,7 +103,7 @@ function updateEnemy(e, dt) {
         e.life += dt; e.aim = aimAt(e.x, e.y);
         e.shootT -= dt;
         if (e.shootT <= 0) {
-          if (tk) { fanAimed(e.x, e.y, 5, .9, 230); Snd.play('enemyShoot', { pan: Snd.panX(e.x) }); e.shootT = 2.3; e.ringT = (e.ringT || 0) + 1; if (e.ringT % 3 === 0) ring(e.x, e.y, 12, 170, e.age); }
+          if (tk) { fanAimed(e.x, e.y, 3, .7, 220); Snd.play('enemyShoot', { pan: Snd.panX(e.x) }); e.shootT = 2.3; e.ringT = (e.ringT || 0) + 1; if (e.ringT % 3 === 0) ring(e.x, e.y, 12, 170, e.age); }
           else { fanAimed(e.x, e.y, e.life > 6 ? 3 : 1, .45, 270); Snd.play('enemyShoot', { pan: Snd.panX(e.x) }); e.shootT = 1.6; }
         }
         if (e.life > (tk ? 18 : 11)) e.mode = 'leave';

@@ -158,6 +158,12 @@ const Extras = {
 
   drawWorld() {
     const t = World.t;
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = '#cdb8ff'; ctx.lineCap = 'round'; // poeira em primeiro plano
+    for (let i = 0; i < 24; i++) {
+      const sp = 650 + (i * 53) % 500, y = ((t * sp + i * 211) % (H + 120)) - 60, x = (i * 97.3) % W + Math.sin(t * .4 + i) * 18;
+      ctx.globalAlpha = .05 + ((i * 17) % 10) / 110; ctx.lineWidth = 1.5 + (i % 3); ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y + sp * .05); ctx.stroke();
+    }
+    ctx.restore();
     if (this.frag) {
       const f = this.frag, pu = 1 + Math.sin(t * 6) * .12;
       ctx.save(); ctx.translate(f.x, f.y); ctx.globalCompositeOperation = 'lighter'; drawGlow(0, 0, 70 * pu, '#ffd36a', .7); drawGlow(0, 0, 36, '#ff9ac0', .5); ctx.globalCompositeOperation = 'source-over';

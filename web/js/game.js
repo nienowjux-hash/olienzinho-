@@ -14,6 +14,8 @@ function txt(s, x, y, size, color = '#e2d4ff', align = 'left', weight = 900, bas
   ctx.font = `${weight} ${size}px ${FONT}`; ctx.textAlign = align; ctx.textBaseline = base; ctx.fillStyle = color; ctx.fillText(s, x, y);
 }
 
+const EPITHET = { 'Nave-Mãe Zangão': 'A Mãe do Enxame', 'Gigante de Rocha': 'O Guardião da Montanha', 'Olho da Tempestade': 'O Vigia que Nunca Pisca', 'Sol-Guardião': 'A Chama que Cuida', 'Eco do Olienzinho': 'O Medo com Formato de Foguete', 'O Vazio': 'O Primeiro Silêncio' };
+
 function newPlayer() {
   const p = {
     x: W / 2, y: H - 130, vx: 0, vy: 0, hp: 5, maxHp: 5, inv: 0, fireT: 0, pulseT: 0, t: 0, blink: 3, blinkT: 0, lookx: 0, looky: 0,
@@ -565,8 +567,11 @@ const Game = {
     if (name && it > .4 && it < 2.8) {
       const a = clamp((it - .4) / .4, 0, 1) * clamp((2.8 - it) / .3, 0, 1), sc = .88 + .12 * easeBack((it - .4) / .5);
       ctx.save(); ctx.globalAlpha = a; ctx.translate(W / 2, H * .7); ctx.scale(sc, sc);
-      txt('C H E F E', 0, -58, 22, '#ff8a5f', 'center', 900);
-      ctx.shadowColor = '#ff8a5f'; ctx.shadowBlur = 30; txt(name.toUpperCase(), 0, -26, 62, '#ffffff', 'center', 900); ctx.restore();
+      const bc = G.boss.col || '#ff8a5f', ep = EPITHET[name] || '', sz = Math.min(62, 980 / (name.length * .66));
+      ctx.fillStyle = bc; ctx.fillRect(-120 * a, -70, 240 * a, 3);
+      txt('C H E F E', 0, -62, 20, bc, 'center', 900);
+      ctx.shadowColor = bc; ctx.shadowBlur = 34; txt(name.toUpperCase(), 0, -30, sz, '#ffffff', 'center', 900); ctx.shadowBlur = 0;
+      txt(ep, 0, -30 + sz + 6, 22, '#e2d4ff', 'center', 700); ctx.fillRect(-120 * a, -30 + sz + 40, 240 * a, 3); ctx.restore();
     }
   },
 

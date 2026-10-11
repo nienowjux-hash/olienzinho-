@@ -65,13 +65,14 @@ class Boss {
     G.pendingLevels = 0; G.hitstop = .22; // o que faltava de XP nao vale mais
     G.finisher = { t: 0 }; Snd.play('special'); // golpe final do Olienzinho
     G.enemies.forEach(e => { if (!e.dead) killEnemy(e, true); });
-    Snd.play('bossDie'); Snd.musicStop();
+    Snd.play(this.dieSfx || 'bossDie'); Snd.musicStop();
     Game.slowmo = 1;
   }
   update(dt) {
     this.t += dt; this.flash = Math.max(0, this.flash - dt); this.orbCd = Math.max(0, this.orbCd - dt);
     if (this.state === 'intro') {
       // desce suavemente ate exatamente onde a luta comeca (sem pulo lateral)
+      if (!this.introSnd) { this.introSnd = true; Snd.play(this.introSfx || 'bossIntro'); }
       this.introT = (this.introT || 0) + dt;
       const k = Math.min(1, this.introT / 3), keep = this.t;
       this.t = 0; this.move(0); const fx = this.x, fy = this.y; this.t = keep;
@@ -83,7 +84,8 @@ class Boss {
     if (this.state === 'dying') {
       this.dyingT += dt; this.boomT -= dt;
       const sh = Math.min(10, this.dyingT * 5); this.shx = rand(-sh, sh); this.shy = rand(-sh, sh);
-      if (this.boomT <= 0) {
+      if (this.dyingFx) this.dyingFx(dt);
+      if (this.boomT <= 0 && !this.noBooms) {
         this.boomT = .09;
         const a = rand(0, TAU), d = rand(0, this.rad || 100), ex = this.x + Math.cos(a) * d, ey = this.y + Math.sin(a) * d;
         burst(ex, ey, [this.col, '#ffe9a8', '#ffffff'], 14, 320, 6);
@@ -92,8 +94,8 @@ class Boss {
         shake(8);
         if (Math.random() < .5) Snd.play('explode', { size: 1.1, pan: Snd.panX(ex) });
       }
-      if (this.dyingT > 3.2) {
-        flashScreen(1); shake(24);
+      if (this.dyingT > (this.dyLen || 3.2)) {
+        flashScreen(1); shake(24); if (this.finalFx) this.finalFx();
         burst(this.x, this.y, [this.col, '#ffe9a8', '#ffffff', '#b98cff'], 120, 700, 8);
         shedDebris(this.x, this.y, 26, [this.dark || '#3a2060', this.col, '#ffe9a8'], 520, 16);
         for (let i = 0; i < 4; i++) shockwave(this.x, this.y, 400 + i * 220, i % 2 ? '#ffe9a8' : this.col);

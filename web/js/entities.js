@@ -193,6 +193,7 @@ function killEnemy(e, byPlayer) {
   const big = e.type === 'tank' || e.type === 'captain';
   burst(e.x, e.y, [e.glow, '#ffe9a8', '#ffffff', '#b98cff'], big ? 40 : 26, big ? 380 : 300, 6);
   shockwave(e.x, e.y, big ? 150 : 90, e.glow);
+  shedDebris(e.x, e.y, big ? 7 : 3, [e.glow, '#ffe9a8', '#3a2060'], big ? 360 : 240, big ? 10 : 6);
   Snd.play('explode', { size: big ? 1.6 : .8, pan: Snd.panX(e.x) });
   shake(big ? 9 : 4);
   if (e.type === 'mine' && byPlayer) mineBlast(e);
@@ -200,6 +201,7 @@ function killEnemy(e, byPlayer) {
   G.kills++;
   G.combo = G.comboT > 0 ? G.combo + 1 : 1; G.comboT = 2.2; G.stats.maxCombo = Math.max(G.stats.maxCombo, G.combo);
   { const U = id => G.upCounts[id] || 0, pl2 = G.player;
+    if ([10, 25, 50, 100].includes(G.combo)) { popup(pl2.x, pl2.y - 90, 'COMBO x' + G.combo, '#ffe9a8', 34); shockwave(pl2.x, pl2.y, 280, '#ffe9a8'); Snd.play('stamp'); }
     if (U('combochg') && G.combo % 10 === 0) pl2.specCd = Math.max(0, pl2.specCd - U('combochg'));
     if (U('vamp') && G.kills % (46 - 14 * U('vamp')) === 0 && pl2.hp < pl2.maxHp) { pl2.hp++; popup(pl2.x, pl2.y - 40, '+1', '#ff9ac0', 24); Snd.play('heart'); } }
   G.score += Math.round(e.score * (1 + Math.min(G.combo, 60) * .03) * dif().score);

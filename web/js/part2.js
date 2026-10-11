@@ -56,7 +56,7 @@ function bossLaser(b, a, warn, dur, c) {
 
 class EchoBoss extends Boss {
   constructor() {
-    super('Eco do Olienzinho', 640); this.col = '#c040ff'; this.dark = '#1a0a38'; this.rad = 80; this.dive = null; this.chargeT = 0; this.chargeMax = 1;
+    super('Eco do Olienzinho', 640); this.dieSfx = 'echoDie'; this.noBooms = true; this.dyLen = 3.1; this.col = '#c040ff'; this.dark = '#1a0a38'; this.rad = 80; this.dive = null; this.chargeT = 0; this.chargeMax = 1;
   }
   hitTest(x, y, r) { return Math.hypot(x - this.x, y - this.y) < 76 + r; }
   move(dt) {
@@ -85,7 +85,28 @@ class EchoBoss extends Boss {
     if (ph === 2 && this.tick('laser', dt, 5)) { const a = aimAt(this.x, this.y); bossLaser(this, a, 1.1, .8, '#c040ff'); bossLaser(this, a + .5, 1.1, .8, '#c040ff'); bossLaser(this, a - .5, 1.1, .8, '#c040ff'); }
     if (this.tick('bits', dt, 7)) for (let i = 0; i < 2; i++) spawnEnemy('bit', this.x + (i ? 60 : -60), this.y + 60, { bx: this.x + (i ? 60 : -60) });
   }
+  dyingFx(dt) {
+    this.gl = Math.min(1, this.dyingT / 2.6);
+    if (Math.random() < dt * 9) G.glitchT = .1;
+    if (Math.random() < dt * 12) shedDebris(this.x + rand(-60, 60), this.y + rand(-70, 70), 2, ['#c040ff', '#ff4ad0', '#2ad4ff'], 320, 9);
+    if (Math.random() < dt * 20) sparks(this.x + rand(-70, 70), this.y + rand(-80, 80), '#ff4ad0', 4, 280);
+    if (Math.random() < dt * 5) shockwave(this.x + rand(-40, 40), this.y + rand(-40, 40), 120, '#c040ff');
+  }
+  finalFx() {
+    for (let i = 0; i < 4; i++) shockwave(this.x, this.y, 260 + i * 160, i % 2 ? '#ffe9a8' : '#2ad4ff');
+    for (let i = 0; i < 70; i++) G.parts.push({ x: this.x + rand(-60, 60), y: this.y + rand(-60, 60), vx: rand(-140, 140), vy: -rand(80, 300), life: 1.8, max: 1.8, r: rand(2, 5), c: Math.random() < .5 ? '#ffe9a8' : '#ffffff', drag: .6 });
+    G.glitchT = .4;
+  }
   draw() {
+    if (this.state !== 'dying') return this.drawShip();
+    const alpha = clamp(1 - (this.dyingT - 2.3) / .8, 0, 1), gl = this.gl || 0; if (alpha <= 0) return;
+    const n = 8, sh = 230 / n;
+    for (let k = 0; k < n; k++) {
+      ctx.save(); ctx.beginPath(); ctx.rect(this.x - 160, this.y - 115 + k * sh, 320, sh + 1); ctx.clip();
+      ctx.translate((Math.random() - .5) * gl * 110 * (k % 2 ? 1 : -1), 0); ctx.globalAlpha = alpha * (Math.random() < gl * .25 ? .3 : 1); this.drawShip(); ctx.restore();
+    }
+  }
+  drawShip() {
     const t = this.t, hit = this.flash > 0, chg = this.chargeT > 0 ? 1 - this.chargeT / this.chargeMax : 0;
     ctx.save(); ctx.translate(this.x, this.y);
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(0, 0, 260, '#c040ff', .3 + Math.sin(t * 5) * .06); drawGlow(0, 20, 150, '#ff4ad0', .18 + chg * .3); ctx.restore(); ctx.globalAlpha = 1;
@@ -108,7 +129,7 @@ class EchoBoss extends Boss {
 
 class VoidBoss extends Boss {
   constructor() {
-    super('O Vazio', 1000); this.col = '#9a63ff'; this.dark = '#02000a'; this.rad = 130; this.dark_ = 0; this.dk = 0; this.chargeT = 0; this.chargeMax = 1; this.spin = 0; this.sweep = 0;
+    super('O Vazio', 1000); this.introSfx = 'voidRoar'; this.dieSfx = 'voidDie'; this.noBooms = true; this.dyLen = 5.6; this.col = '#9a63ff'; this.dark = '#02000a'; this.rad = 130; this.dark_ = 0; this.dk = 0; this.chargeT = 0; this.chargeMax = 1; this.spin = 0; this.sweep = 0;
   }
   get darkAmt() { return this.dk; }
   hitTest(x, y, r) { return Math.hypot(x - this.x, y - this.y) < 118 + r; }
@@ -134,9 +155,27 @@ class VoidBoss extends Boss {
     if (this.tick('kami', dt, 7)) for (let i = 0; i < 2; i++) spawnEnemy('kami', this.x + (i ? 80 : -80), this.y + 60);
     if (Math.random() < dt * 18) { const a = rand(0, TAU); G.parts.push({ x: this.x + Math.cos(a) * 150, y: this.y + Math.sin(a) * 150, vx: -Math.cos(a) * 60, vy: -Math.sin(a) * 60, life: .7, max: .7, r: 3, c: '#c04aff', drag: .4 }); }
   }
+  dyingFx(dt) {
+    const d = this.dyingT; this.collapse = clamp(d / 4.2, 0, 1); this.dk += (0 - this.dk) * Math.min(1, 2.5 * dt);
+    if (d < 4.2) {
+      if (Math.random() < dt * 70) { const a = rand(0, TAU), r = rand(260, 600); G.parts.push({ x: this.x + Math.cos(a) * r, y: this.y + Math.sin(a) * r, vx: -Math.cos(a) * r * 1.15, vy: -Math.sin(a) * r * 1.15, life: .85, max: .85, r: rand(2, 5), c: Math.random() < .5 ? '#e8d0ff' : '#ffe9a8', drag: 0 }); }
+      if (Math.random() < dt * 3) shake(6 + this.collapse * 10);
+    } else if (!this.nova) {
+      this.nova = true; flashScreen(1); shake(34);
+      for (let i = 0; i < 8; i++) shockwave(this.x, this.y, 300 + i * 150, i % 2 ? '#ffe9a8' : '#c04aff');
+      burst(this.x, this.y, ['#ffffff', '#ffe9a8', '#e8d0ff', '#c04aff'], 180, 950, 9);
+      for (let i = 0; i < 40; i++) G.parts.push({ x: this.x + rand(-80, 80), y: this.y + rand(-80, 80), vx: rand(-200, 200), vy: rand(-200, 200), life: 2.4, max: 2.4, r: rand(2, 5), c: '#ffe9a8', drag: .8 });
+    }
+  }
+  finalFx() { G.hitstop = 0; for (let i = 0; i < 40; i++) dropPickup('coin', this.x + rand(-160, 160), this.y + rand(-100, 100), 4); }
   draw() {
-    const t = this.t, ph = this.phase, hit = this.flash > 0, chg = this.chargeT > 0 ? 1 - this.chargeT / this.chargeMax : 0;
+    const t = this.t, ph = this.phase, hit = this.flash > 0, chg = this.chargeT > 0 ? 1 - this.chargeT / this.chargeMax : 0, cl = this.collapse || 0;
     ctx.save(); ctx.translate(this.x, this.y);
+    if (this.nova) { // a luz volta: clarao que se dissolve
+      const k = clamp((this.dyingT - 4.2) / 1.4, 0, 1);
+      ctx.globalCompositeOperation = 'lighter'; drawGlow(0, 0, 300 + k * 700, '#ffffff', (1 - k) * .9); drawGlow(0, 0, 200 + k * 400, '#ffe9a8', (1 - k) * .7); ctx.restore(); return;
+    }
+    if (cl > 0) { const sc = 1 - cl * .5; ctx.scale(sc, sc); ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(0, 0, 260 + cl * 520, '#ffffff', cl * .6); drawGlow(0, 0, 160 + cl * 260, '#ffe9a8', cl * .5); ctx.restore(); }
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(0, 0, 380, '#7a2ad6', .3 + Math.sin(t * 2) * .05); drawGlow(0, 0, 200, '#c04aff', .22 + ph * .06); ctx.restore(); ctx.globalAlpha = 1;
     // tentaculos
     ctx.lineCap = 'round'; ctx.lineJoin = 'round';
@@ -156,7 +195,7 @@ class VoidBoss extends Boss {
     const g = ctx.createLinearGradient(-116, -116, 116, 116); g.addColorStop(0, '#ffe9a8'); g.addColorStop(.5, '#c04aff'); g.addColorStop(1, '#5a2ad6');
     ctx.strokeStyle = g; ctx.lineWidth = 5; ctx.beginPath(); ctx.arc(0, 0, 118, 0, TAU); ctx.stroke(); ctx.globalAlpha = .4; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(0, 0, 130, 0, TAU); ctx.stroke(); ctx.globalAlpha = 1;
     // olho: abre mais a cada fase
-    const open = [.25, .6, 1][ph] * (1 - ((t % 5) < .14 ? .8 : 0)), dx = clamp((G.player.x - this.x) / 400, -1, 1) * 22, dy = clamp((G.player.y - this.y) / 500, -.3, 1) * 14;
+    const open = [.25, .6, 1][ph] * (1 - ((t % 5) < .14 ? .8 : 0)) * (1 - cl * .9), dx = clamp((G.player.x - this.x) / 400, -1, 1) * 22, dy = clamp((G.player.y - this.y) / 500, -.3, 1) * 14;
     ctx.save(); ctx.beginPath(); ctx.ellipse(0, 0, 78, 58 * open + 3, 0, 0, TAU); ctx.clip();
     ctx.fillStyle = rdl(dx, dy, 4, 60, [[0, '#ffe9a8'], [.4, '#c04aff'], [1, '#3a0a70']]); ctx.fillRect(-90, -70, 180, 140);
     ctx.fillStyle = '#02000a'; ctx.beginPath(); ctx.ellipse(dx, dy, 9 + chg * 10, 50, 0, 0, TAU); ctx.fill(); ctx.restore();

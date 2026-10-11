@@ -63,6 +63,7 @@ class Boss {
     this.state = 'dying'; this.dyingT = 0;
     G.eb.forEach(b => { b.dead = true; }); G.hazards = [];
     G.pendingLevels = 0; // o que faltava de XP nao vale mais
+    G.finisher = { t: 0 }; Snd.play('special'); // golpe final do Olienzinho
     G.enemies.forEach(e => { if (!e.dead) killEnemy(e, true); });
     Snd.play('bossDie'); Snd.musicStop();
     Game.slowmo = 1;

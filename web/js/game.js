@@ -2,6 +2,7 @@
 // ---------- estado global e logica de jogo ----------
 const SHIP_S = .62;
 const G = {
+  finisher: null, cut: null, story: null,
   state: 'title', t: 0, stage: null, stageIdx: 0, sel: 0,
   player: null, enemies: [], pb: [], eb: [], pickups: [], parts: [], rings: [], pops: [], hazards: [], boss: null, pulse: null,
   score: 0, kills: 0, runCoins: 0, level: 1, xp: 0, xpNeed: 7, pendingLevels: 0, upCounts: {}, options: [],
@@ -41,7 +42,7 @@ function recalcStats(p) {
 const Game = {
   slowmo: 0,
 
-  startStage(idx) {
+  startStage(idx, opts = {}) {
     G.stageIdx = idx; G.stage = STAGES[idx];
     G.t = 0; G.enemies = []; G.pb = []; G.eb = []; G.pickups = []; G.parts = []; G.rings = []; G.pops = []; G.hazards = []; G.boss = null; G.pulse = null;
     G.score = 0; G.kills = 0; G.runCoins = 0; G.level = 1; G.xp = 0; G.xpNeed = 7; G.pendingLevels = 0; G.upCounts = {}; G.options = [];
@@ -52,10 +53,23 @@ const Game = {
     World.setStage(G.stage.pal); Events.reset(G.stage);
     G.player = newPlayer(); recalcStats(G.player); G.player.hp = G.player.maxHp;
     Events.banner = { t: 0, title: G.stage.name.toUpperCase(), sub: 'FASE ' + (idx + 1), c: G.stage.tint };
-    G.state = 'play';
-    Snd.musicPlay(G.stage.music, 1);
+    G.finisher = null; G.cut = null; G.story = null;
     Save.data.runs++; Save.save();
+    const pages = [];
+    if (!this.noStory && !opts.skipStory) {
+      if (idx === 0 && !Save.data.seenPrologue) { pages.push(...STORY.prologue); Save.data.seenPrologue = true; Save.save(); }
+      pages.push(...STORY.stages[idx].intro);
+    }
+    const begin = () => { G.state = 'play'; Snd.musicPlay(G.stage.music, 1); };
+    if (pages.length) this.startStory(pages, begin); else begin();
   },
+
+  // ---------- historia ----------
+  startStory(pages, done) {
+    G.story = { pages, i: 0, t: 0, last: undefined, lastShown: 0, done };
+    G.state = 'story'; Snd.musicPlay('menu', 0);
+  },
+  endStory() { const d = G.story && G.story.done; G.story = null; if (d) d(); },
 
   // ---------- menu / navegacao ----------
   goTitle() { G.state = 'title'; World.setStage(STAGES[0].pal); Snd.musicPlay('menu', 0); },
@@ -81,18 +95,20 @@ const Game = {
   },
 
   bossDefeated() {
-    G.player.mood = 'happy'; G.player.moodT = 3;
-    G.bossDone = true; G.clearT = 2.8;
+    G.player.mood = 'happy'; G.player.moodT = 9;
+    G.bossDone = true; G.clearT = 0; G.finisher = null;
     for (const k of G.pickups) k.mag = true;
-    Events.banner = { t: 0, title: 'CHEFE DERROTADO!', sub: G.stage.bossName, c: '#ffe9a8' };
+    // cena: Olienzinho no holofote com a fala de impacto
+    G.cut = { t: 0, text: STORY.stages[G.stageIdx].victory, last: 0 };
+    Snd.play('stinger'); Snd.musicPlay('menu', 0);
   },
 
   stageClear() {
     const bonus = 80 + G.stageIdx * 50;
     this.endRunSave(bonus, true);
     G.result = { bonus, coins: G.runCoins, score: G.score, kills: G.kills, level: G.level, best: Save.data.best[G.stageIdx], newStage: G.stageIdx + 1 < STAGES.length };
-    G.state = 'clear';
-    Snd.musicPlay('menu', 0); Snd.play('stageClear');
+    const toClear = () => { G.state = 'clear'; Snd.musicPlay('menu', 0); Snd.play('stageClear'); };
+    if (G.stageIdx + 1 >= STAGES.length && !this.noStory) this.startStory(STORY.epilogue, toClear); else toClear();
   },
 
   gameOver() {
@@ -217,13 +233,29 @@ const Game = {
     G.comboT -= dt; if (G.comboT <= 0) G.combo = 0; G.chainT -= dt; G.cchainT -= dt;
 
     // fim de fase
+    if (G.cut) {
+      const c = G.cut; c.t += rdt;
+      if (Math.random() < .6) G.parts.push({ x: rand(0, W), y: -10, vx: 0, vy: rand(120, 260), life: 4, max: 4, r: rand(3, 6), c: Math.random() < .5 ? '#ffe9a8' : '#b98cff', drag: 0 });
+      const sp = 38, len = c.text.length, typed = Math.floor(Math.max(0, c.t - .9) * sp), full = .9 + len / sp;
+      if (typed > c.last && c.text[Math.min(len, typed) - 1] !== ' ' && typed % 2 === 0) Snd.play('blip', { who: 'O' });
+      c.last = typed;
+      const adv = (Input.pressed(' ') || Input.pressed('enter') || Input.mouse.click) && c.t > 1;
+      if (adv && typed < len) c.t = full + .01;
+      else if ((c.t > full + 2.2) || (adv && c.t > full + .5)) { G.cut = null; this.stageClear(); return; }
+    }
     if (G.clearT > 0) { G.clearT -= rdt; if (G.clearT <= 0) { this.stageClear(); return; } }
     if (G.pendingLevels > 0 && !p.dead && G.state === 'play' && !G.bossDone && !(G.boss && G.boss.state === 'dying')) this.openLevelUp();
-    if (Input.pressed('escape') || Input.pressed('p')) { G.state = 'pause'; Snd.play('uiBack'); }
+    if ((Input.pressed('escape') || Input.pressed('p')) && !G.cut) { G.state = 'pause'; Snd.play('uiBack'); }
   },
 
   updatePlayer(dt) {
     const p = G.player; p.t += dt;
+    if (G.finisher || G.cut) { // nas cenas o Olienzinho vai para o centro e fica invulneravel
+      p.inv = 9; p.vx = p.vy = 0; p.recoil = 0; p.mood = G.cut ? 'happy' : p.mood;
+      p.x += (W / 2 - p.x) * Math.min(1, 3 * dt); p.y += (H * .72 - p.y) * Math.min(1, 3 * dt);
+      p.blink -= dt; if (p.blink <= 0) { p.blinkT = .16; p.blink = rand(2, 5); } if (p.blinkT > 0) p.blinkT -= dt;
+      return;
+    }
     let ax = 0, ay = 0;
     if (Input.down('a') || Input.down('arrowleft')) ax -= 1; if (Input.down('d') || Input.down('arrowright')) ax += 1;
     if (Input.down('w') || Input.down('arrowup')) ay -= 1; if (Input.down('s') || Input.down('arrowdown')) ay += 1;
@@ -264,7 +296,7 @@ const Game = {
     for (const e of G.enemies) Art.enemy(e);
     for (const b of G.pb) Art.pbullet(b);
     for (const b of G.eb) Art.ebullet(b);
-    if (p && !p.dead) {
+    if (p && !p.dead && !G.cut) {
       const sp = Math.hypot(p.vx, p.vy) / 500, bob = Math.sin(p.t * 3) * 2.5 * (1 - Math.min(1, sp));
       Art.ship(p.x, p.y + bob, { vx: p.vx, t: p.t, lookx: p.lookx, looky: p.looky, blinkT: p.blinkT, inv: p.inv, shield: p.shieldReady, scale: SHIP_S, mood: p.mood,
         sx: 1 + p.recoil * .05 - Math.abs(p.vx) / 500 * .05, sy: 1 - p.recoil * .08 + Math.abs(p.vy) / 500 * .04 });
@@ -274,6 +306,7 @@ const Game = {
         ctx.fillStyle = '#ff8a1f'; ctx.beginPath(); ctx.arc(o[0], o[1], 4, 0, 7); ctx.fill();
       }
     }
+    this.drawFinisherBeam();
     for (const q of G.parts) if (q.k === 'smoke') {
       const k = clamp(q.life / q.max, 0, 1);
       ctx.globalAlpha = k * .4; ctx.fillStyle = q.c; ctx.beginPath(); ctx.arc(q.x, q.y, q.r * (1.6 - k * .6), 0, 7); ctx.fill();
@@ -312,8 +345,64 @@ const Game = {
     }
     Events.drawOverlay();
     if (G.flash > 0) { ctx.globalAlpha = Math.min(.7, G.flash * .35); ctx.fillStyle = '#e9e0ff'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; }
-    this.drawHud();
+    if (!G.cut) this.drawHud();
     this.drawCinematic();
+    this.drawCut();
+  },
+
+  // raio gigante do Olienzinho no chefe que esta morrendo
+  drawFinisherBeam() {
+    const b = G.boss, p = G.player;
+    if (!G.finisher || !b || b.state !== 'dying' || !p || p.dead) return;
+    const k = b.dyingT; if (k > 1.9) return;
+    const a = k < .3 ? k / .3 : k > 1.5 ? 1 - (k - 1.5) / .4 : 1;
+    const x0 = p.x, y0 = p.y - 34, x1 = b.x, y1 = b.y;
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    drawGlow(x0, y0, 50 + a * 90, '#ffe9a8', a); drawGlow(x0, y0, 30 + a * 50, '#ffffff', a * .8);
+    if (k > .25) {
+      const ang = Math.atan2(y1 - y0, x1 - x0), len = Math.hypot(x1 - x0, y1 - y0), w = 30 + Math.sin(k * 40) * 9;
+      ctx.translate(x0, y0); ctx.rotate(ang); ctx.globalAlpha = a;
+      ctx.fillStyle = lin(0, -w * 1.5, 0, w * 1.5, [[0, 'rgba(185,140,255,0)'], [.3, 'rgba(255,233,168,.7)'], [.5, '#ffffff'], [.7, 'rgba(255,233,168,.7)'], [1, 'rgba(185,140,255,0)']]);
+      ctx.fillRect(0, -w * 1.5, len, w * 3);
+      ctx.fillStyle = '#ffffff'; ctx.fillRect(0, -w * .25, len, w * .5);
+      ctx.rotate(-ang); ctx.translate(-x0, -y0);
+      drawGlow(x1, y1, 140 + Math.sin(k * 30) * 20, '#ffffff', a * .8);
+    }
+    ctx.restore(); ctx.globalAlpha = 1;
+  },
+
+  // cena depois do chefe: Olienzinho em destaque com a fala de impacto
+  drawCut() {
+    const c = G.cut; if (!c) return;
+    const k = easeOut(c.t / .6), h = 70 * k, t = World.t, len = c.text.length;
+    ctx.globalAlpha = .5 * k; ctx.fillStyle = '#05010f'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1;
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    for (let i = 0; i < 7; i++) {
+      const a = (i - 3) * .12 + Math.sin(t * .5 + i) * .03;
+      ctx.save(); ctx.translate(W / 2, -40); ctx.rotate(a); ctx.globalAlpha = k;
+      ctx.fillStyle = lin(0, 0, 0, H, [[0, 'rgba(255,233,168,.26)'], [1, 'rgba(255,233,168,0)']]);
+      ctx.beginPath(); ctx.moveTo(-14, 0); ctx.lineTo(14, 0); ctx.lineTo(74, H + 60); ctx.lineTo(-74, H + 60); ctx.fill(); ctx.restore();
+    }
+    drawGlow(W / 2, 470, 320, '#ffb340', .55 * k); drawGlow(W / 2, 470, 200, '#b98cff', .5 * k);
+    ctx.restore(); ctx.globalAlpha = 1;
+    ctx.fillStyle = '#05010f'; ctx.fillRect(0, 0, W, h); ctx.fillRect(0, H - h, W, h);
+    Art.ship(W / 2, 480 + Math.sin(t * 2.2) * 8, { vx: 0, t, lookx: 0, looky: -.15, blinkT: (t % 4) < .16 ? .16 - (t % 4) : 0, scale: SHIP_S * 2.4 * easeBack(c.t / .7), mood: 'happy', boost: .4 });
+    // balao de fala
+    const bt = clamp((c.t - .5) / .35, 0, 1);
+    if (bt > 0) {
+      const bw = 860, bh = 130, bx = W / 2 - bw / 2, by = 150, sc = easeBack(bt);
+      ctx.save(); ctx.translate(W / 2, by + bh); ctx.scale(sc, sc); ctx.translate(-W / 2, -(by + bh));
+      ctx.fillStyle = '#fff6ff'; ctx.strokeStyle = '#b98cff'; ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, 26); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(W / 2 - 26, by + bh - 2); ctx.lineTo(W / 2, by + bh + 44); ctx.lineTo(W / 2 + 26, by + bh - 2); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#fff6ff'; ctx.fillRect(W / 2 - 24, by + bh - 6, 48, 8);
+      ctx.fillStyle = '#b98cff'; ctx.beginPath(); ctx.roundRect(bx + 24, by - 20, 190, 36, 18); ctx.fill();
+      txt('OLIENZINHO', bx + 119, by - 2, 20, '#12041f', 'center', 900, 'middle');
+      const lines = Screens.wrapLines(c.text, bw - 80, 34, 800), shown = Math.floor(Math.max(0, c.t - .9) * 38);
+      Screens.typed(lines, shown, W / 2, by + 28, 44, 34, '#2a1478', 'center', 800);
+      ctx.restore();
+    }
+    if (c.t > 1.5) { ctx.globalAlpha = .5 + .4 * Math.sin(t * 5); txt('clique ou ENTER para continuar', W / 2, H - h - 34, 16, '#cdb8ff', 'center', 700); ctx.globalAlpha = 1; }
   },
 
   // faixas de cinema e cartao de nome na chegada do chefe

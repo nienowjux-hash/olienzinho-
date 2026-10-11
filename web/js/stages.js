@@ -11,7 +11,7 @@ const PLANET_PALS = {
 
 const STAGES = [
   {
-    id: 0, name: 'Nebulosa Violeta', desc: 'Onde tudo começa. Zangões da Olien-Corp invadiram o setor.',
+    id: 0, name: 'Nebulosa Violeta', desc: 'Onde tudo começa. O enxame de Zangões invadiu o setor.',
     music: 's1', bossMusic: 'b1', duration: 80, boss: 'mother', bossName: 'Nave-Mãe Zangão', tint: '#8b4dff',
     pal: {
       top: '#2a1478', bot: '#0b0422', star: '#e8e0ff', dust: '#cdb8ff', shaft: '160,110,255', rock0: '#5a3fb0', rock1: '#170a3d', rim: 'rgba(190,160,255,.45)', rocks: 10,

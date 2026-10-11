@@ -114,6 +114,24 @@ const Snd = (() => {
       voice('sine', f * 1.15, f * .55, t, .09, .11, { pan: p, rev: .1, a: .003 });
       voice('triangle', f * 2.3, f * 1.2, t, .06, .02, { pan: p, a: .003 });
     },
+    blip(o) {
+      // "voz" de cada personagem ao digitar o texto
+      const t = now(), w = o.who;
+      if (w === 'O') { const f = rnd(780, 1150); voice('triangle', f, f * 1.22, t, .07, .05, { a: .003, rev: .15 }); }
+      else if (w === 'B') { const f = rnd(430, 640); voice('square', f, f * .96, t, .055, .024, { lp: 2200, a: .003, rev: .1 }); }
+      else { const f = rnd(190, 250); voice('sine', f, f, t, .1, .03, { a: .01, rev: .3 }); }
+    },
+    stinger() {
+      // acorde heroico quando o chefe cai
+      const t = now();
+      [62, 66, 69, 74].forEach((m, i) => {
+        voice('sawtooth', mtof(m), mtof(m), t + i * .02, 1.4, .05, { lp: 700, lp1: 2600, a: .05, rev: .5 });
+        voice('triangle', mtof(m + 12), mtof(m + 12), t + i * .02, 1.6, .04, { a: .04, rev: .5 });
+      });
+      voice('sine', 100, 40, t, .6, .45);
+      noiseV(t, 1.6, .06, { type: 'highpass', f0: 5000, a: .6, rev: .4 });
+      [74, 78, 81, 86, 90].forEach((m, i) => voice('sine', mtof(m), mtof(m), t + .5 + i * .09, .7, .07, { rev: .6, del: .3 }));
+    },
     missile(o) {
       const t = now(), p = o.pan;
       noiseV(t, .35, .12, { type: 'bandpass', f0: 500, f1: 3200, q: 1.2, a: .03, pan: p, rev: .2 });
@@ -286,7 +304,7 @@ const Snd = (() => {
     rumble(o) { noiseV(now(), o.dur || 1.5, .3, { type: 'lowpass', f0: 160, f1: 50, a: .3 }); },
   };
 
-  const GAP = { shoot: .04, hit: .035, bossHit: .06, xp: .03, enemyShoot: .06, explode: .02, coin: .03 };
+  const GAP = { blip: .028, shoot: .04, hit: .035, bossHit: .06, xp: .03, enemyShoot: .06, explode: .02, coin: .03 };
   function play(name, o = {}) {
     if (!ac || vol.sfx <= 0) return;
     const f = SFX[name]; if (!f) return;

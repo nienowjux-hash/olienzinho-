@@ -1,6 +1,97 @@
 'use strict';
 // ---------- telas: titulo, mapa, loja, opcoes, pausa, level-up, fim de fase, fim de jogo ----------
 const Screens = {
+  wrapLines(text, maxW, size, weight = 700) {
+    ctx.font = `${weight} ${size}px ${FONT}`;
+    const lines = []; let line = '';
+    for (const w of text.split(' ')) { const t = line ? line + ' ' + w : w; if (ctx.measureText(t).width > maxW && line) { lines.push(line); line = w; } else line = t; }
+    if (line) lines.push(line);
+    return lines;
+  },
+  // escreve so os primeiros `shown` caracteres (efeito maquina de escrever)
+  typed(lines, shown, x, y, lh, size, color, align = 'left', weight = 700) {
+    let left = shown;
+    for (const ln of lines) {
+      if (left <= 0) break;
+      ctx.font = `${weight} ${size}px ${FONT}`;
+      const x0 = align === 'center' ? x - ctx.measureText(ln).width / 2 : x;
+      txt(ln.slice(0, left), x0, y, size, color, 'left', weight);
+      left -= ln.length + 1; y += lh;
+    }
+  },
+  orbi(x, y, s, a) {
+    const t = World.t; ctx.save(); ctx.translate(x, y + Math.sin(t * 2) * 8 * s); ctx.globalAlpha = a;
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(0, 0, 130 * s, '#7fe0ff', .9); ctx.restore(); ctx.globalAlpha = a;
+    ctx.fillStyle = rdl(-18 * s, -22 * s, 4, 62 * s, [[0, '#ffffff'], [.45, '#7fe0ff'], [1, '#1b6aa8']]); ctx.beginPath(); ctx.arc(0, 0, 58 * s, 0, 7); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,.7)'; ctx.lineWidth = 3 * s; ctx.save(); ctx.rotate(-.4 + Math.sin(t) * .1); ctx.beginPath(); ctx.ellipse(0, 0, 84 * s, 22 * s, 0, 0, TAU); ctx.stroke();
+    const sa = t * 2; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(Math.cos(sa) * 84 * s, Math.sin(sa) * 22 * s, 6 * s, 0, 7); ctx.fill(); ctx.restore();
+    const bl = (t % 4) < .14 ? .15 : 1;
+    ctx.fillStyle = '#0e2a52'; for (const e of [-1, 1]) { ctx.beginPath(); ctx.ellipse(e * 20 * s, -4 * s, 9 * s, 13 * s * bl, 0, 0, 7); ctx.fill(); }
+    ctx.fillStyle = '#fff'; for (const e of [-1, 1]) { ctx.beginPath(); ctx.arc(e * 20 * s - 3 * s, -9 * s, 3 * s, 0, 7); ctx.fill(); }
+    ctx.strokeStyle = '#0e2a52'; ctx.lineWidth = 3 * s; ctx.lineCap = 'round'; ctx.beginPath(); ctx.arc(0, 12 * s, 12 * s, .2, Math.PI - .2); ctx.stroke();
+    ctx.restore();
+  },
+
+  story() {
+    const S = G.story; if (!S) return;
+    const pg = S.pages[S.i]; if (!pg) { Game.endStory(); return; }
+    const now = World.t, dt = Math.min(.05, now - (S.last ?? now)); S.last = now; S.t += dt;
+    const t = World.t, narr = pg.who === 'N', mis = !!pg.mission;
+    ctx.globalAlpha = 1; ctx.fillStyle = `rgba(8,2,26,${narr || mis ? .62 : .32})`; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = '#05010f'; ctx.fillRect(0, 0, W, 54); ctx.fillRect(0, H - 54, W, 54);
+    const adv = (Input.pressed(' ') || Input.pressed('enter') || Input.mouse.click);
+
+    if (mis) { // cartao da missao
+      const m = pg.mission, k = easeBack(S.t / .6);
+      ctx.save(); ctx.translate(W / 2, H / 2); ctx.scale(k, k);
+      UI.panel(-420, -190, 840, 380, { fill: 'rgba(20,8,55,.88)', stroke: '#ffb340' });
+      txt('MISSÃO ' + m.n, 0, -160, 26, '#ffb340', 'center', 900);
+      ctx.save(); ctx.shadowColor = '#8b4dff'; ctx.shadowBlur = 30; txt(m.title, 0, -118, 62, '#ffffff', 'center', 900); ctx.restore();
+      ctx.fillStyle = '#ffb340'; ctx.fillRect(-80, -40, 160, 4);
+      UI.wrap(m.goal, 0, -10, 700, 36, 28, '#e2d4ff', 'center', 700);
+      txt('CHEFE:  ' + m.boss, 0, 100, 24, '#ff8a5f', 'center', 900);
+      ctx.globalAlpha = .55 + .4 * Math.sin(t * 5); txt('clique ou ENTER para começar', 0, 146, 18, '#cdb8ff', 'center', 700); ctx.globalAlpha = 1;
+      ctx.restore();
+      if (adv && S.t > .5) { S.i++; S.t = 0; S.lastShown = 0; Snd.play('uiSelect'); if (S.i >= S.pages.length) { Game.endStory(); return; } }
+    } else {
+      const ch = CHARS[pg.who], text = pg.text, len = text.length, sp = 46;
+      const shown = Math.min(len, Math.floor(S.t * sp));
+      if (shown > S.lastShown && text[shown - 1] !== ' ' && shown % 2 === 0) Snd.play('blip', { who: pg.who });
+      S.lastShown = shown;
+      if (!narr) {
+        const hasB = S.pages.some(p => p.who === 'B');
+        const oa = pg.who === 'O';
+        const k = easeOut(S.t / .35);
+        ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(250, 290, 240, '#8b4dff', oa ? .5 : .15); ctx.restore(); ctx.globalAlpha = 1;
+        ctx.globalAlpha = oa ? 1 : .5;
+        Art.ship(250, 290 + Math.sin(t * 2) * 8, { vx: 0, t, lookx: .5, looky: 0, blinkT: (t % 4) < .16 ? .16 - (t % 4) : 0, scale: oa ? 1.9 : 1.5, mood: pg.who === 'O' ? pg.mood : null, boost: .3 });
+        ctx.globalAlpha = 1;
+        if (hasB) this.orbi(1030, 290, pg.who === 'B' ? 1.4 : 1.0, pg.who === 'B' ? 1 : .5);
+      }
+      // caixa de texto
+      const lines = this.wrapLines(text, narr ? 900 : 880, narr ? 34 : 30, 700);
+      if (narr) {
+        ctx.save(); ctx.globalAlpha = Math.min(1, S.t / .3);
+        this.typed(lines, shown, W / 2, H / 2 - lines.length * 26, 52, 34, '#e2d4ff', 'center', 700); ctx.restore();
+      } else {
+        const bx = 150, by = 478, bw = 980, bh = 176;
+        UI.panel(bx, by, bw, bh, { fill: 'rgba(18,6,50,.88)', stroke: ch.c });
+        ctx.fillStyle = ch.c; ctx.beginPath(); ctx.roundRect(bx + 28, by - 20, 40 + ch.name.length * 14, 38, 19); ctx.fill();
+        txt(ch.name, bx + 28 + (40 + ch.name.length * 14) / 2, by - 1, 20, '#12041f', 'center', 900, 'middle');
+        this.typed(lines, shown, bx + 40, by + 34, 40, 30, '#ffffff', 'left', 700);
+      }
+      if (shown >= len) { ctx.globalAlpha = .5 + .5 * Math.sin(t * 6); txt('▼', narr ? W / 2 : 1100, narr ? H / 2 + lines.length * 30 + 20 : 624, 22, narr ? '#cdb8ff' : ch.c, 'center'); ctx.globalAlpha = 1; }
+      if (adv && S.t > .1) {
+        if (shown < len) S.t = len / sp + .01;
+        else { S.i++; S.t = 0; S.lastShown = 0; Snd.play('uiSelect'); if (S.i >= S.pages.length) { Game.endStory(); return; } }
+      }
+    }
+    // progresso e dicas
+    for (let i = 0; i < S.pages.length; i++) { ctx.fillStyle = i === S.i ? '#ffb340' : i < S.i ? 'rgba(255,255,255,.5)' : 'rgba(255,255,255,.18)'; ctx.beginPath(); ctx.arc(W / 2 - (S.pages.length - 1) * 9 + i * 18, 30, 4, 0, 7); ctx.fill(); }
+    txt('ESC  pular história', W - 28, 22, 16, '#8a7fb0', 'right', 800);
+    if (Input.pressed('escape')) { Snd.play('uiBack'); Game.endStory(); }
+  },
+
   dim(a = .72) { ctx.globalAlpha = 1; ctx.fillStyle = `rgba(10,3,30,${a})`; ctx.fillRect(0, 0, W, H); },
   blinkAt(t) { const ph = t % 4; return ph < .16 ? .16 - ph : 0; },
   stars() { return '★ ' + Save.data.coins; },
@@ -173,7 +264,7 @@ const Screens = {
     txt('O Olienzinho vai tentar de novo.', W / 2, 190, 24, '#cdb8ff', 'center', 700);
     UI.panel(400, 240, 480, 190);
     [['Pontuação', r.score + ' pts'], ['Inimigos derrotados', String(r.kills)], ['Estrelas guardadas', '★ ' + r.coins]].forEach(([a, b], i) => { txt(a, 436, 266 + i * 50, 22, '#cdb8ff', 'left', 700); txt(b, 844, 264 + i * 50, 26, i > 1 ? '#ffcf6b' : '#fff', 'right'); });
-    if (UI.button('retry', 320, 480, 300, 62, 'TENTAR DE NOVO', { size: 24, color: '#9a63ff' })) Game.startStage(G.stageIdx);
+    if (UI.button('retry', 320, 480, 300, 62, 'TENTAR DE NOVO', { size: 24, color: '#9a63ff' })) Game.startStage(G.stageIdx, { skipStory: true });
     if (UI.button('shop', 640, 480, 140, 62, 'LOJA', { size: 22 })) { G.shopBack = 'over'; G.state = 'shop'; }
     if (UI.button('map', 800, 480, 160, 62, 'MAPA', { size: 22 })) Game.goSelect();
     txt('Dica: gaste as estrelas na loja para ficar mais forte.', W / 2, 570, 18, '#8a7fb0', 'center', 700);

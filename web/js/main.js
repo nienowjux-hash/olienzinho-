@@ -12,6 +12,7 @@ Game.goTitle();
   if (q.has('stage')) {
     const i = clamp(parseInt(q.get('stage'), 10) || 0, 0, STAGES.length - 1);
     Save.data.unlocked = Math.max(Save.data.unlocked, i + 1);
+    Game.noStory = !q.has('story');
     Game.startStage(i);
     if (q.has('boss')) G.t = G.stage.duration - 1;
     if (q.has('god')) { G.player.maxHp = 99; G.player.hp = 99; }

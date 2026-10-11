@@ -152,7 +152,7 @@ function killEnemy(e, byPlayer) {
   G.kills++; G.score += e.score;
   G.combo = G.comboT > 0 ? G.combo + 1 : 1; G.comboT = 2.2;
   const xpv = e.xp;
-  for (let i = 0; i < Math.min(3, xpv); i++) dropPickup('xp', e.x + rand(-14, 14), e.y + rand(-10, 10), Math.ceil(xpv / Math.min(3, xpv)));
+  if (!xpClosed()) for (let i = 0; i < Math.min(3, xpv); i++) dropPickup('xp', e.x + rand(-14, 14), e.y + rand(-10, 10), Math.ceil(xpv / Math.min(3, xpv)));
   const pl = G.player;
   if (Math.random() < e.coin * pl.coinMul) dropPickup('coin', e.x, e.y, big ? 6 : 1 + (Math.random() < .15 ? 1 : 0));
   if (big) { for (let i = 0; i < 3; i++) dropPickup('coin', e.x + rand(-30, 30), e.y + rand(-20, 20), 2); }
@@ -208,7 +208,10 @@ function hurtPlayer(dmg = 1) {
   if (p.hp <= 0) { p.hp = 0; Game.playerDied(); }
 }
 
+// depois que o chefe morre o XP nao conta mais: so estrelas
+const xpClosed = () => G.bossDone || (G.boss && G.boss.state === 'dying');
 function addXp(v) {
+  if (xpClosed()) return;
   G.xp += v;
   while (G.xp >= G.xpNeed) {
     G.xp -= G.xpNeed; G.level++; G.xpNeed = 4 + G.level * 3; G.pendingLevels++;

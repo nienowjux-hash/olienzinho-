@@ -62,6 +62,7 @@ class Boss {
   die() {
     this.state = 'dying'; this.dyingT = 0;
     G.eb.forEach(b => { b.dead = true; }); G.hazards = [];
+    G.pendingLevels = 0; // o que faltava de XP nao vale mais
     G.enemies.forEach(e => { if (!e.dead) killEnemy(e, true); });
     Snd.play('bossDie'); Snd.musicStop();
     Game.slowmo = 1;
@@ -96,7 +97,6 @@ class Boss {
         shedDebris(this.x, this.y, 26, [this.dark || '#3a2060', this.col, '#ffe9a8'], 520, 16);
         for (let i = 0; i < 4; i++) shockwave(this.x, this.y, 400 + i * 220, i % 2 ? '#ffe9a8' : this.col);
         for (let i = 0; i < 26; i++) dropPickup('coin', this.x + rand(-80, 80), this.y + rand(-60, 60), 3);
-        for (let i = 0; i < 10; i++) dropPickup('xp', this.x + rand(-80, 80), this.y + rand(-60, 60), 4);
         dropPickup('heart', this.x, this.y, 1);
         G.boss = null; Game.slowmo = 0;
         Game.bossDefeated();

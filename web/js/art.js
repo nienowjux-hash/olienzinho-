@@ -3,6 +3,7 @@
 const Art = {
   // Olienzinho. o = { vx, t, lookx, looky, blinkT, inv, shield, boost, scale }
   ship(x, y, o) {
+    if (o.orbi) return this.orbi(x, y, o);
     const U = 112 * (o.scale || 1), P = o.pal || SKIN_DEFAULT;
     ctx.save(); ctx.translate(x, y); ctx.rotate(clamp((o.vx || 0) / 520, -1, 1) * 0.24); ctx.scale(o.sx || 1, o.sy || 1);
     if (o.inv > 0 && Math.floor(o.inv * 14) % 2 === 0) ctx.globalAlpha = .4;
@@ -103,6 +104,12 @@ const Art = {
         ctx.fillStyle = '#ffe9a8'; for (const s of [-1, 1]) { ctx.beginPath(); ctx.arc(s * r * .25, r * .05, 3, 0, 7); ctx.fill(); }
         break;
       }
+      case 'dummy': {
+        ctx.strokeStyle = '#ffcf6b'; ctx.lineWidth = 4;
+        for (const k of [1, .66, .33]) { ctx.fillStyle = k === .66 ? '#ff5a3c' : '#fff3d0'; ctx.beginPath(); ctx.arc(0, 0, r * k, 0, 7); ctx.fill(); ctx.stroke(); }
+        ctx.fillStyle = '#ff5a3c'; ctx.beginPath(); ctx.arc(0, 0, r * .12, 0, 7); ctx.fill();
+        break;
+      }
       case 'shield': {
         this.ball(r * .85, '#bff0ff', '#2b7bff', hit); this.visor(r * .85, '#10265a', e.look || 0);
         if (e.shield > 0) {
@@ -179,6 +186,11 @@ const Art = {
       const r = b.r || 20; drawGlow(b.x, b.y, r * 2.4, b.c || '#ff7a4a', .9); drawGlow(b.x, b.y, r * 1.2, '#fff2c0', .8);
       ctx.restore(); ctx.globalAlpha = 1; ctx.fillStyle = '#fff2c0'; ctx.beginPath(); ctx.arc(b.x, b.y, r * .62, 0, 7); ctx.fill();
       ctx.strokeStyle = b.c || '#ff7a4a'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(b.x, b.y, r * .8, 0, 7); ctx.stroke();
+      return;
+    }
+    if (b.orb) {
+      drawGlow(b.x, b.y, 34, '#7fe0ff', .9); drawGlow(b.x, b.y, 16, '#ffffff', .8);
+      ctx.restore(); ctx.globalAlpha = 1; ctx.fillStyle = '#e8fbff'; ctx.beginPath(); ctx.arc(b.x, b.y, 8, 0, 7); ctx.fill(); ctx.strokeStyle = '#4cc8ff'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(b.x, b.y, 11, 0, 7); ctx.stroke();
       return;
     }
     if (b.kind === 'missile' && b.star) {

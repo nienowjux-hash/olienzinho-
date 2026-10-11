@@ -568,12 +568,12 @@ const Screens = {
       txt('GUARDIÃO  DAS  ESTRELAS', X0 + 4, Y0 + 46, 22, '#ffb340', 'left', 800); ctx.globalAlpha = 1;
     }
     // menu em texto, com marcador dourado
-    const items = [['play', 'JOGAR', 318, 46, ''], ['endless', 'MODO INFINITO', 390, 30, 'onda ' + (Save.data.bestWave || 0)], ['rank', 'RANKING', 436, 30, ''], ['shop', 'LOJA', 482, 30, '★ ' + Save.data.coins], ['opt', 'OPÇÕES', 528, 30, '']];
+    const items = [['play', 'JOGAR', 318, 46, ''], ['endless', 'MODOS EXTRAS', 390, 30, ''], ['rank', 'RANKING', 436, 30, ''], ['shop', 'LOJA', 482, 30, '★ ' + Save.data.coins], ['opt', 'OPÇÕES', 528, 30, '']];
     if (tt >= 3) {
       items.forEach(([id, label, y, size, sub], i) => {
         const f = UI.focus(id), e = easeBack((tt - 3 - i * .12) / .45), w = size > 40 ? 300 : 230;
         if (UI.hit(id, X0 - 30, y - 8, w + 60, size + 22, { sound: id === 'play' ? 'uiSelect' : 'uiSelect' })) {
-          if (id === 'play') Game.goSelect(); else if (id === 'endless') Game.startEndless(); else if (id === 'rank') G.state = 'rank'; else if (id === 'shop') { G.shopBack = 'title'; G.state = 'shop'; } else { G.setBack = 'title'; G.state = 'settings'; }
+          if (id === 'play') Game.goSelect(); else if (id === 'endless') G.state = 'modes'; else if (id === 'rank') G.state = 'rank'; else if (id === 'shop') { G.shopBack = 'title'; G.state = 'shop'; } else { G.setBack = 'title'; G.state = 'settings'; }
         }
         G.mf = G.mf || {}; G.mf[id] = lerp(G.mf[id] || 0, f ? 1 : 0, .18);
         const k = G.mf[id];
@@ -608,7 +608,11 @@ const Screens = {
   },
 
   hangar() {
-    const t = World.t, ld = Save.data.loadout, own = Save.data.owned;
+    const t = World.t, ld = Save.data.loadout, own = Save.data.owned, orbiOK = !!Save.data.cleared[3], isO = ld.char === 'orbi' && orbiOK;
+    if (UI.button('pOl', 70, 36, 180, 40, 'OLIENZINHO', { size: 15, color: !isO ? '#9a63ff' : undefined })) { ld.char = 'olien'; Save.save(); }
+    if (UI.button('pOr', 262, 36, 130, 40, orbiOK ? 'ORBI' : 'ORBI 🔒', { size: 15, disabled: !orbiOK, color: isO ? '#9a63ff' : undefined })) { ld.char = 'orbi'; Save.save(); }
+    if (!orbiOK) txt('zere a Parte 1 para liberar o Orbi', 408, 46, 13, '#8a7fb0', 'left', 700);
+    if (isO) { this.hangarOrbi(); return; }
     txt('HANGAR', W / 2, 26, 42, '#fff', 'center'); txt(this.stars(), W - 40, 36, 30, '#ffcf6b', 'right');
     txt('ARMAS', 74, 92, 18, '#ffb340', 'left', 900);
     WEAPON_ORDER.forEach((id, i) => {
@@ -826,11 +830,11 @@ const Screens = {
   over() {
     const r = G.result; this.dim(.75);
     if (G.endless) {
-      txt('FIM DA LINHA', W / 2, 90, 74, '#ffb340', 'center');
-      txt(G.rankPos <= 10 && G.rankPos > 0 ? 'Você entrou no ranking: ' + G.rankPos + 'º lugar!' : 'O Vazio venceu desta vez.', W / 2, 180, 24, '#cdb8ff', 'center', 700);
+      txt(G.daily ? 'DESAFIO ENCERRADO' : 'FIM DA LINHA', W / 2, 90, G.daily ? 64 : 74, '#ffb340', 'center');
+      txt(G.daily ? 'Seu melhor de hoje: ' + Extras.dailyBest() + ' pts' : G.rankPos <= 10 && G.rankPos > 0 ? 'Você entrou no ranking: ' + G.rankPos + 'º lugar!' : 'O Vazio venceu desta vez.', W / 2, 180, 24, '#cdb8ff', 'center', 700);
       UI.panel(400, 230, 480, 230);
       [['Onda alcançada', String(r.wave)], ['Pontuação', r.score + ' pts'], ['Inimigos derrotados', String(r.kills)], ['Estrelas guardadas', '★ ' + r.coins]].forEach(([a, b], i) => { txt(a, 436, 256 + i * 46, 22, '#cdb8ff', 'left', 700); txt(b, 844, 254 + i * 46, 26, i > 2 ? '#ffcf6b' : '#fff', 'right'); });
-      if (UI.button('retry', 300, 500, 300, 62, 'TENTAR DE NOVO', { size: 24, color: '#9a63ff' })) Game.startEndless();
+      if (UI.button('retry', 300, 500, 300, 62, 'TENTAR DE NOVO', { size: 24, color: '#9a63ff' })) { if (G.daily) Game.startDaily(); else Game.startEndless(); }
       if (UI.button('rk', 620, 500, 180, 62, 'RANKING', { size: 22 })) G.state = 'rank';
       if (UI.button('menu', 820, 500, 160, 62, 'MENU', { size: 22 })) Game.goTitle();
       return;

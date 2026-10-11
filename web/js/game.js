@@ -39,6 +39,8 @@ function recalcStats(p) {
   p.missiles = U('missile'); p.orbitals = U('orbit'); p.ricochet = U('ricochet'); p.chainL = U('chain');
   p.shieldCd = [0, 20, 15, 10][U('shield')] || 10;
   p.dashCdMax = 1.6 * Math.pow(.8, U('dash')); p.specCdMax = 16 * Math.pow(.8, U('spec')); p.specPow = 1 + .25 * U('spec');
+  if (p.weapon === 'orbi') { p.maxHp = Math.max(2, p.maxHp - 1); p.magnet += 70; p.dashCdMax *= .8; }
+  if (G.dmod === 'glass') { p.maxHp = 3; p.dmg *= 1.5; }
 }
 
 const Game = {
@@ -54,8 +56,8 @@ const Game = {
     this.slowmo = 0;
     World.setStage(G.stage.pal); Events.reset(G.stage);
     G.player = newPlayer();
-    { const ld = Save.data.loadout; G.player.weapon = Save.data.owned.weapons[ld.weapon] ? ld.weapon : 'violet'; }
-    G.stats = { hits: 0, bossHit: 0, maxCombo: 0, minis: 0 }; G.timers = []; G.hitstop = 0; G.mega = null; G.miniDone = false; G.endless = false; G.fragSpawned = false; G.encSpawned = false; Extras.reset(); Extras.tutStart();
+    { const ld = Save.data.loadout; G.player.weapon = Save.data.owned.weapons[ld.weapon] ? ld.weapon : 'violet'; if (ld.char === 'orbi' && Save.data.cleared[3]) G.player.weapon = 'orbi'; }
+    G.stats = { hits: 0, bossHit: 0, maxCombo: 0, minis: 0 }; G.timers = []; G.hitstop = 0; G.mega = null; G.miniDone = false; G.endless = false; G.daily = false; G.training = false; G.dmod = null; G.well = null; G.fragSpawned = false; G.encSpawned = false; Extras.reset(); Extras.tutStart();
     recalcStats(G.player); G.player.hp = G.player.maxHp;
     Events.banner = { t: 0, title: G.stage.name.toUpperCase(), sub: 'FASE ' + (idx + 1), c: G.stage.tint };
     G.finisher = null; G.cut = null; G.story = null;
@@ -88,18 +90,19 @@ const Game = {
   endRunSave(bonus = 0, cleared = false) {
     const d = Save.data;
     d.coins += G.runCoins + bonus;
-    if (G.endless) { G.rankPos = this.addRank(); Save.save(); return; }
+    if (G.training) return;
+    if (G.endless) { if (G.daily) { this.addDaily(); G.rankPos = 0; } else G.rankPos = this.addRank(); Save.save(); return; }
     const prev = d.best[G.stageIdx] || 0; if (G.score > prev) d.best[G.stageIdx] = G.score;
     if (cleared) { d.unlocked = Math.max(d.unlocked, Math.min(STAGES.length, G.stageIdx + 2)); d.cleared[G.stageIdx] = true; }
     Save.save();
   },
 
-  quitRun() { this.endRunSave(0, false); if (G.endless) this.goTitle(); else this.goSelect(); },
+  quitRun() { this.endRunSave(0, false); if (G.endless || G.training) this.goTitle(); else this.goSelect(); },
 
   // ---------- modo infinito ----------
   startEndless() {
     this.startStage(0, { skipStory: true });
-    G.endless = true; G.wave = 1; G.waveT = 0; G.waveMini = false; G.biome = 0;
+    Extras.tut = null; G.endless = true; G.wave = 1; G.waveT = 0; G.waveMini = false; G.biome = 0;
     G.stage = { ...STAGES[0], duration: 1e9, events: [] }; Events.reset(null);
     Events.banner = { t: 0, title: 'MODO INFINITO', sub: 'ONDA 1', c: '#ffb340' };
     G.state = 'play'; Snd.musicPlay(G.stage.music, 1);
@@ -256,6 +259,7 @@ const Game = {
   },
 
   director(dt) {
+    if (G.training) return;
     if (G.endless) { this.endlessDirector(dt); return; }
     const st = G.stage;
     if (G.bossDone) return;
@@ -307,7 +311,7 @@ const Game = {
     const p = G.player;
     G.t += dt; G.intro += dt;
     World.update(dt, p.vy);
-    Events.update(dt); Events.updateHazards(dt); Extras.update(dt); Extras.tutUpdate(dt);
+    Events.update(dt); Events.updateHazards(dt); Extras.update(dt); Extras.tutUpdate(dt); if (G.training) Extras.trainUpdate(dt);
     Snd.setLayers(p.dead ? 0 : G.combo >= 25 ? 2 : G.combo >= 10 ? 1 : 0, !p.dead && p.hp <= Math.max(1, p.maxHp * .25) ? 1 : 0);
     this.director(dt);
     if (!p.dead) this.updatePlayer(dt); else { G.overT -= rdt; if (G.overT <= 0) { this.gameOver(); return; } }
@@ -406,7 +410,7 @@ const Game = {
     for (const k of G.pickups) Art.pickup(k);
     if (G.boss) { const b = G.boss, br = 1 + Math.sin(b.t * 2) * .012; ctx.save(); ctx.translate(b.shx || 0, b.shy || 0); ctx.translate(b.x, b.y); ctx.scale(br, br); ctx.translate(-b.x, -b.y); b.draw(); ctx.restore(); }
     for (const e of G.enemies) Art.enemy(e);
-    Extras.drawWorld();
+    Extras.drawWorld(); drawWell(); Extras.dummyDraw();
     for (const e of G.enemies) {
       if (e.healFx > 0 && e.healTo && !e.healTo.dead) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = '#7fffa0'; ctx.globalAlpha = e.healFx * 2; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(e.x, e.y); ctx.lineTo(e.healTo.x, e.healTo.y); ctx.stroke(); ctx.restore(); }
       if (e.mini && e.mode !== 'enter') { const bw = 120, bx = e.x - bw / 2, by = e.y - e.rad - 26; ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.beginPath(); ctx.roundRect(bx - 2, by - 2, bw + 4, 12, 6); ctx.fill(); ctx.fillStyle = e.glow; ctx.beginPath(); ctx.roundRect(bx, by, Math.max(6, bw * clamp(e.hp / e.maxHp, 0, 1)), 8, 4); ctx.fill(); txt(e.name, e.x, by - 20, 15, '#ffe9a8', 'center', 800); }
@@ -416,10 +420,10 @@ const Game = {
     for (const b of G.eb) Art.ebullet(b);
     if (p && !p.dead && !G.cut) {
       const sp = Math.hypot(p.vx, p.vy) / 500, bob = Math.sin(p.t * 3) * 2.5 * (1 - Math.min(1, sp));
-      const pal = skinOf(Save.data.loadout.skin).pal;
-      for (const g of p.ghosts) { ctx.globalAlpha = g.t / .28 * .45; Art.ship(g.x, g.y, { vx: g.vx, t: p.t, lookx: 0, looky: -1, blinkT: 0, inv: 0, scale: SHIP_S, pal }); }
+      const pal = G.training && G.trainSkin != null ? SKINS[G.trainSkin].pal : skinOf(Save.data.loadout.skin).pal, ob = p.weapon === 'orbi';
+      for (const g of p.ghosts) { ctx.globalAlpha = g.t / .28 * .45; Art.ship(g.x, g.y, { vx: g.vx, t: p.t, lookx: 0, looky: -1, blinkT: 0, inv: 0, scale: SHIP_S, pal, orbi: ob }); }
       ctx.globalAlpha = 1;
-      Art.ship(p.x, p.y + bob, { pal, vx: p.vx, t: p.t, lookx: p.lookx, looky: p.looky, blinkT: p.blinkT, inv: p.inv, shield: p.shieldReady, scale: SHIP_S, mood: p.mood,
+      Art.ship(p.x, p.y + bob, { pal, orbi: ob, vx: p.vx, t: p.t, lookx: p.lookx, looky: p.looky, blinkT: p.blinkT, inv: p.inv, shield: p.shieldReady, scale: SHIP_S, mood: p.mood,
         sx: 1 + p.recoil * .05 - Math.abs(p.vx) / 500 * .05, sy: 1 - p.recoil * .08 + Math.abs(p.vy) / 500 * .04 });
       for (const o of p.orbPos) {
         ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(o[0], o[1], 26, '#ffb340', .9); ctx.restore();
@@ -467,7 +471,7 @@ const Game = {
     }
     Events.drawOverlay();
     if (G.flash > 0) { ctx.globalAlpha = Math.min(.7, G.flash * .35); ctx.fillStyle = '#e9e0ff'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; }
-    if (!G.cut) { this.drawHud(); Extras.tutDraw(); }
+    if (!G.cut) { this.drawHud(); Extras.tutDraw(); Extras.trainDraw(); }
     this.drawCinematic();
     this.drawCut();
   },
@@ -597,6 +601,8 @@ const Game = {
       const g = ctx.createLinearGradient(x, 0, x + w, 0); g.addColorStop(0, '#ff5a3c'); g.addColorStop(1, '#ffb340');
       ctx.fillStyle = g; ctx.beginPath(); ctx.roundRect(x, y, Math.max(8, w * b.ratio), 14, 7); ctx.fill();
       ctx.strokeStyle = 'rgba(255,255,255,.4)'; ctx.lineWidth = 2; for (const f of [.33, .66]) { ctx.beginPath(); ctx.moveTo(x + w * f, y); ctx.lineTo(x + w * f, y + 14); ctx.stroke(); }
+    } else if (G.training) {
+      txt('MODO TREINO', W / 2, 8, 15, '#7fe0a0', 'center', 800);
     } else if (G.endless && !G.boss) {
       const w = 420, x = W / 2 - w / 2, y = 30, k = clamp(G.waveT / 28, 0, 1);
       txt(G.bossPending ? 'CHEFE CHEGANDO!' : 'ONDA ' + G.wave + (G.wave % 5 === 0 ? '  •  CHEFE NO FIM' : ''), W / 2, 8, 15, '#e2d4ff', 'center', 800);

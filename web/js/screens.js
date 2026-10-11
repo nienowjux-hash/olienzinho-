@@ -658,53 +658,74 @@ const Screens = {
     ctx.fillStyle = '#2a1478'; ctx.beginPath(); ctx.arc(0, 4, 4, 0, 7); ctx.fill(); ctx.restore();
   },
 
+  // ---- pecas do estilo cinematografico (barras, itens de menu em texto) ----
+  bars() {
+    const v = ctx.createRadialGradient(W / 2, H / 2, H * .35, W / 2, H / 2, H * .95); v.addColorStop(0, 'rgba(3,1,11,0)'); v.addColorStop(1, 'rgba(3,1,11,.55)');
+    ctx.fillStyle = v; ctx.fillRect(0, 0, W, H); ctx.fillStyle = '#03010b'; ctx.fillRect(0, 0, W, 56); ctx.fillRect(0, H - 56, W, 56);
+    txt(this.stars(), W - 40, 12, 28, '#ffcf6b', 'right');
+  },
+  menuW(label, size) { ctx.save(); ctx.font = '900 ' + size + 'px ' + FONT; const w = ctx.measureText(label).width; ctx.restore(); return w; },
+  menuItem(id, label, x, y, size, sub, o = {}) {
+    const w = this.menuW(label, size), f = UI.focus(id), dis = !!o.disabled;
+    const fired = UI.hit(id, x - 18, y - 8, w + 36 + (sub ? 130 : 0), size + 20, { disabled: dis });
+    G.mf = G.mf || {}; G.mf[id] = lerp(G.mf[id] || 0, f ? 1 : 0, .18); const k = G.mf[id];
+    ctx.save(); ctx.translate(k * 10, 0);
+    if (k > .02) {
+      ctx.save(); ctx.translate(x - 20, y + size * .55); ctx.rotate(Math.PI / 4); ctx.fillStyle = '#ffb340'; ctx.shadowColor = '#ffb340'; ctx.shadowBlur = 14 * k; ctx.fillRect(-5, -5, 10, 10); ctx.restore();
+      ctx.fillStyle = lin(x, 0, x + w, 0, [[0, 'rgba(255,179,64,.9)'], [1, 'rgba(255,179,64,0)']]); ctx.fillRect(x, y + size + 6, w * k, 3);
+    }
+    ctx.save(); if (k > .1) { ctx.shadowColor = 'rgba(139,77,255,.95)'; ctx.shadowBlur = 24 * k; }
+    txt(label, x, y, size, dis ? '#5a5080' : f ? '#ffffff' : '#a99fd6', 'left', 900); ctx.restore();
+    if (sub) txt(sub, x + w + 14, y + size * .22, Math.max(14, size * .5), '#ffcf6b', 'left', 800);
+    ctx.restore(); return fired;
+  },
+
   select() {
-    const t = World.t, unlocked = Save.data.unlocked;
-    txt('ESCOLHA A FASE', W / 2, 36, 40, '#fff', 'center');
-    txt(this.stars(), W - 26, 40, 26, '#ffcf6b', 'right');
-    const pos = i => [150 + i * 196, 215 + (i % 2 ? 46 : -6)];
+    const t = World.t, unlocked = Save.data.unlocked, s = STAGES[G.sel], locked = G.sel >= unlocked;
+    const pos = i => [150 + i * 196, 408 + (i % 2 ? 36 : -18)];
+    // cabecalho do setor escolhido
+    ctx.fillStyle = '#ffb340'; ctx.fillRect(88, 92, 64, 4);
+    txt('SETOR ' + (G.sel + 1) + ' DE ' + STAGES.length, 90, 104, 17, locked ? '#8a7fb0' : s.tint, 'left', 900);
+    ctx.save(); ctx.shadowColor = locked ? '#5a4a90' : s.tint; ctx.shadowBlur = 30; txt(locked ? '???' : s.name.toUpperCase(), 86, 128, 58, '#fff', 'left', 900); ctx.restore();
+    UI.wrap(locked ? 'Derrote o chefe do setor anterior para desbloquear.' : s.desc, 90, 204, 760, 28, 21, '#cdb8ff');
+    txt('CHEFE', 90, 262, 14, '#ff8a5f', 'left', 900); txt(locked ? '???' : s.bossName, 90, 282, 26, '#fff');
+    txt('MELHOR', 420, 262, 14, '#ffcf6b', 'left', 900); txt((Save.data.best[G.sel] || 0) + ' pts', 420, 282, 26, '#fff');
+    const gr = Save.data.grades[G.sel]; txt('NOTA', 640, 262, 14, '#7fe0a0', 'left', 900); txt(gr === undefined ? '-' : 'CBAS'[gr], 640, 282, 26, '#fff');
     // trilha
     ctx.save(); ctx.strokeStyle = 'rgba(190,160,255,.4)'; ctx.lineWidth = 4; ctx.setLineDash([4, 14]); ctx.lineCap = 'round';
-    ctx.beginPath(); STAGES.forEach((s, i) => { const [x, y] = pos(i); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.stroke(); ctx.restore();
-    STAGES.forEach((s, i) => {
-      const [x, y0] = pos(i), locked = i >= unlocked, sel = i === G.sel, y = y0 + (sel ? Math.sin(t * 3) * 5 : 0), R = sel ? 56 : 46;
-      if (UI.hit('stage' + i, x - R, y - R, R * 2, R * 2, { disabled: false })) { if (!locked) { Game.enter(i); return; } Snd.play('uiDeny'); }
+    ctx.beginPath(); STAGES.forEach((st, i) => { const [x, y] = pos(i); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.stroke(); ctx.restore();
+    STAGES.forEach((st, i) => {
+      const [x, y0] = pos(i), lk = i >= unlocked, sel = i === G.sel, y = y0 + (sel ? Math.sin(t * 3) * 5 : 0), R = sel ? 56 : 44;
+      if (UI.hit('stage' + i, x - R, y - R, R * 2, R * 2, { disabled: false })) { if (!lk) { Game.enter(i); return; } Snd.play('uiDeny'); }
       if (UI.focus('stage' + i) && G.sel !== i) { G.sel = i; World.setStage(STAGES[i].pal); }
       ctx.save(); ctx.translate(x, y);
-      ctx.globalCompositeOperation = 'lighter'; drawGlow(0, 0, R * 2.2, locked ? '#5a4a90' : s.tint, sel ? .55 : .3); ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
-      const gr = ctx.createRadialGradient(-R * .35, -R * .35, 4, 0, 0, R);
-      if (locked) { gr.addColorStop(0, '#6a5aa0'); gr.addColorStop(1, '#241a50'); } else { gr.addColorStop(0, '#ffffff'); gr.addColorStop(.35, s.tint); gr.addColorStop(1, '#1a0840'); }
-      ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(0, 0, R, 0, 7); ctx.fill();
-      ctx.strokeStyle = locked ? 'rgba(190,160,255,.3)' : '#e2d4ff'; ctx.lineWidth = sel ? 4 : 2; ctx.stroke();
-      if (i % 2 === 0) { ctx.strokeStyle = 'rgba(226,212,255,.7)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(0, 0, R * 1.6, R * .42, -.35, 0, TAU); ctx.stroke(); }
-      if (locked) this.lock(0, 0, 1.2);
-      else txt(String(i + 1), 0, 0, 40, '#fff', 'center', 900, 'middle');
+      ctx.globalCompositeOperation = 'lighter'; drawGlow(0, 0, R * 2.4, lk ? '#5a4a90' : st.tint, sel ? .6 : .3); ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
+      const g = ctx.createRadialGradient(-R * .35, -R * .35, 4, 0, 0, R);
+      if (lk) { g.addColorStop(0, '#6a5aa0'); g.addColorStop(1, '#241a50'); } else { g.addColorStop(0, '#ffffff'); g.addColorStop(.35, st.tint); g.addColorStop(1, '#1a0840'); }
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, R, 0, 7); ctx.fill();
+      ctx.strokeStyle = lk ? 'rgba(190,160,255,.3)' : '#e2d4ff'; ctx.lineWidth = sel ? 4 : 2; ctx.stroke();
+      if (i % 2 === 0) { ctx.strokeStyle = 'rgba(226,212,255,.7)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(0, 0, R * 1.55, R * .4, -.35, 0, TAU); ctx.stroke(); }
+      if (lk) this.lock(0, 0, 1.1); else txt(String(i + 1), 0, 0, 36, '#fff', 'center', 900, 'middle');
       ctx.restore();
-      if (sel) Art.ship(x, y - R - 44, { vx: 0, t, scale: .5, blinkT: 0, lookx: 0, looky: .5 });
-      if (Save.data.best[i]) txt('★'.repeat(Math.min(3, 1 + Math.floor(Save.data.best[i] / 2500))), x, y + R + 14, 20, '#ffcf6b', 'center');
+      if (sel) Art.ship(x, y - R - 40, { vx: 0, t, scale: .5, blinkT: 0, lookx: 0, looky: .5 });
+      if (Save.data.cleared[i]) txt('CBAS'[Save.data.grades[i] || 0], x, y + R + 10, 22, '#ffcf6b', 'center', 900);
     });
-    if (UI.button('ach', 40, 84, 230, 46, 'CONQUISTAS', { size: 20, sub: ACH.filter(a => Save.data.ach[a.id]).length + '/' + ACH.length })) G.state = 'achievements';
-    if (UI.button('orbi', 290, 84, 230, 46, 'CONVERSAR COM O ORBI', { size: 16 })) G.state = 'chatOrbi';
-    const s = STAGES[G.sel], locked = G.sel >= unlocked;
-    UI.panel(140, 360, 1000, 190);
-    txt('FASE ' + (G.sel + 1), 176, 380, 18, s.tint, 'left', 900);
-    txt(s.name, 176, 402, 36, '#fff');
-    UI.wrap(locked ? 'Derrote o chefe da fase anterior para desbloquear.' : s.desc, 176, 454, 560, 26, 21, '#cdb8ff');
-    txt('CHEFE', 800, 380, 18, '#ff8a5f'); txt(locked ? '???' : s.bossName, 800, 402, 28, '#fff');
-    txt('MELHOR', 800, 454, 18, '#ffcf6b'); txt(String(Save.data.best[G.sel] || 0) + ' pts', 800, 476, 28, '#fff');
-    if (UI.button('go', 140, 580, 250, 62, locked ? 'BLOQUEADA' : 'JOGAR', { size: 26, disabled: locked, color: '#9a63ff' })) { Game.enter(G.sel); return; }
-    if (UI.button('hang', 413, 580, 240, 62, 'HANGAR', { size: 24, sub: WEAPONS[Save.data.loadout.weapon].name })) { G.skinIdx = Math.max(0, SKINS.findIndex(s => s.id === Save.data.loadout.skin)); G.state = 'hangar'; }
-    if (UI.button('shop2', 676, 580, 240, 62, 'LOJA', { size: 24, sub: this.stars() })) { G.shopBack = 'select'; G.state = 'shop'; }
-    if (UI.button('back', 939, 580, 201, 62, 'VOLTAR', { size: 24 })) { Snd.play('uiBack'); Game.goTitle(); }
-    if (Input.pressed('escape')) { Snd.play('uiBack'); Game.goTitle(); }
+    // menu em texto
+    let x = 90;
+    if (this.menuItem('go', locked ? 'BLOQUEADA' : 'JOGAR', x, 580, 44, '', { disabled: locked })) { Game.enter(G.sel); return; }
+    x += this.menuW(locked ? 'BLOQUEADA' : 'JOGAR', 44) + 56;
+    const row = [['hang', 'HANGAR', () => { G.skinIdx = Math.max(0, SKINS.findIndex(q => q.id === Save.data.loadout.skin)); G.state = 'hangar'; }], ['shop2', 'LOJA', () => { G.shopBack = 'select'; G.state = 'shop'; }], ['ach', 'CONQUISTAS', () => { G.state = 'achievements'; }], ['orbi', 'ORBI', () => { G.state = 'chatOrbi'; }]];
+    for (const [id, lb, fn] of row) { if (this.menuItem(id, lb, x, 592, 24, '')) fn(); x += this.menuW(lb, 24) + 44; }
+    if (this.menuItem('back', 'VOLTAR', W - 90 - this.menuW('VOLTAR', 24), 592, 24, '') || Input.pressed('escape')) { Snd.play('uiBack'); Game.goTitle(); }
+    this.bars();
   },
 
   shop() {
-    txt('LOJA DO OLIENZINHO', W / 2, 30, 40, '#fff', 'center');
-    txt('Melhorias permanentes para todas as fases', W / 2, 78, 18, '#cdb8ff', 'center', 700);
-    txt(this.stars(), W - 40, 38, 32, '#ffcf6b', 'right');
+    ctx.fillStyle = '#ffb340'; ctx.fillRect(88, 66, 64, 4);
+    txt('MELHORIAS PERMANENTES PARA TODAS AS FASES', 90, 76, 16, '#cdb8ff', 'left', 800);
+    ctx.save(); ctx.shadowColor = '#8b4dff'; ctx.shadowBlur = 28; txt('LOJA DO OLIENZINHO', 86, 108, 46, '#fff', 'left', 900); ctx.restore();
     SHOP_ITEMS.forEach((it, i) => {
-      const col = i % 2, row = Math.floor(i / 2), x = 80 + col * 560, y = 130 + row * 112, w = 540, h = 100;
+      const col = i % 2, row = Math.floor(i / 2), x = 80 + col * 560, y = 176 + row * 106, w = 540, h = 98;
       const lv = shopLevel(it.id), maxed = lv >= it.max, cost = maxed ? 0 : it.cost(lv), can = !maxed && Save.data.coins >= cost;
       const id = 'item' + it.id, f = UI.focus(id);
       if (UI.hit(id, x, y, w, h, { sound: 'buy' })) {
@@ -723,10 +744,11 @@ const Screens = {
       if (maxed) txt('MÁXIMO', x + w - 24, y + 36, 26, '#ffe9a8', 'right');
       else txt('★ ' + cost, x + w - 24, y + 36, 28, can ? '#ffcf6b' : '#7a70a0', 'right');
     });
-    if (UI.button('back', W / 2 - 160, 600, 320, 58, 'VOLTAR', { size: 24 }) || Input.pressed('escape')) {
+    if (this.menuItem('back', 'VOLTAR', 90, 606, 28, '') || Input.pressed('escape')) {
       Snd.play('uiBack');
       if (G.shopBack === 'select') Game.goSelect(); else if (G.shopBack === 'clear') G.state = 'clear'; else if (G.shopBack === 'over') G.state = 'over'; else Game.goTitle();
     }
+    this.bars();
   },
 
   settings() {

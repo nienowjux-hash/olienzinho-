@@ -215,6 +215,130 @@ const Screens = {
     cols.forEach((c, i) => { const a = t * .45 + i * Math.PI / 2, d = 220 * k, x = cx + Math.cos(a) * d, y = cy + Math.sin(a) * d * .6; ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(x, y, 70, c, .6); ctx.restore(); ctx.globalAlpha = 1; this.shard(x, y, .5 * k, c, a * .2, t + i); });
   },
 
+  bossObjFor(S) {
+    if (!S.bossObj) { try { const b = new BOSS_CLASSES[G.stage.boss](); b.state = 'fight'; S.bossObj = b; } catch (e) { return null; } }
+    return S.bossObj;
+  },
+
+  // Mestra Lumi se apagando: a luz dela vai para o Olienzinho (progresso vem da pagina: pg.fade = [de, ate])
+  sceneLumiFade(S, pg, t) {
+    const [a, b] = pg.fade || [0, 1], p = lerp(a, b, easeOut(clamp(S.t / 6, 0, 1)));
+    const lx = 320, ly = 290, sx = 930, sy = 400;
+    const alive = 1 - p, sc = .45 + alive * .55, gl = Math.random() < p * .25 ? rand(-16, 16) : 0;
+    ctx.fillStyle = `rgba(2,0,12,${p * .45})`; ctx.fillRect(0, 0, W, H);
+    if (alive > .03) {
+      ctx.save(); ctx.translate(lx + gl, ly); ctx.scale(sc, sc); ctx.globalCompositeOperation = 'lighter';
+      ctx.globalAlpha = clamp(alive * 1.3, 0, 1) * (Math.random() < p * .3 ? .35 : .85);
+      drawGlow(0, 0, 250, '#ffd36a', .7);
+      ctx.fillStyle = rdl(0, 0, 6, 130, [[0, '#ffffff'], [.5, '#ffe9a8'], [1, '#e0a030']]);
+      ctx.beginPath(); for (let i = 0; i < 16; i++) { const aa = i / 16 * TAU + t * .2, r = i % 2 ? 66 : 128; ctx.lineTo(Math.cos(aa) * r, Math.sin(aa) * r); } ctx.closePath(); ctx.fill();
+      ctx.restore();
+      ctx.save(); ctx.globalAlpha = .2 + p * .5; ctx.fillStyle = 'rgba(8,2,26,1)'; for (let y = ly - 160; y < ly + 160; y += 5) ctx.fillRect(lx - 190, y, 380, 2); ctx.restore();
+      if (Math.random() < p * .3) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = .4; ctx.fillStyle = '#ffd36a'; ctx.fillRect(lx - 180, ly + rand(-120, 120), 360, rand(2, 6)); ctx.restore(); }
+    }
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    const n = Math.floor(6 + p * 20);
+    for (let i = 0; i < n; i++) {
+      const k = (t * .35 + i / n) % 1, e = k * k * (3 - 2 * k), x = lerp(lx, sx - 10, e) + Math.sin(i * 5 + t * 3) * 26 * (1 - Math.abs(.5 - k) * 2), y = lerp(ly, sy - 20, e) - Math.sin(k * Math.PI) * 120;
+      drawGlow(x, y, 10 + (i % 3) * 3, i % 2 ? '#ffe9a8' : '#ffb340', .8 * Math.sin(k * Math.PI));
+    }
+    drawGlow(sx, sy, 120 + p * 120 + Math.sin(t * 3) * 10, '#ffd36a', .25 + p * .6);
+    ctx.restore(); ctx.globalAlpha = 1;
+    Art.ship(sx, sy + Math.sin(t * 2) * 6, { vx: 0, t, scale: .95, lookx: -.7, looky: -.1, blinkT: 0, boost: .05, mood: p > .6 ? 'hurt' : null });
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(sx, sy - 6, 34 + p * 30 + Math.sin(t * 5) * 5, '#fff6d8', .5 + p * .5); ctx.restore(); ctx.globalAlpha = 1;
+  },
+
+  // guardiao libertado: a casca de escuridao racha, estilhaca e a luz volta
+  sceneFreed(S, t, keep) {
+    const u = keep ? 99 : S.t, b = this.bossObjFor(S); if (!b) return;
+    const col = ['#ffb340', '#c8a0b8', '#ff7ac8', '#ff8a1f'][G.stageIdx] || '#ffd36a', cx = W / 2, cy = 255, sc = G.stageIdx === 3 ? 1.1 : 1.3, shat = 2.8;
+    const dt = Math.min(.05, t - (S.flT ?? t)); S.flT = t;
+    b.t = t; b.x = W / 2; b.y = 250; b.flash = 0; b.phase = 0;
+    const k = easeOut(clamp(u / 3, 0, 1));
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(cx, cy, 460 * k, col, .5); drawGlow(cx, cy, 240 * k, '#fff6d8', .25 * k); ctx.restore(); ctx.globalAlpha = 1;
+    // os filhos da Colmeia (zangoes) acendendo aos poucos
+    const drones = G.stageIdx === 0 ? 8 : 0, back = [], front = [];
+    for (let i = 0; i < drones; i++) { const a = t * .5 + i / drones * TAU, x = cx + Math.cos(a) * 310, y = cy + 40 + Math.sin(a) * 70; (Math.sin(a) > 0 ? front : back).push([x, y, i]); }
+    const drawDrone = ([x, y, i]) => {
+      const lit = keep ? 1 : clamp((u - 3 - i * .25) / 1.2, 0, 1);
+      Art.enemy({ x, y, rad: 16, type: 'drone', age: 9, ph: i, hit: 0, glow: col, look: 0 });
+      if (lit < 1) { ctx.fillStyle = `rgba(14,4,32,${.8 * (1 - lit)})`; ctx.beginPath(); ctx.arc(x, y, 21, 0, 7); ctx.fill(); }
+      else { ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(x, y, 30, '#ffe9a8', .5 + Math.sin(t * 4 + i) * .15); ctx.restore(); ctx.globalAlpha = 1; }
+    };
+    back.forEach(drawDrone);
+    ctx.save(); ctx.translate(cx, cy); ctx.scale(sc, sc); ctx.translate(-b.x, -b.y); ctx.globalAlpha = .92; b.draw(); ctx.restore(); ctx.globalAlpha = 1;
+    front.forEach(drawDrone);
+    if (u < shat + .2) { // casca de corrupcao com rachaduras de luz
+      const cr = clamp(u / shat, 0, 1);
+      ctx.save(); ctx.translate(cx, cy);
+      ctx.globalAlpha = (1 - cr) * .75; ctx.fillStyle = rdl(0, 0, 30, 260, [[0, 'rgba(10,2,24,.9)'], [1, 'rgba(10,2,24,0)']]); ctx.beginPath(); ctx.arc(0, 0, 260, 0, 7); ctx.fill();
+      ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 1; ctx.lineCap = 'round';
+      for (let i = 0; i < 12; i++) { const a2 = i / 12 * TAU + .3, l = 60 + cr * 190 + Math.sin(i * 5) * 30; ctx.strokeStyle = i % 2 ? '#ffffff' : col; ctx.lineWidth = 3 + cr * 3; ctx.beginPath(); ctx.moveTo(0, 0); for (let s2 = 1; s2 <= 5; s2++) ctx.lineTo(Math.cos(a2) * l * s2 / 5 + Math.sin(s2 * 7 + i) * 10, Math.sin(a2) * l * s2 / 5 * .7 + Math.cos(s2 * 5 + i) * 8); ctx.stroke(); }
+      ctx.restore(); ctx.globalAlpha = 1;
+    }
+    if (!keep && u >= shat && !S.shat) {
+      S.shat = true; Snd.play('explode', { size: 1 }); Snd.play('shield'); Snd.play('heart');
+      S.deb = Array.from({ length: 44 }, () => { const a = rand(0, TAU), s = rand(120, 520); return { x: cx + rand(-60, 60), y: cy + rand(-40, 40), vx: Math.cos(a) * s, vy: Math.sin(a) * s - 100, r: rand(8, 22), rot: rand(0, 6), vr: rand(-8, 8), life: rand(1.2, 2.2) }; });
+    }
+    if (S.deb) {
+      for (const d of S.deb) { d.life -= dt; d.x += d.vx * dt; d.y += d.vy * dt; d.vy += 380 * dt; d.rot += d.vr * dt; }
+      ctx.fillStyle = '#12041f'; ctx.strokeStyle = 'rgba(150,90,255,.5)'; ctx.lineWidth = 2;
+      for (const d of S.deb) if (d.life > 0) { ctx.save(); ctx.globalAlpha = clamp(d.life, 0, 1); ctx.translate(d.x, d.y); ctx.rotate(d.rot); ctx.beginPath(); for (let i = 0; i < 5; i++) { const a2 = i / 5 * TAU, r = d.r * (.7 + (i % 2) * .5); ctx.lineTo(Math.cos(a2) * r, Math.sin(a2) * r); } ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore(); }
+      ctx.globalAlpha = 1;
+    }
+    if (S.shat) {
+      const a = u - shat;
+      if (a < .7) { ctx.globalAlpha = (1 - a / .7) * .7; ctx.fillStyle = '#fff6d8'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; }
+      ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = '#ffe9a8';
+      for (let i = 0; i < 3; i++) { const k2 = (a - i * .2) / 1.4; if (k2 > 0 && k2 < 1) { ctx.globalAlpha = (1 - k2) * .8; ctx.lineWidth = 6 * (1 - k2) + 1; ctx.beginPath(); ctx.arc(cx, cy, 30 + k2 * 480, 0, TAU); ctx.stroke(); } }
+      ctx.restore(); ctx.globalAlpha = 1;
+    }
+    if (u > shat + .8 || keep) { // calma: brilhos subindo
+      ctx.save(); ctx.globalCompositeOperation = 'lighter';
+      for (let i = 0; i < 16; i++) { const p = (t * .35 + i / 16) % 1; drawGlow(cx + Math.sin(i * 5 + t) * 160, cy + 130 - p * 280, 6, i % 3 ? col : '#ffffff', (1 - p) * .7); }
+      ctx.restore(); ctx.globalAlpha = 1;
+    }
+  },
+
+  // o Vazio cobre o sol recem-libertado
+  sceneVoidArrive(S, t) {
+    const u = S.t, p = clamp(u / 7, 0, 1), e = p * p * (3 - 2 * p), sx = W * .42, sy = H * .38;
+    if (!S.fx) { S.fx = true; Snd.play('rumble', { dur: 3 }); }
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(sx, sy, 330, '#ffb340', .55 * (1 - e * .5)); drawGlow(sx, sy, 170, '#fff2c0', .6);
+    ctx.lineCap = 'round'; ctx.strokeStyle = 'rgba(255,210,120,.4)'; ctx.lineWidth = 2;
+    for (let i = 0; i < 28; i++) { const a = i / 28 * TAU + t * .05, l = 110 + (i % 4) * 30 + Math.sin(t * 2 + i) * 10; ctx.beginPath(); ctx.moveTo(sx + Math.cos(a) * 96, sy + Math.sin(a) * 96); ctx.lineTo(sx + Math.cos(a) * l, sy + Math.sin(a) * l); ctx.stroke(); }
+    ctx.restore(); ctx.globalAlpha = 1;
+    ctx.fillStyle = rdl(sx - 24, sy - 28, 8, 100, [[0, '#fff7d0'], [.5, '#ffc040'], [1, '#e0541a']]); ctx.beginPath(); ctx.arc(sx, sy, 90, 0, 7); ctx.fill();
+    const dx = lerp(W + 280, sx + 12, e), dy = sy - 6;
+    ctx.save(); ctx.lineCap = 'round';
+    for (let i = 0; i < 8; i++) { const a = Math.PI + (i - 3.5) * .4, L = 120 + (i % 3) * 50, sw = Math.sin(t * 1.4 + i) * 18; ctx.strokeStyle = 'rgba(150,90,255,.4)'; ctx.lineWidth = 12; ctx.beginPath(); ctx.moveTo(dx + Math.cos(a) * 160, dy + Math.sin(a) * 160); ctx.quadraticCurveTo(dx + Math.cos(a) * (160 + L * .6), dy + Math.sin(a) * (160 + L * .6) + sw, dx + Math.cos(a) * (160 + L), dy + Math.sin(a) * (160 + L) - sw); ctx.stroke(); ctx.strokeStyle = '#010005'; ctx.lineWidth = 7; ctx.stroke(); }
+    ctx.restore();
+    ctx.fillStyle = '#010005'; ctx.beginPath(); ctx.arc(dx, dy, 170, 0, 7); ctx.fill();
+    ctx.strokeStyle = 'rgba(150,90,255,.5)'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(dx, dy, 170, 0, TAU); ctx.stroke();
+    if (p > .55) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; for (const s of [-1, 1]) { drawGlow(dx + s * 56, dy - 6, 46, '#b98cff', (p - .55) * 2); ctx.fillStyle = '#f2e8ff'; ctx.globalAlpha = clamp((p - .55) * 2, 0, 1); ctx.beginPath(); ctx.ellipse(dx + s * 56, dy - 6, 28, 5, s * -.2, 0, 7); ctx.fill(); } ctx.restore(); ctx.globalAlpha = 1; }
+    ctx.fillStyle = `rgba(10,0,40,${p * .45})`; ctx.fillRect(0, 0, W, H);
+    this.dyingStars(t);
+  },
+
+  // o Vazio se desfaz em mil sombras
+  sceneVoidBreak(S, t) {
+    const u = S.t, cx = W / 2, cy = H * .4;
+    if (!S.fx) { S.fx = true; Snd.play('explode', { size: 1.6 }); Snd.play('rumble', { dur: 2.5 }); S.wisps = Array.from({ length: 46 }, () => ({ a: rand(0, TAU), s: rand(160, 560), w: rand(.5, 1.4), l: rand(60, 170) })); }
+    const r = Math.max(0, 210 * (1 - easeOut(u / 1.6)));
+    if (r > 2) { ctx.fillStyle = '#010005'; ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.fill(); ctx.strokeStyle = 'rgba(150,90,255,.6)'; ctx.lineWidth = 4; ctx.stroke(); }
+    ctx.save(); ctx.lineCap = 'round';
+    for (const w of S.wisps || []) {
+      const d = w.s * u, a = w.a + Math.sin(u * 3 + w.w) * .1, life = clamp(1 - u / 3, 0, 1), tail = w.l * life;
+      const x = cx + Math.cos(a) * d, y = cy + Math.sin(a) * d * .8, x0 = x - Math.cos(a) * tail, y0 = y - Math.sin(a) * tail * .8;
+      ctx.strokeStyle = `rgba(150,90,255,${life * .35})`; ctx.lineWidth = 12 * life + 3; ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x, y); ctx.stroke();
+      ctx.strokeStyle = `rgba(4,0,16,${life * .95})`; ctx.lineWidth = 8 * life + 2; ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x, y); ctx.stroke();
+    }
+    ctx.restore();
+    if (u < .5) { ctx.globalAlpha = (1 - u / .5) * .5; ctx.fillStyle = '#b98cff'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; }
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(cx, cy, 420 * easeOut(u / 3), '#7fe0ff', .14); ctx.restore(); ctx.globalAlpha = 1;
+    this.dyingStars(t);
+  },
+
   // pula marcadores de musica e toca a trilha da cena
   curPage(S) {
     while (S.pages[S.i] && S.pages[S.i].music && !S.pages[S.i].who && !S.pages[S.i].title && !S.pages[S.i].mission) {
@@ -234,6 +358,7 @@ const Screens = {
     ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
     const sc = pg.scene || (pg.mission ? 'boss' : null);
     if (sc === 'void') this.sceneVoid(t); else if (sc === 'heart') this.sceneHeart(t); else if (sc === 'lumi') this.sceneLumi(t); else if (sc === 'boss') this.sceneBoss(S, t); else if (sc === 'spark') this.sceneSpark(S, t); else if (sc === 'launch') this.sceneLaunch(S, t);
+    else if (sc === 'lumiFade') this.sceneLumiFade(S, pg, t); else if (sc === 'freed' || sc === 'freedKeep') this.sceneFreed(S, t, sc === 'freedKeep'); else if (sc === 'voidArrive') this.sceneVoidArrive(S, t); else if (sc === 'voidBreak') this.sceneVoidBreak(S, t);
     else if (sc === 'lit' || sc === 'litKeep') this.sceneLit(S, t, sc === 'litKeep'); else if (sc === 'fragment' || sc === 'fragmentKeep') this.sceneFragment(S, pg, t, sc === 'fragmentKeep'); else if (sc === 'fragments4') this.sceneFragments4(S, pg, t);
     // particulas flutuando (poeira de luz)
     if (!S.motes) S.motes = Array.from({ length: 70 }, () => ({ x: rand(0, W), y: rand(0, H), v: rand(10, 40), r: rand(2, 6), ph: rand(0, 6) }));
@@ -250,7 +375,7 @@ const Screens = {
     const now = World.t, dt = Math.min(.05, now - (S.last ?? now)); S.last = now; S.t += dt;
     const t = now, adv = Input.pressed(' ') || Input.pressed('enter') || Input.mouse.click;
     const narr = pg.who === 'N', title = !!pg.title, mis = !!pg.mission;
-    const next = () => { S.i++; S.t = 0; S.lastShown = 0; S.doneAt = null; S.fx = false; Snd.play('uiSelect'); if (S.i >= S.pages.length) Game.endStory(); };
+    const next = () => { S.i++; S.t = 0; S.lastShown = 0; S.doneAt = null; S.fx = false; S.shat = false; S.deb = null; Snd.play('uiSelect'); if (S.i >= S.pages.length) Game.endStory(); };
     ctx.globalAlpha = 1; ctx.fillStyle = `rgba(8,2,26,${title ? .88 : mis ? .6 : narr ? .42 : .22})`; ctx.fillRect(0, 0, W, H);
     ctx.fillStyle = rdl(W / 2, H / 2, H * .35, H * .95, [[0, 'rgba(0,0,0,0)'], [1, 'rgba(0,0,0,.7)']]); ctx.fillRect(0, 0, W, H);
     const BH = 64 * easeOut((S.total || 0) / .8);

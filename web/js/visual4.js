@@ -12,12 +12,13 @@ Visual4.fxStep = function (dt) {
 
 // ===== 1. corte de golpe especial =====
 Visual4.cutin = function (wid) {
-  const w = WEAPONS[wid]; G.cutin = { t: 0, dur: 1.05, name: w.specName.toUpperCase(), col: w.c, who: wid === 'orbi' ? 'B' : 'O' };
-  const p = G.player; if (p) { p.mood = 'determined'; p.moodT = .9; }
+  const w = WEAPONS[wid]; G.cutin = { t: 0, dur: 2.0, name: w.specName.toUpperCase(), col: w.c, who: wid === 'orbi' ? 'B' : 'O' };
+  const p = G.player; if (p) { p.mood = 'determined'; p.moodT = 1.2; }
+  Game.slowmo = 1; G.timers.push({ t: .45, fn: () => { if (!G.boss || G.boss.state !== 'dying') Game.slowmo = 0; } });
 };
 Visual4.cutinDraw = function () {
   const c = G.cutin; if (!c) return; if (G.state === 'play') c.t += 1 / 60; if (c.t > c.dur) { G.cutin = null; return; }
-  const inK = easeOut(clamp(c.t / .2, 0, 1)), outK = easeOut(clamp((c.t - (c.dur - .22)) / .22, 0, 1)), a = inK * (1 - outK), t = World.t;
+  const inK = easeOut(clamp(c.t / .4, 0, 1)), outK = easeOut(clamp((c.t - (c.dur - .4)) / .4, 0, 1)), a = inK * (1 - outK), t = World.t;
   ctx.save(); ctx.globalAlpha = a;
   const y0 = 232, h = 150, sl = 70, off = (1 - inK) * -W + outK * W;
   ctx.translate(off, 0);
@@ -27,7 +28,7 @@ Visual4.cutinDraw = function () {
   ctx.beginPath(); ctx.moveTo(-40, y0 + sl * .3); ctx.lineTo(W + 40, y0 - sl * .3); ctx.moveTo(-40, y0 + h + sl * .3); ctx.lineTo(W + 40, y0 + h - sl * .3); ctx.stroke();
   ctx.lineWidth = 2; ctx.globalAlpha = a * .4; for (let i = 0; i < 16; i++) { const yy = y0 + 8 + (i * 37) % (h - 10), xx = ((t * 1500 + i * 211) % (W + 400)) - 200; ctx.beginPath(); ctx.moveTo(xx, yy); ctx.lineTo(xx + 160, yy); ctx.stroke(); }
   ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = a;
-  Portraits.draw(c.who, 180 + inK * 40, y0 + h / 2, 190, { mood: 'determined', t });
+  Portraits.draw(c.who, 180 + Math.min(1, c.t / 1.8) * 50, y0 + h / 2, 190, { mood: 'determined', t });
   ctx.save(); ctx.translate(W - 70, y0 + 36); ctx.transform(1, 0, -.18, 1, 0, 0); ctx.shadowColor = c.col; ctx.shadowBlur = 30;
   txt(c.name, 0, 0, c.name.length > 14 ? 54 : 64, '#ffffff', 'right', 900); ctx.restore();
   txt(c.who === 'B' ? 'ORBI' : 'OLIENZINHO', W - 70, y0 + 104, 20, c.col, 'right', 900);

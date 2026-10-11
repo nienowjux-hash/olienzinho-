@@ -1,7 +1,7 @@
 'use strict';
 // ---------- audio: efeitos e musica 100% sintetizados (Web Audio) ----------
 const Snd = (() => {
-  let ac = null, comp, master, sfxBus, musBus, cineBus, revIn, delIn, noiseBuf, analyser;
+  let ac = null, comp, master, sfxBus, musMaster, musBus, cineBus, revIn, delIn, noiseBuf, analyser;
   const vol = { sfx: .8, music: .55 };
   const SFX_TRIM = .62, MUS_TRIM = .72; // margem interna para nada estourar
   const lastPlay = {};
@@ -31,8 +31,8 @@ const Snd = (() => {
     analyser = ac.createAnalyser(); analyser.fftSize = 32768;
     comp.connect(shelf); shelf.connect(tone); tone.connect(master); master.connect(analyser); master.connect(ac.destination);
     sfxBus = ac.createGain(); sfxBus.gain.value = vol.sfx * SFX_TRIM; sfxBus.connect(comp);
-    musBus = ac.createGain(); musBus.gain.value = vol.music * MUS_TRIM; musBus.connect(comp);
-    cineBus = ac.createGain(); cineBus.gain.value = 1.9; cineBus.connect(musBus);
+    musMaster = ac.createGain(); musMaster.gain.value = vol.music * MUS_TRIM; musMaster.connect(comp);
+    newTrackBus();
     // reverb
     const conv = ac.createConvolver(); conv.buffer = makeImpulse(2.6, 2.4);
     revIn = ac.createGain(); const revOut = ac.createGain(); revOut.gain.value = .5;
@@ -98,13 +98,18 @@ const Snd = (() => {
     s.start(t, Math.random() * 1.5); s.stop(t + dur + .05);
   }
 
+  // cada trilha tem o seu proprio canal: ao trocar, a antiga some devagar enquanto a nova entra (crossfade)
+  function newTrackBus() {
+    musBus = ac.createGain(); musBus.gain.value = 1; musBus.connect(musMaster);
+    cineBus = ac.createGain(); cineBus.gain.value = 1.9; cineBus.connect(musBus);
+  }
   function duck(amount, sec) {
     if (!ac) return;
     const t = now(), base = vol.music * MUS_TRIM;
-    musBus.gain.cancelScheduledValues(t);
-    musBus.gain.setValueAtTime(musBus.gain.value, t);
-    musBus.gain.linearRampToValueAtTime(base * (1 - amount), t + .03);
-    musBus.gain.linearRampToValueAtTime(base, t + sec);
+    musMaster.gain.cancelScheduledValues(t);
+    musMaster.gain.setValueAtTime(musMaster.gain.value, t);
+    musMaster.gain.linearRampToValueAtTime(base * (1 - amount), t + .03);
+    musMaster.gain.linearRampToValueAtTime(base, t + sec);
   }
 
   // ---------- efeitos ----------
@@ -704,13 +709,20 @@ const Snd = (() => {
     if (!ac) { pending = { key, inten }; return; }
     pending = null;
     if (mus.on && mus.key === key) { mus.inten = inten; return; }
-    musicStop(true);
+    const t = now(), xf = mus.on; // havia musica tocando? entao e uma troca suave
+    if (xf) {
+      const old = musBus, oldCine = cineBus;
+      old.gain.cancelScheduledValues(t); old.gain.setValueAtTime(old.gain.value, t); old.gain.setTargetAtTime(.0001, t, .5);
+      setTimeout(() => { try { old.disconnect(); oldCine.disconnect(); } catch (e) { } }, 4500);
+    }
+    mus.on = false; clearInterval(mus.timer);
+    newTrackBus();
     mus.key = key; mus.th = THEMES[key] || THEMES.s1; mus.inten = inten; mus.lay = { combo: 0, danger: 0 };
     mus.step = 0; mus.next = now() + .08; mus.on = true;
-    const t = now();
-    musBus.gain.cancelScheduledValues(t);
     musBus.gain.setValueAtTime(.0001, t);
-    musBus.gain.linearRampToValueAtTime(vol.music * MUS_TRIM, t + 1.2);
+    musBus.gain.setValueAtTime(.0001, t + (xf ? .35 : 0));
+    musBus.gain.linearRampToValueAtTime(1, t + (xf ? .35 : 0) + (xf ? 2 : 1.2));
+    musMaster.gain.cancelScheduledValues(t); musMaster.gain.setValueAtTime(vol.music * MUS_TRIM, t);
     clearInterval(mus.timer);
     mus.timer = setInterval(tick, 40);
   }
@@ -731,7 +743,7 @@ const Snd = (() => {
     vol.sfx = s; vol.music = m;
     if (!ac) return;
     sfxBus.gain.value = s * SFX_TRIM;
-    if (mus.on) musBus.gain.value = m * MUS_TRIM;
+    if (musMaster) musMaster.gain.value = m * MUS_TRIM;
   }
   function peak() {
     if (!analyser) return -1;

@@ -48,6 +48,7 @@ function laserTick(p) {
   const n = p.shots, beams = [];
   for (let i = 0; i < n; i++) beams.push(p.x + (i - (n - 1) / 2) * 34);
   p.beams = beams; p.beamT = .1;
+  for (const bx of beams) for (let k = 0; k < 2; k++) G.parts.push({ x: bx + rand(-10, 10), y: rand(60, p.y - 50), vx: rand(-90, 90), vy: rand(-60, 20), life: .28, max: .28, r: rand(1.5, 3), c: k ? '#ffffff' : '#7fe0ff', drag: 2 });
   for (const bx of beams) {
     const crit = Math.random() < p.crit, dmg = p.dmg * .5 * (crit ? p.critMul : 1);
     for (const e of G.enemies) if (!e.dead && e.y < p.y - 30 && Math.abs(e.x - bx) < e.rad + 14) beamHit(e, dmg, crit);

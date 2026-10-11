@@ -488,10 +488,22 @@ const Game = {
   drawBeams() {
     const p = G.player; if (!p || p.dead) return;
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
-    if (p.beamT > 0 && p.beams) for (const bx of p.beams) {
-      const w = 13 + Math.sin(World.t * 60) * 3;
-      ctx.fillStyle = lin(bx - w, 0, bx + w, 0, [[0, 'rgba(127,224,255,0)'], [.5, 'rgba(225,250,255,.95)'], [1, 'rgba(127,224,255,0)']]);
-      ctx.fillRect(bx - w, 0, w * 2, p.y - 36); drawGlow(bx, p.y - 36, 40, '#7fe0ff', .9);
+    const lk = G.laserK = lerp(G.laserK || 0, p.beamT > 0 && p.beams ? 1 : 0, .3);
+    if (lk > .02 && p.beams) for (const bx of p.beams) {
+      const t = World.t, botY = p.y - 36, flick = 1 + Math.sin(t * 70 + bx) * .08;
+      ctx.fillStyle = lin(bx - 36, 0, bx + 36, 0, [[0, 'rgba(80,190,255,0)'], [.5, 'rgba(80,190,255,' + .22 * lk + ')'], [1, 'rgba(80,190,255,0)']]); ctx.fillRect(bx - 36, 0, 72, botY);
+      const w = 11 * lk * flick;
+      ctx.fillStyle = lin(bx - w, 0, bx + w, 0, [[0, 'rgba(127,224,255,0)'], [.35, 'rgba(160,236,255,.85)'], [.5, 'rgba(255,255,255,1)'], [.65, 'rgba(160,236,255,.85)'], [1, 'rgba(127,224,255,0)']]); ctx.fillRect(bx - w, 0, w * 2, botY);
+      ctx.fillStyle = 'rgba(255,255,255,' + lk + ')'; ctx.fillRect(bx - 2.2 * lk, 0, 4.4 * lk, botY);
+      for (let i = 0; i < 6; i++) { // pulsos de energia subindo
+        const yy = botY - ((t * 1000 + i * botY / 6) % botY), g = ctx.createLinearGradient(0, yy, 0, yy + 70);
+        g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(1, 'rgba(255,255,255,' + .7 * lk + ')'); ctx.fillStyle = g; ctx.fillRect(bx - w * .55, yy, w * 1.1, 70);
+      }
+      drawGlow(bx, botY, 56 * lk * flick, '#7fe0ff', .95); drawGlow(bx, botY, 24 * lk, '#ffffff', .95);
+      ctx.save(); ctx.translate(bx, botY); ctx.rotate(t * 6); ctx.strokeStyle = 'rgba(255,255,255,' + .7 * lk + ')'; ctx.lineWidth = 2; ctx.lineCap = 'round';
+      for (let i = 0; i < 4; i++) { ctx.rotate(Math.PI / 2); ctx.beginPath(); ctx.moveTo(10, 0); ctx.lineTo(26 * lk, 0); ctx.stroke(); } ctx.restore();
+      for (const e of G.enemies) if (!e.dead && e.y < botY && Math.abs(e.x - bx) < e.rad + 12) { drawGlow(bx, e.y + e.rad * .6, 50, '#ffffff', .75 * lk); drawGlow(bx, e.y + e.rad * .6, 90, '#7fe0ff', .45 * lk); }
+      const bo = G.boss; if (bo && bo.targetable()) for (let yy = botY; yy > 20; yy -= 30) if (bo.hitTest(bx, yy, 12)) { drawGlow(bx, yy, 70, '#ffffff', .8 * lk); drawGlow(bx, yy, 130, '#7fe0ff', .5 * lk); break; }
     }
     if (G.mega) {
       const m = G.mega, k = Math.min(1, m.t / .18) * Math.min(1, (m.dur - m.t) / .3), w = (82 + Math.sin(World.t * 40) * 10) * k;

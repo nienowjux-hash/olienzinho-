@@ -8,8 +8,9 @@ Bot.think = function (p, skill) {
   const bs = G.eb.filter(b => !b.dead), en = G.enemies.filter(e => !e.dead && e.type !== 'dummy'), boss = G.boss, hz = G.hazards;
   const tgtX = (() => { if (boss && boss.state === 'fight') { const w = Visual5.weak(boss); return w.x; } let q = null, qd = 1e9; for (const e of en) if (e.y < p.y - 40 && e.y > 20) { const d = Math.abs(e.x - p.x) + (p.y - e.y) * .3; if (d < qd) { qd = d; q = e; } } return q ? q.x : p.x; })();
   const pk = G.pickups.filter(k => !k.dead && (k.type === 'heart' || k.type === 'cap' || k.type === 'coin') && k.y > 100);
-  for (let cx = 50; cx <= W - 50; cx += 70) for (let cy = H - 250; cy <= H - 70; cy += 60) {
-    let danger = 0;
+  const sp = G.sp, chaseOn = !!(sp && sp.on && sp.type === 'chase' && sp.top !== undefined);
+  for (let cx = 50; cx <= W - 50; cx += 70) for (let cy = (chaseOn ? 130 : H - 250); cy <= H - 70; cy += 60) {
+    let danger = 0; if (chaseOn && cy > sp.top - 60) danger += 900;
     for (const b of bs) { for (const t of [.12, .25, .4]) { const x = b.x + b.vx * t, y = b.y + b.vy * t, d = Math.hypot(x - cx, y - cy), lim = b.r + 30; if (d < lim) danger += (lim - d) * 4; } }
     for (const e of en) { const d = Math.hypot(e.x - cx, e.y - cy), lim = e.rad + 46; if (d < lim) danger += (lim - d) * 6; if (e.type === 'kami' && e.mode === 'lock') danger += Math.max(0, 140 - d) * 2; }
     for (const h of hz) { if (h.t > h.warn + h.dur) continue; let inside; if (h.rot) { const dx = cx - h.cx, dy = cy - h.cy, ca = Math.cos(-h.rot), sa = Math.sin(-h.rot), lx = dx * ca - dy * sa, ly = dx * sa + dy * ca; inside = Math.abs(lx) < h.w / 2 + 30 && Math.abs(ly) < h.h / 2 + 30; } else inside = Math.abs(cx - h.cx) < h.w / 2 + 30 && Math.abs(cy - h.cy) < h.h / 2 + 30; if (inside) danger += 600; }

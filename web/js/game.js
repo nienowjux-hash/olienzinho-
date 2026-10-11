@@ -61,7 +61,7 @@ const Game = {
     World.setStage(G.stage.pal); Events.reset(G.stage);
     G.player = newPlayer();
     { const ld = Save.data.loadout; G.player.weapon = Save.data.owned.weapons[ld.weapon] ? ld.weapon : 'violet'; const pw = Visual13.pilotWeapon(ld.char); if (pw) G.player.weapon = pw; }
-    G.stats = { hits: 0, bossHit: 0, maxCombo: 0, minis: 0 }; G.timers = []; G.hitstop = 0; G.mega = null; G.miniDone = false; G.endless = false; G.daily = false; G.training = false; G.dmod = null; G.well = null; G.relic = null; G.grazeN = 0; G.rush = false; G.sanct = false; G.practice = null; G.secret = null; G.adv = null; G.weekly = null; G.wrule = null; G.fragSpawned = false; G.encSpawned = false; Extras.reset(); Extras.tutStart();
+    G.stats = { hits: 0, bossHit: 0, maxCombo: 0, minis: 0 }; G.timers = []; G.hitstop = 0; G.mega = null; G.miniDone = false; G.endless = false; G.daily = false; G.training = false; G.dmod = null; G.well = null; G.relic = null; G.abPop = []; G.abPrev = []; G.grazeN = 0; G.rush = false; G.sanct = false; G.practice = null; G.secret = null; G.adv = null; G.weekly = null; G.wrule = null; G.fragSpawned = false; G.encSpawned = false; Extras.reset(); Extras.tutStart();
     recalcStats(G.player); G.player.hp = G.player.maxHp; Visual6.initP2(); Visual8.onStart();
     Events.banner = { t: 0, title: G.stage.name.toUpperCase(), sub: 'FASE ' + (idx + 1), c: G.stage.tint };
     G.finisher = null; G.cut = null; G.story = null;
@@ -323,7 +323,7 @@ const Game = {
     const p = G.player;
     G.t += dt; G.intro += dt;
     World.update(dt, p.vy);
-    Events.update(dt); Events.updateHazards(dt); Extras.update(dt); Visual.update(dt); Visual2.update(dt); Visual5.update(dt); Visual6.update(dt); Visual8.update(dt); Visual11.update(dt); Visual12.beamReset(); Visual13.update(dt); Extras.tutUpdate(dt); if (G.training) Extras.trainUpdate(dt);
+    Events.update(dt); Events.updateHazards(dt); Extras.update(dt); Visual.update(dt); Visual2.update(dt); Visual5.update(dt); Visual6.update(dt); Visual8.update(dt); Visual11.update(dt); Visual12.beamReset(); Visual13.update(dt); Visual15.update(dt); Extras.tutUpdate(dt); if (G.training) Extras.trainUpdate(dt);
     Snd.setLayers(p.dead ? 0 : G.combo >= 25 ? 2 : G.combo >= 10 ? 1 : 0, !p.dead && p.hp <= Math.max(1, p.maxHp * .25) ? 1 : 0);
     this.director(dt);
     if (!p.dead) this.updatePlayer(dt); else if (!G.p2 || G.p2.dead) { G.overT -= rdt; if (G.overT <= 0) { this.gameOver(); return; } }
@@ -423,7 +423,7 @@ const Game = {
     ctx.save();
     if (G.shake > 0) ctx.translate(rand(-1, 1) * G.shake * .55, rand(-1, 1) * G.shake * .55);
     if (!G.furyCut) G.zoom = (G.zoom || 0) * .92; if (G.zoom <= .002) G.zoomCx = null; if (G.zoom > .001) { const zx = G.zoomCx ?? W / 2, zy = G.zoomCy ?? H / 2; ctx.translate(zx, zy); ctx.scale(1 + G.zoom, 1 + G.zoom); ctx.translate(-zx, -zy); }
-    World.draw(cx); Visual.biome(); Visual4.fog(); Visual2.lights();
+    World.draw(cx); Visual15.veil(); Visual.biome(); Visual4.fog(); Visual15.weather(); Visual2.lights();
     Events.drawHazards();
     for (const k of G.pickups) Art.pickup(k);
     if (G.boss) { const b = G.boss, br = 1 + Math.sin(b.t * 2) * .012; ctx.save(); ctx.translate(b.shx || 0, b.shy || 0); ctx.translate(b.x, b.y); ctx.scale(br, br); ctx.translate(-b.x, -b.y); Visual3.bossDraw(b); ctx.restore(); Visual.bossAura(b); }
@@ -450,7 +450,7 @@ const Game = {
         ctx.fillStyle = '#ff8a1f'; ctx.beginPath(); ctx.arc(o[0], o[1], 4, 0, 7); ctx.fill();
       }
     }
-    Visual6.drawP2(); Visual13.draw(); Visual12.fg(); drawDark(); Visual.overlay(); Visual2.flares();
+    Visual6.drawP2(); Visual13.draw(); Visual12.fg(); Visual15.chaseDraw(); drawDark(); Visual.overlay(); Visual2.flares();
     this.drawFinisherBeam();
     for (const q of G.parts) if (q.k === 'smoke') {
       const k = clamp(q.life / q.max, 0, 1);
@@ -492,7 +492,7 @@ const Game = {
     }
     Events.drawOverlay();
     if (G.flash > 0) { ctx.globalAlpha = Math.min(.7, G.flash * .35); ctx.fillStyle = '#e9e0ff'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; }
-    if (!G.cut && !G.hideHud) { this.drawHud(); Extras.tutDraw(); Extras.trainDraw(); }
+    if (!G.cut && !G.hideHud) { this.drawHud(); Extras.tutDraw(); Extras.trainDraw(); Visual15.hudDraw(); }
     this.drawCinematic();
     this.drawCut();
   },
@@ -658,7 +658,7 @@ const Game = {
     [['PULSO', 'ESPAÇO', p.pulseT, p.pulseCd, '#ffb340'], ['ESQUIVA', 'SHIFT', p.dashCd, p.dashCdMax, '#7fe0ff'], [wp.specName.toUpperCase(), 'Q', p.specCd, p.specCdMax, wp.c], ...Visual13.secHud(p)].forEach(([name, key, cd, mx, col], i) => {
       const cx = 56 + i * 112, cy = H - 66, rdy = cd <= 0, k = rdy ? 1 : 1 - cd / mx;
       G.abPrev = G.abPrev || []; G.abPop = G.abPop || []; if (rdy && G.abPrev[i] === false) G.abPop[i] = World.t; G.abPrev[i] = rdy;
-      { const pp = G.abPop[i] !== undefined ? World.t - G.abPop[i] : 9; if (pp < .6) { ctx.save(); ctx.strokeStyle = col; ctx.globalAlpha = 1 - pp / .6; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(cx, cy, 28 + pp * 55, 0, TAU); ctx.stroke(); ctx.restore(); } }
+      { const pp = G.abPop[i] !== undefined ? World.t - G.abPop[i] : 9; if (pp >= 0 && pp < .6) { ctx.save(); ctx.strokeStyle = col; ctx.globalAlpha = 1 - pp / .6; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(cx, cy, 28 + pp * 55, 0, TAU); ctx.stroke(); ctx.restore(); } }
       ctx.fillStyle = 'rgba(20,8,50,.65)'; ctx.beginPath(); ctx.arc(cx, cy, 28, 0, 7); ctx.fill();
       ctx.lineWidth = 5; ctx.strokeStyle = rdy ? col : '#6a5aa8'; ctx.beginPath(); ctx.arc(cx, cy, 24, -Math.PI / 2, -Math.PI / 2 + TAU * k); ctx.stroke();
       if (rdy) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(cx, cy, 42, col, .45 + Math.sin(World.t * 6 + i) * .15); ctx.restore(); ctx.globalAlpha = 1; }

@@ -133,11 +133,11 @@ ENEMY_DEF.rod = { hp: 1e6, rad: 30, spd: 0, xp: 0, score: 0, coin: 0, glow: '#9f
 // ===== momentos especiais dentro das fases =====
 const SPN = { asteroids: ['CAMPO DE ASTEROIDES', 'ATRAVESSE A CHUVA DE ROCHAS', '#ffb340', 9], lasergrid: ['CORREDOR DE LASERS', 'ENCONTRE A BRECHA', '#ff7ac8', 11], swarm: ['ENXAME!', 'ELES VÊM DOS DOIS LADOS', '#7fe0ff', 9] };
 Visual8.spStart = function () {
-  const sp = G.sp, st = G.stage ? G.stage.id : 0, type = G.endless ? pick(['asteroids', 'lasergrid', 'swarm']) : st === 1 ? 'asteroids' : st === 2 ? 'lasergrid' : pick(['asteroids', 'lasergrid', 'swarm']), d = SPN[type];
+  const sp = G.sp, st = G.stage ? G.stage.id : 0, type = G.endless ? pick(['asteroids', 'lasergrid', 'swarm', 'chase']) : st === 1 ? 'asteroids' : st === 2 ? 'swarm' : pick(['asteroids', 'lasergrid', 'swarm', 'chase']), d = SPN[type];
   sp.on = true; sp.t = 0; sp.type = type; sp.dur = d[3]; sp.hits0 = G.stats.hits; sp.n = 0; Events.banner = { t: 0, title: d[0], sub: d[1], c: d[2] }; Snd.play('bossWarn');
 };
 Visual8.spRun = function (dt) {
-  const sp = G.sp; sp.t += dt; const every = { asteroids: .5, lasergrid: 3.4, swarm: .55 }[sp.type];
+  const sp = G.sp; sp.t += dt; const every = { asteroids: .62, lasergrid: 3.4, swarm: .55 }[sp.type];
   if (sp.t >= sp.n * every + 1.2) {
     sp.n++;
     if (sp.type === 'asteroids') { Events.spawnMeteor(); if (sp.t > 6 && Math.random() < .4) Events.spawnMeteor(); }

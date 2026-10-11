@@ -62,7 +62,7 @@ Art.ebullet = function (b) {
     ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(-R * .12, -R * .12, R * .3, 0, 7); ctx.fill();
     ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = b.c; ctx.globalAlpha = .28; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(0, 0, R * 1.9, 0, 7); ctx.stroke(); ctx.globalAlpha = 1; drawGlow(0, 0, R * 2.4, b.c, .45);
   }
-  if (Save.data.settings.outline) { ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(0, 0, R * 1.3, 0, 7); ctx.stroke(); }
+  if (Save.data.settings.outline || Save.data.settings.contrast) { ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(0, 0, R * 1.3, 0, 7); ctx.stroke(); }
   ctx.restore();
 };
 
@@ -103,7 +103,7 @@ Visual.bossAura = function (b) {
 
 // ===== fundos vivos por fase =====
 Visual.biome = function () {
-  if (QL() < 1) return;
+  if (QL() < 1 || Save.data.settings.contrast) return;
   const st = G.stage ? G.stage.id : 0, t = World.t;
   ctx.save(); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'lighter';
   if (st === 0) { // esporos de luz

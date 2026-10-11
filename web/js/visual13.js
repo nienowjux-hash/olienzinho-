@@ -14,13 +14,13 @@ Visual13.pilotWeapon = id => id === 'orbi' && Save.data.cleared[3] ? 'orbi' : (G
 // ===== armas dos guardioes =====
 const bee = (p, k, n, ang, speed, mul, o) => mkBullet(p, p.x + k * 20, p.y - 20, ang, speed, mul, Object.assign({ kind: 'missile', orb: true, speed: 760, target: null, life: 2.2, pierce: 0, r: 8 }, o));
 WEAPONS.g_C = { name: 'Enxame', desc: 'Abelhas teleguiadas.', c: '#ffb340', price: 0, delay: 1.15, special: 'swarm', specName: 'Enxame', specDesc: 'Vinte e quatro abelhas atrás dos inimigos.',
-  fire(p) { const n = 3 + (p.shots - 1); for (let i = 0; i < n; i++) { const k = i - (n - 1) / 2; bee(p, k, n, -Math.PI / 2 + k * .5, 520, .5, { bee: true, c: '#ffb340' }); } muzzle(p, '#ffb340', 20); Snd.play('shoot', { lv: 0, wpn: 'fan', pan: Snd.panX(p.x) * .5 }); } };
+  fire(p) { const n = 5 + (p.shots - 1) * 2; for (let i = 0; i < n; i++) { const k = i - (n - 1) / 2; bee(p, k * .5, n, -Math.PI / 2 + k * .3 + rand(-.12, .12), rand(420, 600), .32, { bee: true, c: '#ffb340', ph: rand(0, 6) }); } muzzle(p, '#ffb340', 20); Snd.play('shoot', { lv: 0, wpn: 'fan', pan: Snd.panX(p.x) * .5 }); } };
 WEAPONS.g_P = { name: 'Rochedo', desc: 'Rocha lenta que explode em área.', c: '#c8a0b8', price: 0, delay: 1.9, special: 'quake', specName: 'Terremoto', specDesc: 'Sacode a tela: todos os inimigos sofrem dano.',
-  fire(p) { const n = Math.min(3, p.shots); for (let i = 0; i < n; i++) { const k = i - (n - 1) / 2; mkBullet(p, p.x + k * 30, p.y - 40, -Math.PI / 2 + k * .12, 600, 3.8, { kind: 'cannon', r: 20, aoe: 105, life: 1.5, pierce: 0, c: '#c8a0b8' }); } muzzle(p, '#c8a0b8', 30); shake(2); Snd.play('cannon', { pan: Snd.panX(p.x) * .5 }); } };
+  fire(p) { const n = Math.min(3, p.shots); for (let i = 0; i < n; i++) { const k = i - (n - 1) / 2; mkBullet(p, p.x + k * 30, p.y - 40, -Math.PI / 2 + k * .12, 600, 3.2, { kind: 'cannon', rock: true, sd: rand(0, 9), r: 20, aoe: 106, life: 1.5, pierce: 0, c: '#c8a0b8' }); } for (let i = 0; i < 4 + p.shots; i++) mkBullet(p, p.x + rand(-16, 16), p.y - 36, -Math.PI / 2 + rand(-.45, .45), rand(700, 900), .16, { rock: true, small: true, sd: rand(0, 9), r: 7, life: .7, pierce: 0, c: '#c8a0b8' }); muzzle(p, '#c8a0b8', 30); shake(2); Snd.play('cannon', { pan: Snd.panX(p.x) * .5 }); } };
 WEAPONS.g_E = { name: 'Olhar', desc: 'Feixes que atravessam os inimigos.', c: '#ff7ac8', price: 0, delay: 1, special: 'gaze', specName: 'Olhar do Vigia', specDesc: 'Limpa os tiros e marca os inimigos: dano dobrado por 4s.',
   fire(p) { const n = 2 + Math.floor((p.shots - 1) / 2) * 2; for (let i = 0; i < n; i++) { const k = i - (n - 1) / 2; mkBullet(p, p.x + k * 20, p.y - 34, -Math.PI / 2, 1150, .78, { pierce: 99, c: '#ff7ac8' }); } muzzle(p, '#ff7ac8', 18); Snd.play('shoot', { lv: 0, pan: Snd.panX(p.x) * .5 }); } };
 WEAPONS.g_S = { name: 'Fogo Solar', desc: 'Bolas de fogo em leque largo.', c: '#ff8a1f', price: 0, delay: 1.2, special: 'sunburst', specName: 'Explosão Solar', specDesc: 'Um anel de fogo em todas as direções.',
-  fire(p) { const n = 5 + (p.shots - 1) * 2; for (let i = 0; i < n; i++) mkBullet(p, p.x, p.y - 30, -Math.PI / 2 + (i / (n - 1) - .5) * 1.15, 780, .78, { r: 9, c: '#ff8a1f', pierce: 1, life: .7 }); muzzle(p, '#ffb340', 24); Snd.play('shoot', { lv: 0, wpn: 'fan', pan: Snd.panX(p.x) * .5 }); } };
+  fire(p) { const n = 5 + (p.shots - 1) * 2; for (let i = 0; i < n; i++) mkBullet(p, p.x, p.y - 30, -Math.PI / 2 + (i / (n - 1) - .5) * 1.15, 700, .78, { r: 12, c: '#ff8a1f', pierce: 1, life: .75, fire: true, ph: rand(0, 6) }); muzzle(p, '#ffb340', 24); Snd.play('shoot', { lv: 0, wpn: 'fan', pan: Snd.panX(p.x) * .5 }); } };
 SPECIALS.swarm = function (p) { const d = p.specPow || 1; for (let i = 0; i < 24; i++) { const a = i / 24 * TAU; G.pb.push({ kind: 'missile', orb: true, bee: true, x: p.x, y: p.y - 10, vx: Math.cos(a) * 380, vy: Math.sin(a) * 380, dmg: p.dmg * 1.1 * d, pierce: 0, hits: [], life: 3.2, speed: 820, target: null, c: '#ffb340', r: 8, crit: false }); } flashScreen(.12); };
 SPECIALS.quake = function (p) { const d = (p.specPow || 1) * p.dmg * 3.2; shockwave(p.x, p.y, 900, '#c8a0b8'); shockwave(p.x, p.y, 500, '#ffffff'); shake(24); for (const q of G.eb) q.dead = true; for (const e of G.enemies) if (!e.dead && e.type !== 'dummy') damageEnemy(e, d, false, true); const bo = G.boss; if (bo && bo.targetable()) bo.damage(Math.min(d * 2, bo.maxHp * .045)); shedDebris(p.x, p.y, 20, ['#5a3a58', '#c8a0b8'], 600, 14); };
 SPECIALS.gaze = function (p) { G.mark = 4; for (const q of G.eb) q.dead = true; shockwave(p.x, p.y, 700, '#ff7ac8'); flashScreen(.25); };
@@ -34,11 +34,41 @@ SPECIALS.sunburst = function (p) { const d = (p.specPow || 1) * p.dmg * 1.4; for
   };
   const ap = Art.pbullet;
   Art.pbullet = function (b) {
-    if (b.bee) { const t = World.t * 30 + b.x * .1; ctx.save(); ctx.translate(b.x, b.y); ctx.rotate(Math.atan2(b.vy, b.vx) + Math.PI / 2); ctx.globalCompositeOperation = 'lighter'; drawGlow(0, 0, 24, '#ffb340', .7); ctx.globalCompositeOperation = 'source-over';
-      ctx.fillStyle = '#ffd36a'; ctx.beginPath(); ctx.ellipse(0, 0, 5, 8, 0, 0, TAU); ctx.fill(); ctx.fillStyle = '#3a2008'; ctx.fillRect(-5, -1, 10, 2.5); ctx.fillStyle = 'rgba(255,255,255,.7)'; for (const s of [-1, 1]) { ctx.beginPath(); ctx.ellipse(s * 7, -2, 6, 3 + Math.sin(t) * 1.5, s * .5, 0, TAU); ctx.fill(); } ctx.restore(); return; }
+    if (b.bee) { // abelha de verdade: asas batendo, listras e ferrao
+      const t = World.t * 40 + (b.ph || 0), a = Math.atan2(b.vy, b.vx) + Math.PI / 2; ctx.save(); ctx.translate(b.x, b.y); ctx.rotate(a + Math.sin(t * .2) * .12); ctx.scale(1.8, 1.8);
+      ctx.globalCompositeOperation = 'lighter'; drawGlow(0, 0, 20, '#ffb340', .4); ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
+      const fl = Math.sin(t); for (const s of [-1, 1]) { ctx.save(); ctx.rotate(s * (.5 + fl * .45)); ctx.fillStyle = 'rgba(235,248,255,.8)'; ctx.strokeStyle = 'rgba(150,200,240,.9)'; ctx.lineWidth = .8; ctx.beginPath(); ctx.ellipse(s * 6, -3, 6.5, 3, s * .3, 0, TAU); ctx.fill(); ctx.stroke(); ctx.restore(); }
+      ctx.fillStyle = '#3a2008'; ctx.beginPath(); ctx.moveTo(-1.8, 9); ctx.lineTo(0, 15); ctx.lineTo(1.8, 9); ctx.fill();
+      ctx.fillStyle = '#ffc233'; ctx.beginPath(); ctx.ellipse(0, 3.5, 5.2, 7.2, 0, 0, TAU); ctx.fill();
+      ctx.save(); ctx.beginPath(); ctx.ellipse(0, 3.5, 5.2, 7.2, 0, 0, TAU); ctx.clip(); ctx.fillStyle = '#2a1404'; ctx.fillRect(-6, 1, 12, 2.3); ctx.fillRect(-6, 5.4, 12, 2.3); ctx.restore();
+      ctx.fillStyle = '#6a4010'; ctx.beginPath(); ctx.arc(0, -3, 4.2, 0, TAU); ctx.fill(); ctx.fillStyle = '#ffd96a'; ctx.beginPath(); ctx.arc(0, -8.2, 3.6, 0, TAU); ctx.fill();
+      ctx.fillStyle = '#fff'; for (const s of [-1, 1]) { ctx.beginPath(); ctx.arc(s * 1.9, -8.6, 1.4, 0, TAU); ctx.fill(); } ctx.fillStyle = '#1a0a02'; for (const s of [-1, 1]) { ctx.beginPath(); ctx.arc(s * 1.9, -8.4, .7, 0, TAU); ctx.fill(); }
+      ctx.strokeStyle = '#2a1404'; ctx.lineWidth = .9; for (const s of [-1, 1]) { ctx.beginPath(); ctx.moveTo(s * 1.4, -11); ctx.quadraticCurveTo(s * 3, -14, s * 4.6, -13.4); ctx.stroke(); }
+      ctx.restore(); return; }
+    if (b.rock) { // pedra de verdade: lasca irregular girando
+      const R = (b.r || 20) * 1.15, rot = World.t * (b.small ? 9 : 3.4) + (b.sd || 0); ctx.save(); ctx.translate(b.x, b.y); ctx.rotate(rot);
+      if (!b.small) { ctx.globalCompositeOperation = 'lighter'; drawGlow(0, 0, R * 1.9, '#ff9a6a', .22); ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1; }
+      const pts = []; for (let i = 0; i < 9; i++) { const a = i / 9 * TAU, k = R * (.78 + ((Math.sin(i * 2.9 + (b.sd || 0)) + 1) * .15)); pts.push([Math.cos(a) * k, Math.sin(a) * k * .95]); }
+      ctx.fillStyle = lin(-R, -R, R, R, [[0, '#e8ccd8'], [.5, '#a07a98'], [1, '#4a2e48']]); ctx.strokeStyle = '#241428'; ctx.lineWidth = b.small ? 1.5 : 3; ctx.lineJoin = 'round'; ctx.beginPath(); pts.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.closePath(); ctx.fill(); ctx.stroke();
+      if (!b.small) { ctx.fillStyle = 'rgba(255,255,255,.28)'; ctx.beginPath(); ctx.moveTo(pts[0][0] * .8, pts[0][1] * .8); ctx.lineTo(pts[1][0] * .8, pts[1][1] * .8); ctx.lineTo(pts[2][0] * .3, pts[2][1] * .3); ctx.closePath(); ctx.fill(); ctx.strokeStyle = 'rgba(36,20,40,.75)'; ctx.lineWidth = 1.8; ctx.beginPath(); ctx.moveTo(-R * .1, -R * .6); ctx.lineTo(R * .15, -R * .1); ctx.lineTo(-R * .2, R * .35); ctx.moveTo(R * .15, -R * .1); ctx.lineTo(R * .55, R * .05); ctx.stroke(); }
+      ctx.restore(); return; }
+    if (b.fire) { Visual13.fireball(b.x, b.y, b.r || 12, Math.atan2(b.vy, b.vx), b.ph || 0, 1); return; }
+    if (b.kind === 'flame') { const k = 1 - clamp((b.life || 0) / (b.l0 || .38), 0, 1); Visual13.fireball(b.x, b.y, (b.r || 15) * (.8 + k * .5), Math.atan2(b.vy, b.vx), b.x * .05, 1 - k * .8); return; }
     return ap.call(this, b);
   };
 }
+// bola de fogo: cabeca branca-amarela, cauda de labaredas que tremem e mudam de cor
+Visual13.fireball = function (x, y, r, ang, ph, al) {
+  const dx = Math.cos(ang), dy = Math.sin(ang), px = -dy, py = dx, t = World.t * 22 + ph; ctx.save();
+  for (let k = 9; k >= 0; k--) {
+    const f = k / 9, w = Math.sin(t + k * 1.1) * k * .9, cx = x - dx * k * r * .62 + px * w, cy = y - dy * k * r * .62 + py * w, rr = r * (1 - f * .55) * (1 + Math.sin(t * 1.3 + k) * .1);
+    ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = al * (1 - f) * .75; ctx.fillStyle = f < .35 ? '#ffb43a' : f < .7 ? '#ff6a1a' : '#b8300e'; ctx.beginPath(); ctx.arc(cx, cy, rr, 0, TAU); ctx.fill();
+    ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = al * (1 - f) * .5; drawGlow(cx, cy, rr * 2, f < .5 ? '#ff9a2a' : '#ff4a1a', .8);
+  }
+  ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = al; drawGlow(x, y, r * 2.8, '#ff8a1f', .85);
+  ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = '#ffd36a'; ctx.beginPath(); ctx.arc(x, y, r * .85, 0, TAU); ctx.fill(); ctx.fillStyle = '#fff6d0'; ctx.beginPath(); ctx.arc(x + dx * 1.5, y + dy * 1.5, r * .5, 0, TAU); ctx.fill();
+  ctx.restore();
+};
 // ===== desenho dos guardioes =====
 Art.guardian = function (x, y, o) {
   const U = 112 * (o.scale || 1), r = U * .36, t = o.t || 0, g = o.guard.slice(2);
@@ -89,6 +119,10 @@ Visual13.update = function (dt) {
     if (b.t > b.dur) G.barrier = null;
   }
   if (G.mark > 0) G.mark -= dt;
+  for (const q of G.pb) {
+    if (q.fire && Math.random() < .7) G.parts.push({ x: q.x + rand(-6, 6), y: q.y + rand(-3, 8), vx: rand(-50, 50), vy: rand(-90, 20), life: rand(.25, .5), max: .5, r: rand(2, 5), c: Math.random() < .5 ? '#ffb340' : '#ff6a1a', drag: 1.5 });
+    else if (q.rock && !q.small && Math.random() < .5) G.parts.push({ x: q.x + rand(-8, 8), y: q.y + 12, vx: rand(-30, 30), vy: rand(20, 90), life: rand(.3, .6), max: .6, r: rand(3, 6), c: Math.random() < .5 ? '#b89aa8' : '#6a4a68', drag: 2 });
+  }
 };
 Visual13.draw = function () {
   const p = G.player; if (!p) return; const t = World.t;

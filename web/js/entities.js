@@ -331,6 +331,7 @@ function fireMissile() {
 }
 
 function missileBoom(x, y, dmg, except, radius = 110, f = .6) {
+  if (radius === 106) shedDebris(x, y, 14, ['#c8a0b8', '#5a3a58', '#8a6a88'], 460, 10);
   const big = radius > 120;
   burst(x, y, ['#ffb340', '#ff6a1a', '#ffffff'], big ? 34 : 22, big ? 380 : 300, big ? 8 : 6); shockwave(x, y, radius + 10, '#ffb340'); shockwave(x, y, radius * .6, '#ffffff');
   Snd.play('explode', { size: big ? 1.4 : .9, pan: Snd.panX(x) });

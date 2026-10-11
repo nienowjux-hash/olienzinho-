@@ -66,7 +66,6 @@ class Herald extends Boss {
     if (ph >= 1 && this.tick('ring', dt, 2.5)) { ring(this.x, this.y, 18 + ph * 4, 170, this.t); shockwave(this.x, this.y, 200, '#ffe9a8'); Snd.play('enemyShoot'); }
     if (ph >= 1 && this.tick('laser', dt, ph === 1 ? 5 : 4)) { const a = aimAt(this.x, this.y); bossLaser(this, a, 1.1, .8, '#ffe9a8'); if (ph === 2) { bossLaser(this, a + .55, 1.1, .8, '#ffe9a8'); bossLaser(this, a - .55, 1.1, .8, '#ffe9a8'); } }
     if (ph === 2 && this.tick('spiral', dt, .16)) { this.spin += .4; for (let k = 0; k < 2; k++) ebullet(this.x, this.y, this.spin + k * Math.PI, 200, { r: 6 }); }
-    if (this.tick('helpers', dt, 8)) for (const s of [-1, 1]) spawnEnemy('shield', this.x + s * 120, this.y + 60, { noElite: true });
   }
   draw() {
     const t = this.t, ph = this.phase, hit = this.flash > 0, chg = this.chargeT > 0 ? 1 - this.chargeT / this.chargeMax : 0;
@@ -131,7 +130,6 @@ class Mirror extends Boss {
     if (this.tick('cross', dt, ph === 0 ? 4.6 : 3.6)) { for (const s of [0, 1]) { const [bx, by] = this.pos(s); bossLaser({ x: bx, y: by, chargeT: 0, chargeMax: 1 }, Math.PI / 2 + (s ? -1 : 1) * (.35 + ph * .12), 1.1, .7, '#e8d0ff'); } }
     if (ph >= 1 && this.tick('mirror', dt, 2.6)) { for (let i = 0; i < 12; i++) { const a = i / 12 * TAU + this.t; const [bx, by] = this.pos(0), [cx, cy] = this.pos(1); ebullet(bx, by, a, 170, { r: 6 }); ebullet(cx, cy, Math.PI - a, 170, { r: 6 }); } }
     if (ph === 2 && this.tick('drop', dt, 1.1)) { const x = rand(80, W - 80); Events.hazardRect(x, H / 2, 70, H, .9, .3, '#e8d0ff', 'bolt'); Events.hazardRect(W - x, H / 2, 70, H, .9, .3, '#e8d0ff', 'bolt'); }
-    if (this.tick('helpers', dt, 9)) { spawnEnemy('teleporter', rand(120, W - 120), -30, { noElite: true }); }
   }
   draw() {
     const t = this.t, hit = this.flash > 0;

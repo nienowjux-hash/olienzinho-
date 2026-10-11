@@ -305,6 +305,7 @@ const Snd = (() => {
       [60, 64, 67, 72, 76, 79, 84].forEach((m, i) => voice('triangle', mtof(m), mtof(m), t + 3.8 + i * .11, 3, .11, { rev: .8, del: .35, a: .2 }));
       duck(.9, 5);
     },
+    graze(o) { const t = now(); voice('sine', 1700 * rnd(.95, 1.1), 2600, t, .05, .035, { a: .002 }); },
     bossIntro() {
       const t = now();
       noiseV(t, 1.8, .3, { type: 'bandpass', f0: 200, f1: 5200, q: 2, a: 1.5, rev: .4 });
@@ -400,7 +401,7 @@ const Snd = (() => {
     rumble(o) { noiseV(now(), o.dur || 1.5, .3, { type: 'lowpass', f0: 160, f1: 50, a: .3 }); },
   };
 
-  const GAP = { blip: .028, shoot: .04, hit: .035, bossHit: .06, xp: .03, enemyShoot: .06, explode: .02, coin: .03 };
+  const GAP = { graze: .07, blip: .028, shoot: .04, hit: .035, bossHit: .06, xp: .03, enemyShoot: .06, explode: .02, coin: .03 };
   function play(name, o = {}) {
     if (!ac || vol.sfx <= 0) return;
     const f = SFX[name]; if (!f) return;

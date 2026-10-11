@@ -53,7 +53,7 @@ function laserTick(p) {
     const crit = Math.random() < p.crit, dmg = p.dmg * .5 * (crit ? p.critMul : 1);
     for (const e of G.enemies) if (!e.dead && e.y < p.y - 30 && Math.abs(e.x - bx) < e.rad + 14) beamHit(e, dmg, crit);
     const bo = G.boss;
-    if (bo && bo.targetable()) for (let yy = p.y - 60; yy > 20; yy -= 36) if (bo.hitTest(bx, yy, 12)) { bo.damage(dmg, crit); break; }
+    if (bo && bo.targetable()) for (let yy = p.y - 60; yy > 20; yy -= 36) if (bo.hitTest(bx, yy, 12)) { bo.damage(dmg * Visual5.weakMul(bo, bx, yy, 12), crit); break; }
   }
   Snd.play('laser', { pan: Snd.panX(p.x) * .5 });
 }

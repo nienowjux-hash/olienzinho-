@@ -110,6 +110,12 @@ function updateEnemy(e, dt) {
         e.vx = Math.cos(e.dir) * sp; e.vy = Math.sin(e.dir) * sp; e.x += e.vx * dt; e.y += e.vy * dt;
       }
       break;
+    case 'crystal': {
+      const bs = e.boss; if (!bs || bs.state !== 'fight') { if (!bs || bs.state === 'dying') e.dead = true; break; }
+      e.ang += dt * .9; e.x = bs.x + Math.cos(e.ang) * 250; e.y = bs.y + Math.sin(e.ang) * 120 + 40; e.mode = 'hover';
+      e.shootT -= dt; if (e.shootT <= 0) { e.shootT = 2.6; fanAimed(e.x, e.y, 3, .5, 200); }
+      break;
+    }
     case 'dummy': e.mode = 'hover'; e.y += (210 - e.y) * Math.min(1, 2 * dt); break;
     case 'healer':
       if (e.mode === 'enter') { e.y += e.spd * 1.8 * dt; if (e.y >= e.stopY) { e.mode = 'hover'; e.vx = (Math.random() < .5 ? -1 : 1) * 45; e.life = 0; e.shootT = 1.4; } }
@@ -177,7 +183,7 @@ function updateEnemy(e, dt) {
   // contato com o jogador
   if (!e.dead && Math.hypot(p.x - e.x, p.y - e.y) < e.rad + 12) {
     hurtPlayer(e.type === 'kami' ? 2 : 1);
-    if (e.type !== 'tank' && e.type !== 'captain' && e.type !== 'dummy') { killEnemy(e, false); }
+    if (e.type !== 'tank' && e.type !== 'captain' && e.type !== 'dummy' && e.type !== 'crystal') { killEnemy(e, false); }
   }
 }
 
@@ -199,7 +205,7 @@ function killEnemy(e, byPlayer) {
   if (e.type === 'mine' && byPlayer) mineBlast(e);
   if (!byPlayer) return;
   G.kills++;
-  G.combo = G.comboT > 0 ? G.combo + 1 : 1; G.comboT = 2.2; G.stats.maxCombo = Math.max(G.stats.maxCombo, G.combo);
+  G.combo = G.comboT > 0 ? G.combo + 1 : 1; G.comboT = G.relic === 'trace' ? 3.8 : 2.2; G.stats.maxCombo = Math.max(G.stats.maxCombo, G.combo);
   { const U = id => G.upCounts[id] || 0, pl2 = G.player;
     if ([10, 25, 50, 100].includes(G.combo)) { popup(pl2.x, pl2.y - 90, 'COMBO x' + G.combo, '#ffe9a8', 34); shockwave(pl2.x, pl2.y, 280, '#ffe9a8'); Snd.play('stamp'); }
     if (U('combochg') && G.combo % 10 === 0) pl2.specCd = Math.max(0, pl2.specCd - U('combochg'));
@@ -256,7 +262,7 @@ function updatePickup(k, dt) {
   const p = G.player;
   k.age += dt;
   const d = Math.hypot(p.x - k.x, p.y - k.y);
-  if (d < p.magnet || k.mag) {
+  if (d < p.magnet + (p.buffs && p.buffs.magnet > 0 ? 260 : 0) || k.mag) {
     k.mag = true;
     const sp = 380 + (1 - Math.min(1, d / 400)) * 700;
     k.x += (p.x - k.x) / (d || 1) * sp * dt; k.y += (p.y - k.y) / (d || 1) * sp * dt;
@@ -268,6 +274,7 @@ function updatePickup(k, dt) {
     k.dead = true;
     if (k.type === 'xp') { G.chain = G.chainT > 0 ? G.chain + 1 : 0; G.chainT = .5; Snd.play('xp', { combo: G.chain, pan: Snd.panX(k.x) }); addXp(k.val * p.xpMul); }
     else if (k.type === 'coin') { G.cchain = G.cchainT > 0 ? G.cchain + 1 : 0; G.cchainT = .7; Snd.play('coin', { combo: G.cchain, pan: Snd.panX(k.x) }); G.runCoins += k.val; popup(k.x, k.y - 14, '+' + k.val, '#ffcf6b', 18); }
+    else if (k.type === 'cap') { Visual5.takeCap(k.val); }
     else if (k.type === 'heart') { Snd.play('heart'); p.mood = 'happy'; p.moodT = .9; if (p.hp < p.maxHp) { p.hp++; popup(p.x, p.y - 60, '+1 vida', '#ff9ac0'); } else { G.runCoins += 3; popup(p.x, p.y - 60, '+3', '#ffcf6b'); } }
   }
   if (k.y > H + 40) k.dead = true;
@@ -387,11 +394,11 @@ function updatePlayerWeapons(dt) {
     if (!b.dead && bo && bo.targetable() && !b.hits.includes(bo) && bo.hitTest(b.x, b.y, b.r ? b.r * .6 : 8)) {
       if (b.kind === 'bomb') bombBoom(b);
       else if (b.kind === 'missile') {
-        bo.damage(b.dmg);
+        bo.damage(b.dmg * Visual5.weakMul(bo, b.x, b.y, b.r));
         if (b.star) burst(b.x, b.y, ['#ffe9a8', '#ffffff'], 8, 200, 4); else missileBoom(b.x, b.y, b.dmg, bo);
         b.dead = true;
       } else {
-        bo.damage(b.dmg, b.crit);
+        bo.damage(b.dmg * Visual5.weakMul(bo, b.x, b.y, b.r), b.crit);
         if (b.aoe) { missileBoom(b.x, b.y, b.dmg, bo, b.aoe, .5); b.dead = true; }
         else { b.hits.push(bo); burst(b.x, b.y, ['#e2d4ff', '#ffe9a8'], 3, 160, 3); if (b.pierce > 0) b.pierce--; else b.dead = true; }
       }

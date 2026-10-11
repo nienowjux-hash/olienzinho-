@@ -30,7 +30,7 @@ function recalcStats(p) {
   p.maxHp = Math.max(2, 5 + L('hp') + U('hp') + dif().php);
   p.dmg = (1 + .12 * L('dmg')) * (1 + .2 * U('dmg')) * (1 + .02 * Extras.fragCount());
   p.fireDelay = .2 * Math.pow(.9, U('rate')) / (1 + .06 * L('rate'));
-  p.shots = 1 + U('multi');
+  p.shots = 1 + U('multi') + (p.buffs && p.buffs.double > 0 ? 1 : 0) + Visual5.wShots(p);
   p.speed = 470 * (1 + .05 * L('speed')) * (1 + .1 * U('speed'));
   p.pierce = U('pierce');
   p.magnet = 95 + 30 * L('magnet') + 60 * U('magnet');
@@ -43,6 +43,8 @@ function recalcStats(p) {
   p.dashCdMax = 1.6 * Math.pow(.8, U('dash')); p.specCdMax = 16 * Math.pow(.8, U('spec')); p.specPow = 1 + .25 * U('spec');
   if (p.weapon === 'orbi') { p.maxHp = Math.max(2, p.maxHp - 2); p.magnet += 40; p.dashCdMax *= .9; p.specCdMax *= 1.35; p.dmg *= .85; }
   if (G.dmod === 'glass') { p.maxHp = 3; p.dmg *= 1.5; }
+  { const lv = Visual5.wl(p.weapon); p.dmg *= 1 + .12 * (lv - 1); p.specCdMax *= Math.pow(.93, lv - 1); if (lv >= 5) p.crit += .1; }
+  Visual5.relicStats(p);
 }
 
 const Game = {
@@ -59,13 +61,13 @@ const Game = {
     World.setStage(G.stage.pal); Events.reset(G.stage);
     G.player = newPlayer();
     { const ld = Save.data.loadout; G.player.weapon = Save.data.owned.weapons[ld.weapon] ? ld.weapon : 'violet'; if (ld.char === 'orbi' && Save.data.cleared[3]) G.player.weapon = 'orbi'; }
-    G.stats = { hits: 0, bossHit: 0, maxCombo: 0, minis: 0 }; G.timers = []; G.hitstop = 0; G.mega = null; G.miniDone = false; G.endless = false; G.daily = false; G.training = false; G.dmod = null; G.well = null; G.fragSpawned = false; G.encSpawned = false; Extras.reset(); Extras.tutStart();
+    G.stats = { hits: 0, bossHit: 0, maxCombo: 0, minis: 0 }; G.timers = []; G.hitstop = 0; G.mega = null; G.miniDone = false; G.endless = false; G.daily = false; G.training = false; G.dmod = null; G.well = null; G.relic = null; G.grazeN = 0; G.rush = false; G.sanct = false; G.fragSpawned = false; G.encSpawned = false; Extras.reset(); Extras.tutStart();
     recalcStats(G.player); G.player.hp = G.player.maxHp;
     Events.banner = { t: 0, title: G.stage.name.toUpperCase(), sub: 'FASE ' + (idx + 1), c: G.stage.tint };
     G.finisher = null; G.cut = null; G.story = null;
     Save.data.runs++; Save.save();
     G.retry = !!opts.skipStory; G.preDone = false;
-    const begin = () => { G.state = 'play'; Snd.musicPlay(G.stage.music, 1); };
+    const begin = () => Visual5.pickRelic(() => { G.state = 'play'; Snd.musicPlay(G.stage.music, 1); });
     const intro = () => this.maybeStory('intro' + idx, STORY.stages[idx].intro, begin);
     if (idx === 0 && !Save.data.seenPrologue && !this.noStory) { Save.data.seenPrologue = true; Save.save(); this.startStory(STORY.prologue, intro); }
     else intro();
@@ -93,6 +95,7 @@ const Game = {
     const d = Save.data;
     d.coins += G.runCoins + bonus;
     if (G.training) return;
+    if (G.rush || G.sanct) { d.coins += G.runCoins; Save.save(); return; }
     if (G.endless) { if (G.daily) { this.addDaily(); G.rankPos = 0; } else G.rankPos = this.addRank(); Save.save(); return; }
     const prev = d.best[G.stageIdx] || 0; if (G.score > prev) d.best[G.stageIdx] = G.score;
     if (cleared) { d.unlocked = Math.max(d.unlocked, Math.min(STAGES.length, G.stageIdx + 2)); d.cleared[G.stageIdx] = true; }
@@ -107,7 +110,7 @@ const Game = {
     Extras.tut = null; G.endless = true; G.wave = 1; G.waveT = 0; G.waveMini = false; G.biome = 0;
     G.stage = { ...STAGES[0], duration: 1e9, events: [] }; Events.reset(null);
     Events.banner = { t: 0, title: 'MODO INFINITO', sub: 'ONDA 1', c: '#ffb340' };
-    G.state = 'play'; Snd.musicPlay(G.stage.music, 1);
+    Visual5.pickRelic(() => { G.state = 'play'; Snd.musicPlay(G.stage.music, 1); });
   },
   setBiome(b) {
     G.biome = b; G.stageIdx = b; G.stage = { ...STAGES[b], duration: 1e9, events: [] };
@@ -200,6 +203,7 @@ const Game = {
     G.result = { coins: G.runCoins, score: G.score, kills: G.kills, level: G.level };
     const toOver = () => { G.state = 'over'; G.overAt = undefined; G.overQuote = null; Snd.play('gameOver'); };
     if (G.endless) G.result.wave = G.wave;
+    if (G.rush) G.result.wave = G.rushI;
     if (this.noStory || G.endless) { toOver(); return; }
     // o vilao (o chefe da fase ou o Vazio) fala com o jogador
     const D = STORY.defeat, inBoss = !!G.boss, bc = ['C', 'P', 'E', 'S', 'X', 'V'][G.stageIdx];
@@ -264,6 +268,7 @@ const Game = {
 
   director(dt) {
     if (G.training) return;
+    if (G.sanct) { Visual5.sanctDir(dt); return; }
     if (G.endless) { this.endlessDirector(dt); return; }
     const st = G.stage;
     if (G.bossDone) return;
@@ -317,7 +322,7 @@ const Game = {
     const p = G.player;
     G.t += dt; G.intro += dt;
     World.update(dt, p.vy);
-    Events.update(dt); Events.updateHazards(dt); Extras.update(dt); Visual.update(dt); Visual2.update(dt); Extras.tutUpdate(dt); if (G.training) Extras.trainUpdate(dt);
+    Events.update(dt); Events.updateHazards(dt); Extras.update(dt); Visual.update(dt); Visual2.update(dt); Visual5.update(dt); Extras.tutUpdate(dt); if (G.training) Extras.trainUpdate(dt);
     Snd.setLayers(p.dead ? 0 : G.combo >= 25 ? 2 : G.combo >= 10 ? 1 : 0, !p.dead && p.hp <= Math.max(1, p.maxHp * .25) ? 1 : 0);
     this.director(dt);
     if (!p.dead) this.updatePlayer(dt); else { G.overT -= rdt; if (G.overT <= 0) { this.gameOver(); return; } }
@@ -331,6 +336,7 @@ const Game = {
       if (b.acc) { const s = Math.hypot(b.vx, b.vy) + b.acc * dt, a = Math.atan2(b.vy, b.vx); b.vx = Math.cos(a) * s; b.vy = Math.sin(a) * s; }
       if (b.life <= 0 || b.x < -60 || b.x > W + 60 || b.y < -60 || b.y > H + 60) b.dead = true;
       else if (!p.dead && Math.hypot(b.x - p.x, b.y - p.y - 6) < b.r + 10) { b.dead = true; hurtPlayer(1); }
+      else if (!p.dead && !b.grazed && Math.hypot(b.x - p.x, b.y - p.y - 6) < b.r + 30) Visual5.graze(b);
     }
     for (const k of G.pickups) updatePickup(k, dt);
     for (const tm of G.timers) { tm.t -= dt; if (tm.t <= 0) { tm.fn(); tm.dead = true; } }
@@ -396,7 +402,7 @@ const Game = {
 
     // tiro e chama
     p.recoil = Math.max(0, p.recoil - dt * 9); if (p.moodT > 0) { p.moodT -= dt; if (p.moodT <= 0) p.mood = null; }
-    p.fireT -= dt; if (p.fireT <= 0) { playerShoot(); p.fireT = p.fireDelay * WEAPONS[p.weapon].delay / (p.od ? 1.8 : 1); }
+    p.fireT -= dt; if (p.fireT <= 0) { playerShoot(); p.fireT = p.fireDelay * WEAPONS[p.weapon].delay / (p.od ? 1.8 : 1) / (p.buffs && p.buffs.rapid > 0 ? 1.6 : 1); }
     for (let i = 0; i < 2; i++) G.parts.push({ x: p.x + rand(-4, 4), y: p.y + 27, vx: rand(-30, 30), vy: rand(150, 280), life: rand(.25, .5), max: .5, r: rand(3, 7), c: Math.random() < .5 ? '#ffb340' : '#ffe9a8', drag: 1 });
 
     // pulso e escudo
@@ -472,7 +478,7 @@ const Game = {
     for (const o of G.pops) { ctx.globalAlpha = clamp(o.life, 0, 1); txt(o.text, o.x, o.y, o.size, o.c, 'center'); }
     ctx.globalAlpha = 1;
     ctx.restore();
-    Visual3.furyDraw(); Visual4.cutinDraw(); Visual4.faceDraw(); Visual4.introDraw();
+    Visual5.hud(); Visual3.furyDraw(); Visual4.cutinDraw(); Visual4.faceDraw(); Visual4.introDraw();
     if (G.hurtFlash > 0) {
       const g = ctx.createRadialGradient(W / 2, H / 2, H * .3, W / 2, H / 2, H * .85);
       g.addColorStop(0, 'rgba(255,40,90,0)'); g.addColorStop(1, `rgba(255,40,90,${G.hurtFlash * 1.2})`); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);

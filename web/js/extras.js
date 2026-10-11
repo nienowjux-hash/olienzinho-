@@ -197,9 +197,9 @@ Screens.achievements = function () {
     ctx.fillStyle = has ? '#fff2c0' : '#6a5aa0'; ctx.beginPath(); ctx.moveTo(x, y - 14); ctx.lineTo(x + 7, y); ctx.lineTo(x, y + 14); ctx.lineTo(x - 7, y); ctx.closePath(); ctx.fill(); ctx.restore();
   }
   txt('+2% de dano por fragmento', 640, 114, 14, '#8a7fb0', 'left', 700);
-  const cw = 560, ch = 50, gx = 70, gy = 146;
+  const cw = 388, ch = 50, gx = 58, gy = 146;
   ACH.forEach((a, i) => {
-    const col = i % 2, row = (i / 2) | 0, x = gx + col * (cw + 20), y = gy + row * (ch + 6), has = Save.data.ach[a.id];
+    const col = i % 3, row = (i / 3) | 0, x = gx + col * (cw + 14), y = gy + row * (ch + 6), has = Save.data.ach[a.id];
     const ek = Screens.enterK(i * .6, .4); ctx.save(); ctx.translate(0, (1 - ek) * 30); ctx.globalAlpha = clamp(ek, 0, 1);
     UI.panel(x, y, cw, ch, { r: 16, fill: has ? 'rgba(60,34,140,.8)' : 'rgba(20,8,55,.65)', stroke: has ? '#ffb340' : 'rgba(190,160,255,.25)' });
     if (has) { ctx.save(); ctx.beginPath(); ctx.roundRect(x, y, cw, ch, 16); ctx.clip(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha *= .12; ctx.fillStyle = '#ffe9a8'; const sx = x + ((t * 150 + i * 90) % (cw + 240)) - 120; ctx.beginPath(); ctx.moveTo(sx, y); ctx.lineTo(sx + 50, y); ctx.lineTo(sx + 20, y + ch); ctx.lineTo(sx - 30, y + ch); ctx.closePath(); ctx.fill(); ctx.restore(); }

@@ -618,7 +618,7 @@ const Screens = {
     WEAPON_ORDER.forEach((id, i) => {
       const w = WEAPONS[id], x = 70, y = 118 + i * 104, cw = 580, ch = 94, has = !!own.weapons[id], eq = ld.weapon === id, fid = 'w_' + id, f = UI.focus(fid);
       const ek = Screens.enterK(i); ctx.save(); ctx.translate((1 - ek) * -80, 0); ctx.globalAlpha = clamp(ek, 0, 1);
-      if (UI.hit(fid, x, y, cw, ch, { sound: 'buy' })) {
+      if (UI.hit(fid, x, y, has ? cw - 180 : cw, ch, { sound: 'buy' })) {
         if (has) { ld.weapon = id; Save.save(); }
         else if (Save.data.coins >= w.price) { Save.data.coins -= w.price; own.weapons[id] = true; ld.weapon = id; Save.save(); }
         else Snd.play('uiDeny');
@@ -630,6 +630,13 @@ const Screens = {
       txt('Especial: ' + w.specName, x + 112, y + 66, 14, w.c, 'left', 800);
       if (eq) txt('EQUIPADA', x + cw - 20, y + 14, 16, '#7fe0a0', 'right'); else if (has) txt('equipar', x + cw - 20, y + 14, 15, '#8a7fb0', 'right', 700);
       else txt('★ ' + w.price, x + cw - 20, y + 12, 24, Save.data.coins >= w.price ? '#ffcf6b' : '#7a70a0', 'right');
+      if (has) { // evolucao da arma
+        const lv = Visual5.wl(id), maxed = lv >= 5, cost = Visual5.wCost(lv), ex = x + cw - 168, ey = y + 48, eid = 'wu_' + id, ef = UI.focus(eid);
+        if (UI.hit(eid, ex, ey, 150, 36, { sound: 'buy', disabled: maxed })) { if (Save.data.coins >= cost) { Save.data.coins -= cost; Save.data.wlevel[id] = lv + 1; Save.save(); Snd.play('levelUp'); Ach.check(); } else Snd.play('uiDeny'); }
+        ctx.fillStyle = maxed ? 'rgba(255,211,106,.25)' : ef ? '#9a63ff' : Save.data.coins >= cost ? 'rgba(90,50,190,.95)' : 'rgba(50,30,100,.8)'; ctx.beginPath(); ctx.roundRect(ex, ey, 150, 36, 12); ctx.fill();
+        txt(maxed ? 'NÍVEL MÁXIMO' : 'EVOLUIR  ★' + cost, ex + 75, ey + 18, 14, '#fff', 'center', 900, 'middle');
+        for (let k = 0; k < 5; k++) { ctx.fillStyle = k < lv ? w.c : 'rgba(255,255,255,.2)'; ctx.beginPath(); ctx.arc(ex + 22 + k * 26, ey - 9, 5, 0, TAU); ctx.fill(); }
+      }
       ctx.restore();
     });
     // direita: nave e skins

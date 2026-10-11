@@ -1,31 +1,31 @@
 'use strict';
 // ---------- Orbi jogavel, modos extras (infinito, desafio diario, treino) ----------
 WEAPONS.orbi = {
-  name: 'Orbes Gêmeos', desc: 'Orbes teleguiados que explodem em área.', c: '#7fe0ff', price: 0, delay: 1.25,
+  name: 'Orbes Gêmeos', desc: 'Orbes teleguiados que explodem em área.', c: '#7fe0ff', price: 0, delay: 1.7,
   special: 'gravity', specName: 'Poço Gravitacional', specDesc: 'Puxa inimigos, absorve tiros e implode no final.',
   fire(p) {
     const n = p.shots + 1;
-    for (let i = 0; i < n; i++) { const k = i - (n - 1) / 2; mkBullet(p, p.x + k * 22, p.y - 22, -Math.PI / 2 + k * .6, 520, 1.15, { kind: 'missile', orb: true, speed: 780, target: null, life: 2.2, pierce: 0, r: 9 }); }
+    for (let i = 0; i < n; i++) { const k = i - (n - 1) / 2; mkBullet(p, p.x + k * 22, p.y - 22, -Math.PI / 2 + k * .6, 520, .8, { kind: 'missile', orb: true, speed: 780, target: null, life: 2.2, pierce: 0, r: 9 }); }
     muzzle(p, '#7fe0ff', 22); Snd.play('shoot', { lv: 0, wpn: 'fan', pan: Snd.panX(p.x) * .5 });
   },
 };
-SPECIALS.gravity = function (p) { G.well = { x: p.x, y: Math.max(160, p.y - 260), t: 0, dur: 2.8, R: 190, tk: 0 }; Snd.play('beam', { dur: 2.4 }); };
+SPECIALS.gravity = function (p) { G.well = { x: p.x, y: Math.max(160, p.y - 260), t: 0, dur: 2.2, R: 160, tk: 0 }; Snd.play('beam', { dur: 2.4 }); };
 
 function wellTick(dt) {
-  const w = G.well, p = G.player, dmg = p.dmg * 1.6 * (p.specPow || 1); w.t += dt; w.tk -= dt;
+  const w = G.well, p = G.player, dmg = p.dmg * .9 * (p.specPow || 1); w.t += dt; w.tk -= dt;
   const hit = w.tk <= 0; if (hit) w.tk = .25;
   for (const e of G.enemies) {
     if (e.dead) continue; const d = Math.hypot(w.x - e.x, w.y - e.y);
-    if (d < w.R * 2.4 && e.type !== 'captain' && e.type !== 'tank' && e.type !== 'dummy') { const k = 320 * dt / (d || 1); e.x += (w.x - e.x) * k; e.y += (w.y - e.y) * k; if (e.bx !== undefined) e.bx += (w.x - e.bx) * k * .5; }
+    if (d < w.R * 2.4 && e.type !== 'captain' && e.type !== 'tank' && e.type !== 'dummy') { const k = 220 * dt / (d || 1); e.x += (w.x - e.x) * k; e.y += (w.y - e.y) * k; if (e.bx !== undefined) e.bx += (w.x - e.bx) * k * .5; }
     if (hit && d < w.R + e.rad) damageEnemy(e, dmg, false, true);
   }
   for (const q of G.eb) if (!q.dead && Math.hypot(q.x - w.x, q.y - w.y) < w.R * 1.4) { q.dead = true; G.parts.push({ x: q.x, y: q.y, vx: (w.x - q.x) * 3, vy: (w.y - q.y) * 3, life: .25, max: .25, r: 5, c: '#7fe0ff', drag: 1 }); }
-  const bo = G.boss; if (hit && bo && bo.targetable() && Math.hypot(bo.x - w.x, bo.y - w.y) < w.R + 130) bo.damage(dmg * .8);
+  const bo = G.boss; if (hit && bo && bo.targetable() && Math.hypot(bo.x - w.x, bo.y - w.y) < w.R + 130) bo.damage(dmg * .5);
   if (Math.random() < .6) G.parts.push({ x: w.x + rand(-w.R, w.R), y: w.y + rand(-w.R, w.R), vx: 0, vy: 0, life: .4, max: .4, r: 3, c: '#9ad8ff', drag: 1 });
   if (w.t >= w.dur) {
     shockwave(w.x, w.y, w.R * 2.4, '#7fe0ff'); shockwave(w.x, w.y, w.R * 1.4, '#ffffff'); burst(w.x, w.y, ['#7fe0ff', '#ffffff', '#b98cff'], 50, 520, 6); Snd.play('explode', { size: 1.6 }); shake(14); flashScreen(.3);
-    for (const e of G.enemies) if (!e.dead && Math.hypot(w.x - e.x, w.y - e.y) < w.R * 2 + e.rad) damageEnemy(e, dmg * 5, false, true);
-    if (bo && bo.targetable() && Math.hypot(bo.x - w.x, bo.y - w.y) < w.R * 2 + 130) bo.damage(Math.min(dmg * 6, bo.maxHp * .05));
+    for (const e of G.enemies) if (!e.dead && Math.hypot(w.x - e.x, w.y - e.y) < w.R * 2 + e.rad) damageEnemy(e, dmg * 3, false, true);
+    if (bo && bo.targetable() && Math.hypot(bo.x - w.x, bo.y - w.y) < w.R * 2 + 130) bo.damage(Math.min(dmg * 3, bo.maxHp * .03));
     G.well = null;
   }
 }
@@ -154,7 +154,7 @@ Screens.hangarOrbi = function () {
   txt('HANGAR', W / 2, 26, 42, '#fff', 'center'); txt(Screens.stars(), W - 40, 36, 30, '#ffcf6b', 'right');
   UI.panel(70, 118, 580, 416, { r: 22 });
   txt('ORBI', 100, 136, 38, '#7fe0ff', 'left', 900); txt('o parceiro de bordo, agora no comando', 100, 184, 17, '#cdb8ff', 'left', 700);
-  const rows = [['Orbes Gêmeos', 'Dispara orbes teleguiados que explodem em área.'], ['Poço Gravitacional (Q)', 'Puxa inimigos, absorve tiros e implode no final.'], ['Salto Rápido (Shift)', 'A esquiva recarrega 20% mais rápido.'], ['Ímã Poderoso', 'Atrai estrelas de bem mais longe.'], ['Casco Leve', 'Tem 1 de vida a menos que o Olienzinho.']];
+  const rows = [['Orbes Gêmeos', 'Dispara orbes teleguiados que explodem em área.'], ['Poço Gravitacional (Q)', 'Puxa inimigos, absorve tiros e implode no final.'], ['Salto Rápido (Shift)', 'A esquiva recarrega 20% mais rápido.'], ['Ímã Poderoso', 'Atrai estrelas de mais longe.'], ['Casco Frágil', 'Tem 2 de vida a menos e causa menos dano.']];
   rows.forEach(([a, b], i) => { const y = 226 + i * 56; ctx.fillStyle = i < 2 ? '#7fe0ff' : i < 4 ? '#7fe0a0' : '#ff9ac0'; ctx.beginPath(); ctx.arc(110, y + 12, 6, 0, TAU); ctx.fill(); txt(a, 130, y, 21, '#fff', 'left', 800); UI.wrap(b, 130, y + 26, 490, 20, 15, '#cdb8ff'); });
   UI.panel(700, 92, 520, 430, { r: 24 });
   ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(960, 300, 230, '#4cc8ff', .4); ctx.restore();

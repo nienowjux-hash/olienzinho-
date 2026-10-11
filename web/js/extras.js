@@ -225,7 +225,7 @@ Portraits.face_Z = function (mood, t, talk) {
 // ---------- tutorial curto (so na primeira vez na fase 1) ----------
 Extras.tutStart = function () {
   const seen = Save.data.seen || {};
-  this.tut = (!Game.noStory && !seen.tutorial && !G.endless && !G.training && G.stageIdx === 0) ? { step: 0, t: 0, done: 0, px: 0, py: 0, moved: 0, d0: Save.data.stats.dashes || 0 } : null;
+  this.tut = (!Game.noStory && !seen.tutorial && !G.endless && !G.training && G.stageIdx === 0) ? { step: 0, t: 0, done: 0, px: 0, py: 0, moved: 0, wait: true, d0: Save.data.stats.dashes || 0 } : null;
 };
 const TUT = [
   { keys: ['W', 'A', 'S', 'D'], text: 'Mova a nave com WASD, as setas ou o mouse.', ok: T => T.moved > 260 },
@@ -239,11 +239,28 @@ Extras.tutUpdate = function (dt) {
   T.t += dt;
   if (T.step < TUT.length) {
     const p = G.player; if (T.px) T.moved += Math.hypot(p.x - T.px, p.y - T.py); T.px = p.x; T.py = p.y;
-    if (TUT[T.step].ok(T)) { T.step++; T.t = 0; Snd.play('uiSelect'); }
+    if (TUT[T.step].ok(T)) { T.step++; T.t = 0; T.wait = T.step < TUT.length; Snd.play('uiSelect'); }
   } else if (T.t > 2.6) { Save.data.seen = Save.data.seen || {}; Save.data.seen.tutorial = true; Save.save(); this.tut = null; }
+};
+Extras.tutWait = function () {
+  const T = this.tut; if (!T) return;
+  if (Input.pressed('enter') || Input.mouse.click) { T.wait = false; T.t = 0; T.moved = 0; T.px = 0; T.d0 = Save.data.stats.dashes || 0; Snd.play('uiSelect'); }
 };
 Extras.tutDraw = function () {
   const T = this.tut; if (!T || G.state !== 'play') return;
+  if (T.wait && T.step < TUT.length) { // cartao que pausa o jogo para dar tempo de ler
+    const st = TUT[T.step], k = easeBack(clamp((T.t += 1 / 60) / .35, 0, 1));
+    ctx.save(); ctx.fillStyle = 'rgba(3,1,11,.6)'; ctx.fillRect(0, 0, W, H);
+    const w = 800, h = 250, x = W / 2 - w / 2, y = H / 2 - h / 2;
+    ctx.translate(W / 2, H / 2); ctx.scale(k, k); ctx.translate(-W / 2, -H / 2);
+    ctx.fillStyle = 'rgba(20,8,55,.96)'; ctx.strokeStyle = '#ffb340'; ctx.lineWidth = 3; ctx.beginPath(); ctx.roundRect(x, y, w, h, 24); ctx.fill(); ctx.stroke();
+    txt('TUTORIAL  ' + (T.step + 1) + ' / ' + TUT.length, W / 2, y + 22, 16, '#ffb340', 'center', 900);
+    let kx = W / 2 - st.keys.reduce((a, q) => a + Math.max(48, q.length * 16 + 24) + 10, -10) / 2;
+    for (const q of st.keys) { const kw = Math.max(48, q.length * 16 + 24); ctx.fillStyle = '#e2d4ff'; ctx.beginPath(); ctx.roundRect(kx, y + 56, kw, 50, 10); ctx.fill(); ctx.fillStyle = '#8b6adb'; ctx.fillRect(kx + 5, y + 98, kw - 10, 5); txt(q, kx + kw / 2, y + 79, 24, '#2a1060', 'center', 900, 'middle'); kx += kw + 10; }
+    UI.wrap(st.text, x + 50, y + (st.keys.length ? 124 : 80), w - 100, 34, 25, '#fff');
+    ctx.globalAlpha = .6 + Math.sin(World.t * 5) * .3; txt('ENTER ou clique para continuar', W / 2, y + h - 36, 17, '#cdb8ff', 'center', 800);
+    ctx.restore(); return;
+  }
   const fin = T.step >= TUT.length, st = fin ? { keys: [], text: 'Muito bem! Agora é com você, Guardião.' } : TUT[T.step];
   const a = clamp(T.t / .4, 0, 1) * (fin ? clamp((2.6 - T.t) / .5, 0, 1) : 1);
   ctx.save(); ctx.globalAlpha = a;

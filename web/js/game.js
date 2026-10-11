@@ -39,7 +39,7 @@ function recalcStats(p) {
   p.missiles = U('missile'); p.orbitals = U('orbit'); p.ricochet = U('ricochet'); p.chainL = U('chain');
   p.shieldCd = [0, 20, 15, 10][U('shield')] || 10;
   p.dashCdMax = 1.6 * Math.pow(.8, U('dash')); p.specCdMax = 16 * Math.pow(.8, U('spec')); p.specPow = 1 + .25 * U('spec');
-  if (p.weapon === 'orbi') { p.maxHp = Math.max(2, p.maxHp - 1); p.magnet += 70; p.dashCdMax *= .8; }
+  if (p.weapon === 'orbi') { p.maxHp = Math.max(2, p.maxHp - 2); p.magnet += 40; p.dashCdMax *= .9; p.specCdMax *= 1.35; p.dmg *= .85; }
   if (G.dmod === 'glass') { p.maxHp = 3; p.dmg *= 1.5; }
 }
 
@@ -167,7 +167,7 @@ const Game = {
 
   bossDefeated() {
     if (G.endless) { // no infinito o jogo segue
-      G.player.mood = 'happy'; G.player.moodT = 3; for (const k of G.pickups) k.mag = true;
+      G.player.mood = 'happy'; G.player.moodT = 3; G.finisher = null; G.cut = null; Game.slowmo = 0; for (const k of G.pickups) k.mag = true;
       G.player.hp = Math.min(G.player.maxHp, G.player.hp + 2); Snd.play('stinger'); flashScreen(.4);
       this.nextWave(); Snd.musicPlay(G.stage.music, 1); return;
     }
@@ -305,6 +305,7 @@ const Game = {
   },
 
   updatePlay(rdt) {
+    if (Extras.tut && Extras.tut.wait) { Extras.tutWait(); return; }
     if (G.hitstop > 0) { G.hitstop -= rdt; return; }
     let dt = rdt;
     if (this.slowmo) dt *= .45;

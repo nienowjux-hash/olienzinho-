@@ -26,6 +26,7 @@ function postFx(s) {
   ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
   const gw = cv.width, gh = cv.height;
   if (FX_STATES.includes(s)) ctx.drawImage(VIG, 0, 0, gw, gh);
+  if (s === 'play' && G.stage) { ctx.save(); ctx.globalCompositeOperation = 'soft-light'; ctx.globalAlpha = .08; ctx.fillStyle = G.stage.tint; ctx.fillRect(0, 0, gw, gh); ctx.restore(); }
   const p = G.player;
   if (s === 'play' && p && !p.dead && p.hp <= Math.max(1, p.maxHp * .25)) { // vida baixa: bordas vermelhas pulsando
     const a = .1 + (.5 + .5 * Math.sin(World.t * 6)) * .14, g = ctx.createRadialGradient(gw / 2, gh / 2, gh * .35, gw / 2, gh / 2, gh * .9);

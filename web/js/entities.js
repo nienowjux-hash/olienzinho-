@@ -28,7 +28,7 @@ function sparks(x, y, c, n, sp = 220) {
 }
 const shockwave = (x, y, max, c) => G.rings.push({ x, y, r: 6, max, c, life: 1 });
 const popup = (x, y, text, c = '#ffe9a8', size = 24) => G.pops.push({ x, y, text, c, size, life: 1 });
-const shake = a => { G.shake = Math.max(G.shake, a); };
+const shake = a => { G.shake = Math.max(G.shake, a); if (a >= 12) G.zoom = Math.max(G.zoom || 0, Math.min(.05, a * .0016)); };
 const flashScreen = a => { G.flash = Math.max(G.flash, a); };
 const bulletColor = () => '#ff4a2e';
 

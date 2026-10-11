@@ -316,7 +316,7 @@ const Game = {
     const p = G.player;
     G.t += dt; G.intro += dt;
     World.update(dt, p.vy);
-    Events.update(dt); Events.updateHazards(dt); Extras.update(dt); Extras.tutUpdate(dt); if (G.training) Extras.trainUpdate(dt);
+    Events.update(dt); Events.updateHazards(dt); Extras.update(dt); Visual.update(dt); Extras.tutUpdate(dt); if (G.training) Extras.trainUpdate(dt);
     Snd.setLayers(p.dead ? 0 : G.combo >= 25 ? 2 : G.combo >= 10 ? 1 : 0, !p.dead && p.hp <= Math.max(1, p.maxHp * .25) ? 1 : 0);
     this.director(dt);
     if (!p.dead) this.updatePlayer(dt); else { G.overT -= rdt; if (G.overT <= 0) { this.gameOver(); return; } }
@@ -412,10 +412,11 @@ const Game = {
     const p = G.player, cx = p ? p.x - W / 2 : 0;
     ctx.save();
     if (G.shake > 0) ctx.translate(rand(-1, 1) * G.shake * .55, rand(-1, 1) * G.shake * .55);
-    World.draw(cx);
+    G.zoom = (G.zoom || 0) * .92; if (G.zoom > .001) { ctx.translate(W / 2, H / 2); ctx.scale(1 + G.zoom, 1 + G.zoom); ctx.translate(-W / 2, -H / 2); }
+    World.draw(cx); Visual.biome();
     Events.drawHazards();
     for (const k of G.pickups) Art.pickup(k);
-    if (G.boss) { const b = G.boss, br = 1 + Math.sin(b.t * 2) * .012; ctx.save(); ctx.translate(b.shx || 0, b.shy || 0); ctx.translate(b.x, b.y); ctx.scale(br, br); ctx.translate(-b.x, -b.y); b.draw(); ctx.restore(); }
+    if (G.boss) { const b = G.boss, br = 1 + Math.sin(b.t * 2) * .012; ctx.save(); ctx.translate(b.shx || 0, b.shy || 0); ctx.translate(b.x, b.y); ctx.scale(br, br); ctx.translate(-b.x, -b.y); b.draw(); ctx.restore(); Visual.bossAura(b); }
     for (const e of G.enemies) Art.enemy(e);
     Extras.drawWorld(); drawWell(); Extras.dummyDraw();
     for (const e of G.enemies) {
@@ -431,14 +432,14 @@ const Game = {
       for (const g of p.ghosts) { ctx.globalAlpha = g.t / .28 * .45; Art.ship(g.x, g.y, { vx: g.vx, t: p.t, lookx: 0, looky: -1, blinkT: 0, inv: 0, scale: SHIP_S, pal, orbi: ob }); }
       ctx.globalAlpha = 1;
       Art.ship(p.x, p.y + bob, { pal, orbi: ob, vx: p.vx, t: p.t, lookx: p.lookx, looky: p.looky, blinkT: p.blinkT, inv: p.inv, shield: p.shieldReady, scale: SHIP_S, mood: p.mood,
-        sx: 1 + p.recoil * .05 - Math.abs(p.vx) / 500 * .05, sy: 1 - p.recoil * .08 + Math.abs(p.vy) / 500 * .04 });
+        sx: (1 + p.recoil * .05 - Math.abs(p.vx) / 500 * .05) * (p.dashT > 0 ? .78 : 1), sy: (1 - p.recoil * .08 + Math.abs(p.vy) / 500 * .04) * (p.dashT > 0 ? 1.3 : 1) });
       for (const o of p.orbPos) {
         ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(o[0], o[1], 26, '#ffb340', .9); ctx.restore();
         ctx.globalAlpha = 1; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(o[0], o[1], 7, 0, 7); ctx.fill();
         ctx.fillStyle = '#ff8a1f'; ctx.beginPath(); ctx.arc(o[0], o[1], 4, 0, 7); ctx.fill();
       }
     }
-    drawDark();
+    drawDark(); Visual.overlay();
     this.drawFinisherBeam();
     for (const q of G.parts) if (q.k === 'smoke') {
       const k = clamp(q.life / q.max, 0, 1);
@@ -615,7 +616,13 @@ const Game = {
     if (G.score !== G.scorePrev) { G.scorePop = 1; G.scorePrev = G.score; } G.scorePop = Math.max(0, G.scorePop - dtH * 4);
     ctx.save(); ctx.translate(W - 24, 35); ctx.scale(1 + G.scorePop * .22, 1 + G.scorePop * .22); txt(Math.round(G.scoreShown) + ' pts', 0, -13, 26, G.scorePop > 0 ? '#ffffff' : '#e2d4ff', 'right'); ctx.restore();
     txt('★ ' + G.runCoins, W - 24, 56, 22, '#ffcf6b', 'right');
-    if (G.combo >= 3) txt('COMBO ' + G.combo + '  (x' + (1 + Math.min(G.combo, 60) * .03).toFixed(1) + ')', W - 24, 84, 20, '#ffe9a8', 'right');
+    if (G.combo >= 3) {
+      if (G.combo !== G.comboLast) { G.comboLast = G.combo; G.comboAt = World.t; }
+      const pop = 1 + .4 * Math.max(0, 1 - (World.t - (G.comboAt || 0)) * 5), cc = G.combo >= 50 ? '#ff7ac8' : G.combo >= 25 ? '#ffb340' : G.combo >= 10 ? '#ffe9a8' : '#e2d4ff';
+      ctx.save(); ctx.translate(W - 24, 84); ctx.scale(pop, pop); ctx.shadowColor = cc; ctx.shadowBlur = G.combo >= 10 ? 14 : 0; txt('COMBO ' + G.combo, 0, 0, 22, cc, 'right'); ctx.restore();
+      txt('x' + (1 + Math.min(G.combo, 60) * .03).toFixed(1) + ' pontos', W - 24, 110, 14, '#cdb8ff', 'right', 700);
+      ctx.fillStyle = 'rgba(255,255,255,.15)'; ctx.fillRect(W - 24 - 120, 130, 120, 4); ctx.fillStyle = cc; ctx.fillRect(W - 24 - 120 * clamp(G.comboT / 2.2, 0, 1), 130, 120 * clamp(G.comboT / 2.2, 0, 1), 4);
+    }
     // progresso / chefe
     if (G.boss && G.boss.state !== 'intro') {
       const b = G.boss, w = 560, x = W / 2 - w / 2, y = 52;
@@ -643,6 +650,8 @@ const Game = {
     const wp = WEAPONS[p.weapon];
     [['PULSO', 'ESPAÇO', p.pulseT, p.pulseCd, '#ffb340'], ['ESQUIVA', 'SHIFT', p.dashCd, p.dashCdMax, '#7fe0ff'], [wp.specName.toUpperCase(), 'Q', p.specCd, p.specCdMax, wp.c]].forEach(([name, key, cd, mx, col], i) => {
       const cx = 56 + i * 112, cy = H - 66, rdy = cd <= 0, k = rdy ? 1 : 1 - cd / mx;
+      G.abPrev = G.abPrev || []; G.abPop = G.abPop || []; if (rdy && G.abPrev[i] === false) G.abPop[i] = World.t; G.abPrev[i] = rdy;
+      { const pp = G.abPop[i] !== undefined ? World.t - G.abPop[i] : 9; if (pp < .6) { ctx.save(); ctx.strokeStyle = col; ctx.globalAlpha = 1 - pp / .6; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(cx, cy, 28 + pp * 55, 0, TAU); ctx.stroke(); ctx.restore(); } }
       ctx.fillStyle = 'rgba(20,8,50,.65)'; ctx.beginPath(); ctx.arc(cx, cy, 28, 0, 7); ctx.fill();
       ctx.lineWidth = 5; ctx.strokeStyle = rdy ? col : '#6a5aa8'; ctx.beginPath(); ctx.arc(cx, cy, 24, -Math.PI / 2, -Math.PI / 2 + TAU * k); ctx.stroke();
       if (rdy) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(cx, cy, 42, col, .45 + Math.sin(World.t * 6 + i) * .15); ctx.restore(); ctx.globalAlpha = 1; }

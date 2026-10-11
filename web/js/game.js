@@ -157,13 +157,13 @@ const Game = {
     if (G.boss || G.bossPending) {
       if (G.bossPending) {
         G.bossPendingT -= dt;
-        if (G.bossPendingT <= 0) { G.bossPending = false; G.boss = new BOSS_CLASSES[st.boss](); Snd.musicPlay(st.music, 2); G.bossShown = 0; }
+        if (G.bossPendingT <= 0) { G.bossPending = false; G.boss = new BOSS_CLASSES[st.boss](); Snd.play('impact'); Snd.musicPlay(st.bossMusic, 2); G.bossShown = 0; }
       }
       return;
     }
     if (G.t >= st.duration) {
       G.bossPending = true; G.bossPendingT = 3.2;
-      Events.cancel(); World.boost = .6;
+      Events.cancel(); World.boost = .6; Snd.musicStop();
       Events.banner = { t: 0, title: 'CHEFE APROXIMANDO', sub: st.bossName, c: '#ff8a5f' };
       Snd.play('bossWarn');
       return;

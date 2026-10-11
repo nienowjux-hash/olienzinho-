@@ -114,6 +114,19 @@ const Snd = (() => {
       voice('sine', f * 1.15, f * .55, t, .09, .11, { pan: p, rev: .1, a: .003 });
       voice('triangle', f * 2.3, f * 1.2, t, .06, .02, { pan: p, a: .003 });
     },
+    missile(o) {
+      const t = now(), p = o.pan;
+      noiseV(t, .35, .12, { type: 'bandpass', f0: 500, f1: 3200, q: 1.2, a: .03, pan: p, rev: .2 });
+      voice('sine', 160, 70, t, .22, .2, { pan: p });
+      voice('triangle', 420, 900, t, .25, .04, { pan: p, a: .05, rev: .3 });
+    },
+    impact() {
+      const t = now();
+      voice('sine', 90, 26, t, 1.3, .5);
+      noiseV(t, 1.5, .14, { type: 'lowpass', f0: 3000, f1: 120, a: .01, rev: .5 });
+      noiseV(t, 1.4, .06, { type: 'highpass', f0: 5000, f1: 3000, a: .02, rev: .5 });
+      duck(.5, 1.5);
+    },
     enemyShoot(o) {
       const t = now(), p = o.pan;
       voice('sine', 620 * rnd(.95, 1.05), 240, t, .14, .07, { pan: p, rev: .15 });
@@ -289,112 +302,174 @@ const Snd = (() => {
   // pan por posicao x do evento (0..W)
   const panX = x => ((x / 1280) * 2 - 1) * .7;
 
-  // ---------- musica: temas compostos (melodia fixa, tom maior, timbres macios) ----------
-  const MAJ = [0, 2, 4, 5, 7, 9, 11], MIN = [0, 2, 3, 5, 7, 8, 10];
-  // chords = grau da escala de cada compasso (8 compassos); mel = [passo(0-15), grau, duracao em passos]
+  // ---------- musica epica: cordas, metais, taiko; um tema por fase + um tema de chefe por fase ----------
+  const MIN = [0, 2, 3, 5, 7, 8, 10];
+  // chords = grau (escala menor natural) por compasso; mel = [passo 0-15, grau, duracao em passos]
+  const T = (root, bpm, chords, mel, extra) => Object.assign({ root, scale: MIN, bpm, chords, mel }, extra);
   const THEMES = {
-    s1: { root: 60, scale: MAJ, bpm: 112, chords: [0, 4, 5, 3, 0, 3, 4, 4], mel: [
-      [[0, 4, 2], [2, 2, 2], [4, 4, 2], [6, 7, 6]],
-      [[0, 8, 2], [2, 7, 2], [4, 6, 2], [6, 4, 6]],
-      [[0, 5, 2], [2, 7, 2], [4, 9, 2], [6, 7, 6]],
-      [[0, 8, 2], [2, 7, 2], [4, 5, 2], [6, 3, 6]],
-      [[0, 4, 2], [2, 7, 2], [4, 9, 4], [8, 7, 4]],
-      [[0, 5, 2], [2, 7, 2], [4, 10, 4], [8, 9, 4]],
-      [[0, 8, 2], [2, 9, 2], [4, 8, 2], [6, 6, 2], [8, 4, 8]],
-      [[8, 4, 2], [10, 6, 2], [12, 8, 4]]] },
-    s2: { root: 62, scale: MAJ, bpm: 104, chords: [0, 3, 0, 4, 5, 3, 4, 0], mel: [
-      [[0, 4, 3], [3, 7, 3], [6, 9, 2], [8, 7, 8]],
-      [[0, 8, 3], [3, 7, 3], [6, 5, 2], [8, 3, 8]],
-      [[0, 4, 3], [3, 7, 3], [6, 9, 2], [8, 11, 4], [12, 9, 4]],
-      [[0, 8, 4], [4, 6, 4], [8, 4, 8]],
-      [[0, 5, 3], [3, 7, 3], [6, 9, 2], [8, 9, 8]],
-      [[0, 10, 3], [3, 9, 3], [6, 7, 2], [8, 5, 8]],
-      [[0, 6, 3], [3, 8, 3], [6, 11, 2], [8, 9, 4], [12, 8, 4]],
-      [[0, 7, 8], [8, 4, 4], [12, 7, 4]]] },
-    s3: { root: 69, scale: MIN, bpm: 108, chords: [0, 5, 2, 6, 0, 5, 6, 6], mel: [
-      [[0, 0, 4], [4, 2, 4], [8, 4, 8]],
-      [[0, 5, 4], [4, 7, 4], [8, 5, 8]],
-      [[0, 6, 4], [4, 4, 4], [8, 2, 8]],
-      [[0, 3, 4], [4, 1, 4], [8, 6, 8]],
-      [[0, 2, 3], [3, 4, 3], [6, 7, 4], [10, 4, 6]],
-      [[0, 5, 3], [3, 7, 3], [6, 5, 4], [10, 3, 6]],
-      [[0, 3, 4], [4, 4, 4], [8, 6, 4], [12, 4, 4]],
-      [[0, 3, 8], [8, 1, 8]]] },
-    s4: { root: 64, scale: MAJ, bpm: 120, chords: [0, 4, 5, 3, 0, 4, 3, 4], mel: [
-      [[0, 4, 2], [2, 2, 2], [4, 4, 2], [6, 7, 2], [8, 4, 2], [10, 7, 2], [12, 9, 4]],
-      [[0, 8, 2], [2, 6, 2], [4, 4, 2], [6, 6, 2], [8, 8, 8]],
-      [[0, 9, 2], [2, 7, 2], [4, 5, 2], [6, 7, 2], [8, 9, 4], [12, 7, 4]],
-      [[0, 5, 4], [4, 7, 4], [8, 10, 8]],
-      [[0, 7, 4], [4, 4, 4], [8, 2, 4], [12, 4, 4]],
-      [[0, 8, 4], [4, 6, 4], [8, 4, 4], [12, 6, 4]],
-      [[0, 5, 2], [2, 7, 2], [4, 9, 2], [6, 10, 2], [8, 9, 4], [12, 7, 4]],
-      [[0, 8, 6], [8, 6, 4], [12, 8, 4]]] },
+    // 1. Nebulosa Violeta: re menor, heroico e celestial
+    s1: T(62, 122, [0, 5, 2, 6, 0, 5, 6, 4], [
+      [[0, 4, 4], [4, 7, 4], [8, 9, 8]],
+      [[0, 9, 4], [4, 7, 4], [8, 5, 8]],
+      [[0, 4, 4], [4, 6, 4], [8, 9, 8]],
+      [[0, 10, 4], [4, 8, 4], [8, 6, 8]],
+      [[0, 7, 2], [2, 9, 2], [4, 11, 4], [8, 9, 4], [12, 7, 4]],
+      [[0, 9, 2], [2, 10, 2], [4, 9, 4], [8, 7, 4], [12, 5, 4]],
+      [[0, 6, 2], [2, 8, 2], [4, 10, 4], [8, 12, 4], [12, 10, 4]],
+      [[0, 11, 8], [8, 9, 4], [12, 8, 4]]],
+      { kick: '1000001010000010', snare: '0000100000001000', flair: 'bells' }),
+    // 2. Cinturao de Asteroides: do menor, marcha pesada
+    s2: T(60, 112, [0, 0, 5, 4, 0, 3, 6, 4], [
+      [[0, 4, 3], [3, 4, 1], [4, 7, 4], [8, 4, 8]],
+      [[0, 2, 3], [3, 2, 1], [4, 4, 4], [8, 2, 8]],
+      [[0, 5, 3], [3, 5, 1], [4, 7, 4], [8, 9, 8]],
+      [[0, 4, 3], [3, 4, 1], [4, 6, 4], [8, 8, 8]],
+      [[0, 7, 3], [3, 7, 1], [4, 9, 4], [8, 11, 4], [12, 9, 4]],
+      [[0, 10, 3], [3, 10, 1], [4, 9, 4], [8, 7, 8]],
+      [[0, 6, 3], [3, 6, 1], [4, 8, 4], [8, 10, 4], [12, 8, 4]],
+      [[0, 11, 4], [4, 8, 4], [8, 4, 8]]],
+      { kick: '1000100010001010', snare: '0000100000001000', flair: 'anvil' }),
+    // 3. Tempestade Ionica: la menor, eletrica e veloz
+    s3: T(57, 132, [0, 5, 2, 6, 0, 3, 6, 4], [
+      [[0, 11, 2], [2, 9, 2], [4, 7, 2], [6, 9, 2], [8, 11, 4], [12, 9, 4]],
+      [[0, 12, 2], [2, 9, 2], [4, 7, 2], [6, 9, 2], [8, 12, 4], [12, 9, 4]],
+      [[0, 13, 2], [2, 11, 2], [4, 9, 2], [6, 11, 2], [8, 13, 4], [12, 11, 4]],
+      [[0, 10, 2], [2, 8, 2], [4, 13, 2], [6, 10, 2], [8, 8, 8]],
+      [[0, 7, 2], [2, 9, 2], [4, 11, 2], [6, 14, 2], [8, 11, 4], [12, 9, 4]],
+      [[0, 10, 2], [2, 12, 2], [4, 14, 2], [6, 12, 2], [8, 10, 8]],
+      [[0, 13, 2], [2, 10, 2], [4, 8, 2], [6, 10, 2], [8, 13, 4], [12, 10, 4]],
+      [[0, 11, 4], [4, 13, 4], [8, 11, 8]]],
+      { kick: '1001001010010010', snare: '0000100000001000', flair: 'thunder', shaker: true }),
+    // 4. Zona Solar: mi menor, fanfarra heroica
+    s4: T(64, 138, [0, 5, 2, 6, 0, 5, 6, 6], [
+      [[0, 4, 4], [4, 7, 4], [8, 9, 8]],
+      [[0, 9, 4], [4, 7, 4], [8, 5, 8]],
+      [[0, 4, 4], [4, 6, 4], [8, 9, 8]],
+      [[0, 8, 4], [4, 10, 4], [8, 8, 4], [12, 6, 4]],
+      [[0, 7, 2], [2, 9, 2], [4, 11, 4], [8, 9, 4], [12, 7, 4]],
+      [[0, 9, 2], [2, 10, 2], [4, 9, 4], [8, 7, 4], [12, 5, 4]],
+      [[0, 8, 2], [2, 10, 2], [4, 12, 4], [8, 10, 4], [12, 8, 4]],
+      [[0, 10, 8], [8, 8, 4], [12, 6, 4]]],
+      { kick: '1010001010100010', snare: '0000100000001000', flair: 'fanfare' }),
+    // ---- temas de chefe: mais rapidos, riffs insistentes, percussao pesada ----
+    b1: T(50, 150, [0, 0, 5, 6, 0, 0, 3, 4], [
+      [[0, 7, 2], [2, 7, 2], [4, 9, 2], [6, 7, 2], [8, 11, 2], [10, 10, 2], [12, 9, 2], [14, 8, 2]],
+      [[0, 7, 2], [2, 7, 2], [4, 9, 2], [6, 7, 2], [8, 14, 4], [12, 11, 4]],
+      [[0, 12, 2], [2, 12, 2], [4, 14, 2], [6, 12, 2], [8, 16, 2], [10, 15, 2], [12, 14, 2], [14, 13, 2]],
+      [[0, 13, 2], [2, 13, 2], [4, 15, 2], [6, 13, 2], [8, 17, 4], [12, 15, 4]],
+      [[0, 7, 2], [2, 7, 2], [4, 9, 2], [6, 7, 2], [8, 11, 2], [10, 10, 2], [12, 9, 2], [14, 8, 2]],
+      [[0, 7, 2], [2, 7, 2], [4, 9, 2], [6, 7, 2], [8, 14, 4], [12, 11, 4]],
+      [[0, 10, 2], [2, 10, 2], [4, 12, 2], [6, 10, 2], [8, 14, 2], [10, 13, 2], [12, 12, 2], [14, 11, 2]],
+      [[0, 11, 4], [4, 13, 4], [8, 15, 4], [12, 15, 4]]],
+      { kick: '1000101010001011', snare: '0000100000001000', flair: 'bells' }),
+    b2: T(48, 134, [0, 0, 5, 4, 0, 0, 6, 4], [
+      [[0, 7, 3], [4, 7, 3], [8, 9, 2], [10, 7, 2], [12, 11, 4]],
+      [[0, 7, 3], [4, 7, 3], [8, 9, 2], [10, 11, 2], [12, 14, 4]],
+      [[0, 12, 3], [4, 12, 3], [8, 14, 2], [10, 12, 2], [12, 16, 4]],
+      [[0, 11, 3], [4, 11, 3], [8, 13, 2], [10, 11, 2], [12, 15, 4]],
+      [[0, 14, 3], [4, 14, 3], [8, 16, 2], [10, 14, 2], [12, 18, 4]],
+      [[0, 14, 3], [4, 14, 3], [8, 16, 2], [10, 18, 2], [12, 19, 4]],
+      [[0, 13, 2], [2, 15, 2], [4, 17, 4], [8, 15, 2], [10, 13, 2], [12, 15, 4]],
+      [[0, 18, 8], [8, 15, 4], [12, 11, 4]]],
+      { kick: '1000100010101010', snare: '0000100000001000', flair: 'anvil' }),
+    b3: T(45, 158, [0, 0, 5, 6, 0, 3, 4, 4], [
+      [[0, 7, 1], [1, 7, 1], [2, 9, 1], [3, 7, 1], [4, 11, 2], [6, 9, 2], [8, 7, 1], [9, 7, 1], [10, 9, 1], [11, 7, 1], [12, 12, 2], [14, 11, 2]],
+      [[0, 7, 1], [1, 7, 1], [2, 9, 1], [3, 7, 1], [4, 11, 2], [6, 14, 2], [8, 11, 4], [12, 9, 4]],
+      [[0, 9, 1], [1, 9, 1], [2, 12, 1], [3, 9, 1], [4, 14, 2], [6, 12, 2], [8, 9, 4], [12, 12, 4]],
+      [[0, 10, 1], [1, 10, 1], [2, 13, 1], [3, 10, 1], [4, 8, 2], [6, 10, 2], [8, 13, 4], [12, 10, 4]],
+      [[0, 7, 1], [1, 7, 1], [2, 9, 1], [3, 7, 1], [4, 11, 2], [6, 9, 2], [8, 7, 1], [9, 7, 1], [10, 9, 1], [11, 7, 1], [12, 12, 2], [14, 11, 2]],
+      [[0, 10, 1], [1, 10, 1], [2, 12, 1], [3, 10, 1], [4, 14, 2], [6, 12, 2], [8, 10, 4], [12, 12, 4]],
+      [[0, 11, 2], [2, 13, 2], [4, 11, 2], [6, 8, 2], [8, 11, 4], [12, 13, 4]],
+      [[0, 13, 4], [4, 11, 4], [8, 8, 4], [12, 11, 4]]],
+      { kick: '1001001010010010', snare: '0000100000001000', flair: 'thunder', shaker: true }),
+    b4: T(52, 148, [0, 5, 6, 0, 0, 5, 6, 4], [
+      [[0, 7, 2], [2, 7, 2], [4, 9, 2], [6, 7, 2], [8, 11, 4], [12, 9, 4]],
+      [[0, 9, 2], [2, 7, 2], [4, 5, 4], [8, 7, 4], [12, 9, 4]],
+      [[0, 8, 2], [2, 10, 2], [4, 12, 4], [8, 10, 4], [12, 8, 4]],
+      [[0, 7, 8], [8, 9, 4], [12, 7, 4]],
+      [[0, 11, 2], [2, 11, 2], [4, 12, 2], [6, 11, 2], [8, 9, 4], [12, 11, 4]],
+      [[0, 9, 2], [2, 11, 2], [4, 12, 4], [8, 11, 4], [12, 9, 4]],
+      [[0, 8, 2], [2, 10, 2], [4, 12, 2], [6, 10, 2], [8, 8, 8]],
+      [[0, 11, 4], [4, 8, 4], [8, 6, 4], [12, 8, 4]]],
+      { kick: '1010001010100011', snare: '0000100000001000', flair: 'fanfare' }),
   };
-  // groove de cada bioma: kick/snare/hat = padroes de 16 passos; bass: 1=raiz 2=oitava 3=quinta
-  Object.assign(THEMES.s1, { bpm: 126, lead: ['sawtooth', 2600], kick: '1000100010001000', snare: '0000100000001000', hat: '0010001000100010', bass: '1020102010201030', arp16: false });
-  Object.assign(THEMES.s2, { bpm: 116, lead: ['square', 2200], kick: '1000001010000010', snare: '0000100000001001', hat: '1010101010101010', bass: '1001001010010010', arp16: false });
-  Object.assign(THEMES.s3, { bpm: 136, lead: ['sawtooth', 3200], kick: '1001100010011000', snare: '0000100000001000', hat: '1111111111111111', bass: '1020102010201020', arp16: true });
-  Object.assign(THEMES.s4, { bpm: 142, lead: ['sawtooth', 3600], kick: '1000100110001001', snare: '0000100000001000', hat: '0010001000100010', bass: '1001011010010110', arp16: true });
-  THEMES.menu = Object.assign({}, THEMES.s1, { bpm: 88 });
+  THEMES.menu = Object.assign({}, THEMES.s1, { bpm: 84 });
   const mus = { on: false, key: null, th: null, inten: 0, step: 0, next: 0, timer: null };
   let pending = null;
 
   const noteOf = (th, d) => { const n = th.scale.length; return th.root + th.scale[((d % n) + n) % n] + 12 * Math.floor(d / n); };
-  const stepDur = () => 60 / (mus.th.bpm * (mus.inten === 2 ? 1.1 : 1)) / 4;
+  const stepDur = () => 60 / mus.th.bpm / 4;
 
-  function kick(t, v) { voice('sine', 140, 48, t, .22, v, { bus: musBus }); }
-  function clap(t, v) { noiseV(t, .09, v, { type: 'bandpass', f0: 1700, q: .9, bus: musBus, rev: .12 }); }
-  function hat(t, v) { noiseV(t, .03, v, { type: 'highpass', f0: 7000, bus: musBus }); }
+  function taiko(t, v) {
+    voice('sine', 100, 42, t, .4, v, { bus: musBus });
+    voice('triangle', 190, 70, t, .12, v * .35, { bus: musBus });
+    noiseV(t, .09, v * .4, { type: 'lowpass', f0: 520, bus: musBus });
+  }
+  function snare(t, v) {
+    noiseV(t, .17, v, { type: 'bandpass', f0: 2000, q: .7, bus: musBus, rev: .28 });
+    voice('triangle', 180, 110, t, .1, v * .6, { bus: musBus });
+  }
   function pluck(m, t, dur, v, o = {}) {
     const f = mtof(m);
-    voice('sine', f, f, t, dur, v, Object.assign({ bus: musBus, a: .006, del: .3, rev: .3 }, o));
-    voice('sine', f * 2, f * 2, t, dur * .6, v * .35, Object.assign({ bus: musBus, a: .006, rev: .3 }, o));
+    voice('sine', f, f, t, dur, v, Object.assign({ bus: musBus, a: .006, del: .3, rev: .35 }, o));
+    voice('sine', f * 2, f * 2, t, dur * .6, v * .35, Object.assign({ bus: musBus, a: .006, rev: .35 }, o));
   }
 
   function scheduleStep(step, t) {
-    const th = mus.th, inten = mus.inten, bar = Math.floor(step / 16) % 8, s = step % 16, sd = stepDur();
+    const th = mus.th, inten = mus.inten, boss = inten === 2, bar = Math.floor(step / 16) % 8, s = step % 16, sd = stepDur();
     const deg = th.chords[bar];
     const chord = [deg, deg + 2, deg + 4].map(d => noteOf(th, d));
 
-    if (s === 0) { // colchao de acordes
-      chord.forEach(m => {
-        const f = mtof(m - 12);
-        voice('triangle', f, f, t, sd * 16 + .4, .03, { bus: musBus, lp: 1200, a: .4, hold: sd * 14, rev: .5, detune: -5 });
-        voice('triangle', f, f, t, sd * 16 + .4, .03, { bus: musBus, lp: 1200, a: .4, hold: sd * 14, rev: .5, detune: 5 });
+    // cordas: acorde aberto, entrando devagar
+    if (s === 0) {
+      [chord[0] - 12, chord[1] - 12, chord[2] - 12, chord[0]].forEach(m => {
+        const f = mtof(m);
+        [-8, 8].forEach(dt => voice('sawtooth', f, f, t, sd * 16 + .5, inten === 0 ? .01 : .013, { bus: musBus, lp: 1500, detune: dt, a: .45, hold: sd * 14, rev: .55 }));
       });
     }
-    // baixo pulsante
+    // ostinato de cordas (corrida)
+    if (inten >= 1) {
+      const div = boss ? 1 : 2;
+      if (s % div === 0) {
+        const m = chord[[0, 1, 2, 1][(s / div) % 4]] + 12;
+        voice('sawtooth', mtof(m), mtof(m), t, sd * div * 1.15, (s % 4 === 0 ? .02 : .013) * (boss ? 1.15 : 1), { bus: musBus, lp: 2300, lp1: 900, a: .004, rev: .2 });
+      }
+    }
+    // baixo profundo
     const bass = (m, dur, v) => {
-      voice('sawtooth', mtof(m - 12), mtof(m - 12), t, dur, v, { bus: musBus, lp: 480, q: 1.2 });
+      voice('sawtooth', mtof(m - 24), mtof(m - 24), t, dur, v, { bus: musBus, lp: 400, q: 1 });
       voice('sine', mtof(m - 24), mtof(m - 24), t, dur, v * .9, { bus: musBus });
     };
-    if (inten === 0) { if (s === 0) bass(chord[0], sd * 6, .08); }
-    else {
-      const c = th.bass[s];
-      if (c !== '0') bass(c === '1' ? chord[0] : c === '2' ? chord[0] + 12 : chord[2], sd * 1.7, inten === 2 ? .12 : .1);
-    }
-    // arpejo (celesta)
-    if (inten === 0 ? s % 4 === 0 : (th.arp16 || s % 2 === 0)) {
-      const div = inten === 0 ? 4 : (th.arp16 ? 1 : 2), i = Math.floor(s / div) % 4;
-      pluck(chord[[0, 1, 2, 1][i]] + 12, t, sd * 2.5, inten === 0 ? .016 : (s % 4 === 2 ? .028 : .02));
-    }
-    // melodia (tema)
-    const [lt, llp] = th.lead || ['sawtooth', 2600];
+    if (inten === 0) { if (s === 0) bass(chord[0], sd * 14, .09); }
+    else if (!boss) { if (s === 0) bass(chord[0], sd * 7, .13); if (s === 8) bass(chord[0], sd * 6, .11); if (s === 12 && bar % 2) bass(chord[2], sd * 3, .08); }
+    else if (s % 2 === 0) bass(chord[0], sd * 1.8, .12);
+
+    // melodia nos metais (filtro abre durante a nota)
     for (const [ms, d, len] of th.mel[bar]) {
       if (ms !== s) continue;
-      const f = mtof(noteOf(th, d)), dur = len * sd * .95 + .08, v = inten === 0 ? .05 : .068;
-      voice(lt, f, f, t, dur, v * .55, { bus: musBus, lp: llp, a: .012, del: .26, rev: .3, q: .8 });
-      voice('triangle', f, f, t, dur, v, { bus: musBus, a: .012, del: .26, rev: .3 });
-      if (inten === 2) voice('sawtooth', f * 2, f * 2, t, dur, .014, { bus: musBus, lp: 2800, a: .02, rev: .3 });
+      const f = mtof(noteOf(th, d)), dur = len * sd * .95 + .1, v = inten === 0 ? .05 : (boss ? .07 : .062);
+      voice('sawtooth', f, f, t, dur, v * .75, { bus: musBus, lp: 800, lp1: 2700, a: .035, rev: .35, del: .2 });
+      voice('sawtooth', f, f, t, dur, v * .5, { bus: musBus, lp: 800, lp1: 2700, a: .035, rev: .35, detune: 7 });
+      voice('triangle', f, f, t, dur, v * .6, { bus: musBus, a: .03, rev: .3 });
+      if (boss) voice('sawtooth', f / 2, f / 2, t, dur, .03, { bus: musBus, lp: 1200, a: .03, rev: .3 });
     }
-    // bateria
+
+    // percussao
     if (inten >= 1) {
-      if (th.kick[s] === '1') kick(t, inten === 2 ? .36 : .3);
-      if (inten === 2 && s % 4 === 0 && th.kick[s] !== '1') kick(t, .24);
-      if (th.snare[s] === '1') { clap(t, inten === 2 ? .1 : .075); voice('triangle', 200, 130, t, .08, inten === 2 ? .08 : .05, { bus: musBus }); }
-      if (th.hat[s] === '1') hat(t, (s % 4 === 2 ? .026 : .016) * (inten === 2 ? 1.3 : 1));
-      if (inten === 2 && s === 0 && bar % 4 === 0) noiseV(t, .6, .05, { type: 'highpass', f0: 5000, a: .004, bus: musBus, rev: .3 });
-    }
+      if (th.kick[s] === '1') taiko(t, boss ? .5 : .4);
+      if (th.snare[s] === '1') snare(t, boss ? .1 : .075);
+      if (boss && bar === 7 && s >= 8) snare(t, .04 + (s - 8) * .008);          // rufar antes de repetir
+      if (s === 0 && bar % 4 === 0) noiseV(t, 1.5, boss ? .06 : .045, { type: 'highpass', f0: 5500, a: .9, bus: musBus, rev: .4 });
+      if (th.shaker && s % 2 === 0) noiseV(t, .04, .014, { type: 'bandpass', f0: 6500, q: 1, bus: musBus });
+    } else if (s === 0 && bar % 2 === 0) taiko(t, .2);
+
+    // cor de cada bioma
+    if (inten >= 1) {
+      if (th.flair === 'bells' && s % 4 === 2) pluck(chord[(s / 4 | 0) % 3] + 24, t, sd * 4, .012);
+      if (th.flair === 'anvil' && (s === 4 || s === 12)) { voice('square', 1560, 1500, t, .06, .02, { bus: musBus, lp: 5000 }); noiseV(t, .05, .02, { type: 'bandpass', f0: 4200, bus: musBus }); }
+      if (th.flair === 'thunder' && s === 0 && bar % 4 === 0) noiseV(t, 1.8, .15, { type: 'lowpass', f0: 260, f1: 60, a: .06, bus: musBus, rev: .4 });
+      if (th.flair === 'fanfare' && (s === 0 || s === 10)) chord.forEach(m => voice('sawtooth', mtof(m), mtof(m), t, sd * 2.4, .02, { bus: musBus, lp: 1800, a: .02, rev: .3 }));
+    } else if (inten === 0 && s % 8 === 4) pluck(chord[(s / 8 | 0) % 3] + 24, t, sd * 6, .012);
   }
 
   function tick() {
@@ -423,6 +498,7 @@ const Snd = (() => {
   }
   function setIntensity(i) { mus.inten = i; }
   function musicStop(fast) {
+    pending = null;
     if (!mus.on) return;
     mus.on = false; clearInterval(mus.timer);
     if (!ac) return;
@@ -444,5 +520,5 @@ const Snd = (() => {
     let p = 0; for (const v of b) p = Math.max(p, Math.abs(v)); return p;
   }
 
-  return { init, play, panX, musicPlay, musicStop, setIntensity, setVolumes, peak, duck, get ready() { return !!ac; }, get state() { return ac && ac.state; } };
+  return { get track() { return mus.on ? mus.key : null; }, init, play, panX, musicPlay, musicStop, setIntensity, setVolumes, peak, duck, get ready() { return !!ac; }, get state() { return ac && ac.state; } };
 })();

@@ -237,19 +237,20 @@ function nearestTarget(x, y, skip) {
 }
 
 function fireMissile() {
-  const p = G.player;
+  const p = G.player, taken = [];
   for (let i = 0; i < p.missiles; i++) {
-    const a = -Math.PI / 2 + (i - (p.missiles - 1) / 2) * .8;
-    G.pb.push({ kind: 'missile', x: p.x, y: p.y - 30, vx: Math.cos(a) * 300, vy: Math.sin(a) * 300, dmg: p.dmg * 3.2, pierce: 0, hits: [], life: 3, speed: 560 });
+    const a = -Math.PI / 2 + (i - (p.missiles - 1) / 2) * 1.1 + rand(-.1, .1);
+    const tg = nearestTarget(p.x, p.y, taken); if (tg) taken.push(tg);
+    G.pb.push({ kind: 'missile', x: p.x + (i - (p.missiles - 1) / 2) * 16, y: p.y - 24, vx: Math.cos(a) * 340, vy: Math.sin(a) * 340, dmg: p.dmg * 4, pierce: 0, hits: [], life: 3.2, speed: 640, target: tg });
   }
-  Snd.play('enemyShoot', { pan: Snd.panX(p.x) * .5 });
+  Snd.play('missile', { pan: Snd.panX(p.x) * .5 });
 }
 
 function missileBoom(x, y, dmg, except) {
-  burst(x, y, ['#ffb340', '#ff6a1a', '#ffffff'], 16, 260, 5); shockwave(x, y, 80, '#ffb340');
-  Snd.play('explode', { size: .6, pan: Snd.panX(x) });
-  for (const e of G.enemies) if (!e.dead && e !== except && Math.hypot(e.x - x, e.y - y) < 80 + e.rad) damageEnemy(e, dmg * .5, false);
-  if (G.boss && G.boss !== except && G.boss.targetable() && G.boss.hitTest(x, y, 70)) G.boss.damage(dmg * .5);
+  burst(x, y, ['#ffb340', '#ff6a1a', '#ffffff'], 22, 300, 6); shockwave(x, y, 120, '#ffb340'); shockwave(x, y, 70, '#ffffff');
+  Snd.play('explode', { size: .9, pan: Snd.panX(x) });
+  for (const e of G.enemies) if (!e.dead && e !== except && Math.hypot(e.x - x, e.y - y) < 110 + e.rad) damageEnemy(e, dmg * .6, false);
+  if (G.boss && G.boss !== except && G.boss.targetable() && G.boss.hitTest(x, y, 90)) G.boss.damage(dmg * .6);
 }
 
 // aplicado a cada frame: balas do jogador, drones orbitais, pulso
@@ -258,14 +259,16 @@ function updatePlayerWeapons(dt) {
   for (const b of G.pb) {
     if (b.kind === 'missile') {
       b.life -= dt;
-      const t = nearestTarget(b.x, b.y);
+      const t = (b.target && !b.target.dead && (!b.target.targetable || b.target.targetable())) ? b.target : nearestTarget(b.x, b.y);
       if (t) {
         const want = Math.atan2(t.y - b.y, t.x - b.x), cur = Math.atan2(b.vy, b.vx);
         let d = want - cur; while (d > Math.PI) d -= TAU; while (d < -Math.PI) d += TAU;
-        const na = cur + clamp(d, -5 * dt, 5 * dt), sp = Math.min(b.speed, Math.hypot(b.vx, b.vy) + 700 * dt);
+        const na = cur + clamp(d, -7.5 * dt, 7.5 * dt), sp = Math.min(b.speed, Math.hypot(b.vx, b.vy) + 1100 * dt);
         b.vx = Math.cos(na) * sp; b.vy = Math.sin(na) * sp;
       }
       if (b.life <= 0) b.dead = true;
+      G.parts.push({ x: b.x - b.vx * .012, y: b.y - b.vy * .012, vx: rand(-20, 20), vy: rand(-20, 20), life: .35, max: .35, r: rand(4, 7), c: Math.random() < .5 ? '#ffb340' : '#ff6a1a', drag: 2 });
+      if (Math.random() < .5) G.parts.push({ k: 'smoke', x: b.x - b.vx * .02, y: b.y - b.vy * .02, vx: rand(-15, 15), vy: rand(-15, 15), life: .5, max: .5, r: rand(3, 5), c: '#3a2060', drag: 1 });
     }
     b.x += b.vx * dt; b.y += b.vy * dt;
     if (b.y < -60 || b.y > H + 60 || b.x < -60 || b.x > W + 60) { b.dead = true; continue; }
@@ -296,7 +299,7 @@ function updatePlayerWeapons(dt) {
   }
   p.orbPos.length = p.orbitals;
   // missis
-  if (p.missiles > 0) { p.missT -= dt; if (p.missT <= 0 && (G.enemies.length || (G.boss && G.boss.targetable()))) { fireMissile(); p.missT = Math.max(1.2, 2.8 - p.missiles * .35); } }
+  if (p.missiles > 0) { p.missT -= dt; if (p.missT <= 0 && (G.enemies.length || (G.boss && G.boss.targetable()))) { fireMissile(); p.missT = Math.max(.9, 2.1 - p.missiles * .25); } }
   // pulso
   if (G.pulse) {
     const pu = G.pulse; pu.r += 1400 * dt;

@@ -21,7 +21,7 @@ const RUN_UPGRADES = [
   { id: 'pierce', name: 'Tiro Perfurante', r: 'raro', max: 3, desc: 'Tiros atravessam +1 inimigo.' },
   { id: 'crit', name: 'Mira Crítica', r: 'raro', max: 5, desc: '+8% de chance de crítico (dano x2).' },
   { id: 'shield', name: 'Escudo de Energia', r: 'raro', max: 3, desc: 'Absorve 1 golpe. Recarrega sozinho.' },
-  { id: 'missile', name: 'Mísseis Teleguiados', r: 'epico', max: 4, desc: 'Dispara mísseis que perseguem inimigos.' },
+  { id: 'missile', name: 'Mísseis Teleguiados', r: 'epico', max: 4, desc: 'Dispara mísseis que perseguem e explodem em área. +1 míssil por nível.' },
   { id: 'orbit', name: 'Drones Orbitais', r: 'epico', max: 4, desc: 'Drones giram ao seu redor e destroem tudo.' },
 ];
 

@@ -12,7 +12,7 @@ const PLANET_PALS = {
 const STAGES = [
   {
     id: 0, name: 'Nebulosa Violeta', desc: 'Onde tudo começa. Zangões da Olien-Corp invadiram o setor.',
-    music: 's1', duration: 80, boss: 'mother', bossName: 'Nave-Mãe Zangão', tint: '#8b4dff',
+    music: 's1', bossMusic: 'b1', duration: 80, boss: 'mother', bossName: 'Nave-Mãe Zangão', tint: '#8b4dff',
     pal: {
       top: '#2a1478', bot: '#0b0422', star: '#e8e0ff', dust: '#cdb8ff', shaft: '160,110,255', rock0: '#5a3fb0', rock1: '#170a3d', rim: 'rgba(190,160,255,.45)', rocks: 10,
       nebA: [[200, 150, 360, '#7a3dff', .22], [1050, 300, 420, '#4b2bd6', .24], [640, 560, 380, '#a76bff', .14], [100, 600, 300, '#3b82ff', .08]],
@@ -28,7 +28,7 @@ const STAGES = [
   },
   {
     id: 1, name: 'Cinturão de Asteroides', desc: 'Rochas, minas e sucata. Ninguém atravessa sem arranhar a pintura.',
-    music: 's2', duration: 90, boss: 'golem', bossName: 'Gigante de Rocha', tint: '#ffb340',
+    music: 's2', bossMusic: 'b2', duration: 90, boss: 'golem', bossName: 'Gigante de Rocha', tint: '#ffb340',
     pal: {
       top: '#3a1a52', bot: '#14081f', star: '#ffe9d0', dust: '#ffcf9a', shaft: '255,170,90', rock0: '#8a5a7a', rock1: '#2a1030', rim: 'rgba(255,190,140,.5)', rocks: 18,
       nebA: [[250, 200, 380, '#ff7a3c', .16], [1000, 420, 420, '#a23cff', .2], [600, 600, 320, '#ff4a8a', .1]],
@@ -44,7 +44,7 @@ const STAGES = [
   },
   {
     id: 2, name: 'Tempestade Iônica', desc: 'Raios, descargas e energia solta. Observe o chão antes de pisar.',
-    music: 's3', duration: 95, boss: 'eye', bossName: 'Olho da Tempestade', tint: '#ff7ac8',
+    music: 's3', bossMusic: 'b3', duration: 95, boss: 'eye', bossName: 'Olho da Tempestade', tint: '#ff7ac8',
     pal: {
       top: '#3a0f5c', bot: '#0a0420', star: '#ffe0f4', dust: '#ff9ad0', shaft: '255,100,200', rock0: '#7a3a8a', rock1: '#220a38', rim: 'rgba(255,150,220,.5)', rocks: 8,
       nebA: [[200, 200, 400, '#ff3d9a', .2], [1050, 300, 420, '#7a3dff', .22], [640, 600, 340, '#33c4ff', .12]],
@@ -60,7 +60,7 @@ const STAGES = [
   },
   {
     id: 3, name: 'Zona Solar', desc: 'Perto demais de uma estrela. As chamas escolhem o próprio caminho.',
-    music: 's4', duration: 100, boss: 'sun', bossName: 'Sol-Guardião', tint: '#ff5a3c',
+    music: 's4', bossMusic: 'b4', duration: 100, boss: 'sun', bossName: 'Sol-Guardião', tint: '#ff5a3c',
     pal: {
       top: '#4a1230', bot: '#12040f', star: '#fff0d0', dust: '#ffb870', shaft: '255,130,60', rock0: '#a2503a', rock1: '#30100a', rim: 'rgba(255,170,100,.55)', rocks: 9,
       nebA: [[200, 150, 400, '#ff7a1f', .22], [1050, 350, 420, '#ff3a3a', .22], [640, 600, 340, '#ffb340', .14]],

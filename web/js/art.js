@@ -151,8 +151,21 @@ const Art = {
     const c = b.c || '#b98cff';
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
     if (b.kind === 'missile') {
-      drawGlow(b.x, b.y, 22, '#ffb340', .9); drawGlow(b.x - b.vx * .02, b.y - b.vy * .02, 16, '#ff6a1a', .6);
-      ctx.restore(); ctx.globalAlpha = 1; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(b.x, b.y, 4, 0, 7); ctx.fill();
+      const ang = Math.atan2(b.vy, b.vx) + Math.PI / 2;
+      drawGlow(b.x, b.y, 30, '#ffb340', .8);
+      ctx.restore(); ctx.save(); ctx.translate(b.x, b.y); ctx.rotate(ang); ctx.globalAlpha = 1;
+      // chama
+      ctx.globalCompositeOperation = 'lighter';
+      const fl = 14 + Math.random() * 8, fg = ctx.createLinearGradient(0, 6, 0, 6 + fl);
+      fg.addColorStop(0, '#fff1c1'); fg.addColorStop(.5, '#ffb340'); fg.addColorStop(1, 'rgba(255,90,20,0)');
+      ctx.fillStyle = fg; ctx.beginPath(); ctx.moveTo(-4, 6); ctx.lineTo(0, 6 + fl); ctx.lineTo(4, 6); ctx.fill();
+      ctx.globalCompositeOperation = 'source-over';
+      // aletas, corpo e ponta
+      ctx.fillStyle = '#ff5a3c'; ctx.beginPath(); ctx.moveTo(-3, 0); ctx.lineTo(-9, 10); ctx.lineTo(-3, 8); ctx.fill(); ctx.beginPath(); ctx.moveTo(3, 0); ctx.lineTo(9, 10); ctx.lineTo(3, 8); ctx.fill();
+      ctx.fillStyle = '#f3ecff'; ctx.beginPath(); ctx.roundRect(-4, -9, 8, 18, 3); ctx.fill();
+      ctx.fillStyle = '#ff7a2a'; ctx.beginPath(); ctx.moveTo(-4, -9); ctx.lineTo(0, -17); ctx.lineTo(4, -9); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#7fe0ff'; ctx.beginPath(); ctx.arc(0, -2, 2, 0, 7); ctx.fill();
+      ctx.restore();
       return;
     }
     const a = Math.atan2(b.vy, b.vx) + Math.PI / 2;

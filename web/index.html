@@ -13,18 +13,10 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<script src="js/util.js"></script>
-<script src="js/audio.js"></script>
-<script src="js/art.js"></script>
-<script src="js/world.js"></script>
-<script src="js/stages.js"></script>
-<script src="js/upgrades.js"></script>
-<script src="js/entities.js"></script>
-<script src="js/events.js"></script>
-<script src="js/boss.js"></script>
-<script src="js/game.js"></script>
-<script src="js/ui.js"></script>
-<script src="js/screens.js"></script>
-<script src="js/main.js"></script>
+<script>
+// carrega sempre a versao mais nova dos scripts (evita cache antigo)
+['util','audio','art','world','stages','upgrades','entities','events','boss','game','ui','screens','main']
+  .forEach(n => document.write('<script src="js/' + n + '.js?t=' + Date.now() + '"><\/script>'));
+</script>
 </body>
 </html>

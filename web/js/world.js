@@ -93,8 +93,7 @@ const World = {
 
   draw(cx) {
     const pal = this.pal, t = this.t, sc = this.scroll;
-    const bg = ctx.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, pal.top); bg.addColorStop(1, pal.bot);
-    ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = bg; ctx.fillRect(-10, -10, W + 20, H + 20);
+    ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; ctx.drawImage(this.bgC, -10, -10, W + 20, H + 20);
     const ox = -cx * .04, off = (t * 16 * sc) % H, off2 = (t * 42 * sc) % H;
     ctx.globalAlpha = .8 + .2 * Math.sin(t * .4); ctx.drawImage(this.nebA, ox - 60, off, W + 120, H); ctx.drawImage(this.nebA, ox - 60, off - H, W + 120, H);
     ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = .4 + .3 * Math.sin(t * .23 + 1);

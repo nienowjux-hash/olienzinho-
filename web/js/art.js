@@ -42,10 +42,14 @@ const Art = {
       ctx.beginPath(); ctx.arc(0, ey + U * .05, U * .1, Math.PI * 1.1, Math.PI * 1.9); ctx.stroke();
       ctx.fillStyle = 'rgba(255,120,170,.5)'; for (const s of [-1, 1]) { ctx.beginPath(); ctx.ellipse(s * U * .16, ey + U * .08, U * .05, U * .03, 0, 0, 7); ctx.fill(); }
     } else {
-      ctx.fillStyle = mood === 'hurt' ? '#ffd0d8' : '#f5eeff'; ctx.beginPath(); ctx.ellipse(0, ey, U * .125, U * .125 * eh, 0, 0, 7); ctx.fill();
-      const pr = mood === 'hurt' ? U * .06 : U * .088;
+      const es = mood === 'shock' ? 1.22 : 1;
+      ctx.fillStyle = mood === 'hurt' ? '#ffd0d8' : '#f5eeff'; ctx.beginPath(); ctx.ellipse(0, ey, U * .125 * es, U * .125 * eh * es, 0, 0, 7); ctx.fill();
+      const pr = mood === 'hurt' ? U * .06 : mood === 'shock' ? U * .05 : U * .088;
       ctx.fillStyle = '#1b0b3d'; ctx.beginPath(); ctx.ellipse(lx * U * .03, ey + ly * U * .03, pr, pr * eh, 0, 0, 7); ctx.fill();
       if (eh > .5) { ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(lx * U * .03 + U * .03, ey + ly * U * .03 - U * .03, U * .025, 0, 7); ctx.fill(); }
+      if (mood === 'determined' || mood === 'worry') { // palpebra: cenho firme ou olhar preocupado
+        const sd = mood === 'worry' ? -1 : 1; ctx.fillStyle = P.g1; ctx.beginPath(); ctx.moveTo(-U * .14, ey - U * .14); ctx.lineTo(U * .14, ey - U * .14); ctx.lineTo(U * .14, ey - U * (sd > 0 ? .02 : .09)); ctx.lineTo(-U * .14, ey - U * (sd > 0 ? .09 : .02)); ctx.closePath(); ctx.fill();
+      }
     }
     // escudo
     if (o.shield) {

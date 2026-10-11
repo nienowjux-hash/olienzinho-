@@ -739,8 +739,9 @@ const Screens = {
       UI.panel(x, y, w, h, { fill: f ? 'rgba(60,30,140,.85)' : 'rgba(20,8,55,.72)', stroke: f ? '#e2d4ff' : 'rgba(190,160,255,.35)', r: 18 });
       ctx.restore();
       ctx.fillStyle = it.col; ctx.beginPath(); ctx.roundRect(x + 14, y + 14, 8, h - 28, 4); ctx.fill();
-      txt(it.name, x + 38, y + 14, 26, '#fff'); txt(it.desc, x + 38, y + 48, 16, '#cdb8ff', 'left', 700);
-      for (let k = 0; k < it.max; k++) { ctx.fillStyle = k < lv ? it.col : 'rgba(255,255,255,.15)'; ctx.beginPath(); ctx.roundRect(x + 38 + k * 22, y + 74, 18, 8, 4); ctx.fill(); }
+      { const bt = G.buyFlash && G.buyFlash.id === id ? G.buyFlash.t : 9, pop = 1 + Math.max(0, .5 - bt) * .9, ic = { luck: 'lucky' }[it.id] || it.id; ctx.save(); ctx.translate(0, 0); Visual2.upIcon(ic, x + 66, y + h / 2, 21 * pop, it.col, f); ctx.restore(); }
+      txt(it.name, x + 108, y + 14, 26, '#fff'); txt(it.desc, x + 108, y + 48, 16, '#cdb8ff', 'left', 700);
+      for (let k = 0; k < it.max; k++) { ctx.fillStyle = k < lv ? it.col : 'rgba(255,255,255,.15)'; ctx.beginPath(); ctx.roundRect(x + 108 + k * 22, y + 74, 18, 8, 4); ctx.fill(); }
       const bf = G.buyFlash && G.buyFlash.id === id ? 1 - G.buyFlash.t * 2.5 : 0;
       if (bf > 0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = bf * .5; ctx.fillStyle = it.col; ctx.beginPath(); ctx.roundRect(x, y, w, h, 18); ctx.fill(); ctx.restore(); G.buyFlash.t += .016; }
       if (maxed) txt('MÁXIMO', x + w - 24, y + 36, 26, '#ffe9a8', 'right');

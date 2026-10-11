@@ -91,6 +91,7 @@ Visual.update = function (dt) {
   };
 }
 Visual.bossAura = function (b) {
+  G.lastBoss = { x: b.x, y: b.y, col: b.col };
   if (b.state === 'dying') return;
   const t = World.t, ph = b.phase || 0, R = (b.rad || 120);
   ctx.save(); ctx.globalCompositeOperation = 'lighter';

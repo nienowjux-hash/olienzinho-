@@ -21,7 +21,7 @@ Game.goTitle();
 
 const VIG = (() => { const c = document.createElement('canvas'); c.width = 256; c.height = 144; const x = c.getContext('2d'); const g = x.createRadialGradient(128, 72, 38, 128, 72, 150); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(2,0,12,.72)'); x.fillStyle = g; x.fillRect(0, 0, 256, 144); return c; })();
 const GRAIN = (() => { const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d'), d = x.createImageData(128, 128); for (let i = 0; i < d.data.length; i += 4) { const v = Math.random() * 255; d.data[i] = d.data[i + 1] = d.data[i + 2] = v; d.data[i + 3] = 255; } x.putImageData(d, 0, 0); return ctx.createPattern(c, 'repeat'); })();
-const FX_STATES = ['play', 'pause', 'levelup', 'clear', 'over', 'story'];
+const FX_STATES = ['play', 'pause', 'levelup', 'clear', 'over', 'story', 'celebrate'];
 function postFx(s) {
   ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
   const gw = cv.width, gh = cv.height;
@@ -45,7 +45,7 @@ function render() {
   ctx.setTransform(K, 0, 0, K, 0, 0);
   ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
   const s = G.state;
-  if (s === 'play' || s === 'pause' || s === 'levelup' || s === 'clear' || s === 'over') Game.drawPlay(); else if (s === 'story') Screens.storyBackdrop(); else if (s === 'title') Screens.titleBackdrop(); else World.draw(0);
+  if (s === 'play' || s === 'pause' || s === 'levelup' || s === 'clear' || s === 'over' || s === 'celebrate') Game.drawPlay(); else if (s === 'story') Screens.storyBackdrop(); else if (s === 'title') Screens.titleBackdrop(); else World.draw(0);
   ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
   if (Screens[s]) Screens[s]();
   Ach.draw();
@@ -73,7 +73,7 @@ document.addEventListener('visibilitychange', () => { if (document.hidden && G.s
 
 const Trans = { t: 9 };
 let prevS = G.state;
-const QUIET = ['play', 'pause', 'levelup'];
+const QUIET = ['play', 'pause', 'levelup', 'celebrate'];
 let lastT = performance.now();
 function frame(now) {
   const dt = Math.min(.05, (now - lastT) / 1000); lastT = now;

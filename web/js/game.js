@@ -189,7 +189,7 @@ const Game = {
     const prevG = Save.data.grades[G.stageIdx]; if (prevG === undefined || gi > prevG) Save.data.grades[G.stageIdx] = gi;
     this.endRunSave(bonus, true);
     G.result = { bonus, grade, gi, hits: st.hits, maxCombo: st.maxCombo, time: G.t, coins: G.runCoins, score: G.score, kills: G.kills, level: G.level, best: Save.data.best[G.stageIdx], newStage: G.stageIdx + 1 < STAGES.length };
-    const toClear = () => { G.clearAt = World.t; G.state = 'clear'; Snd.musicPlay('menu', 0); Snd.play('stageClear'); };
+    const toClear = () => Visual4.celebrate();
     if (G.stageIdx === 3) this.maybeStory('epi', STORY.epilogue, toClear);
     else if (G.stageIdx === 5) { Save.data.won = true; Save.save(); Ach.check(); this.maybeStory('finale', STORY.finale, toClear); }
     else toClear();
@@ -414,7 +414,7 @@ const Game = {
     ctx.save();
     if (G.shake > 0) ctx.translate(rand(-1, 1) * G.shake * .55, rand(-1, 1) * G.shake * .55);
     if (!G.furyCut) G.zoom = (G.zoom || 0) * .92; if (G.zoom <= .002) G.zoomCx = null; if (G.zoom > .001) { const zx = G.zoomCx ?? W / 2, zy = G.zoomCy ?? H / 2; ctx.translate(zx, zy); ctx.scale(1 + G.zoom, 1 + G.zoom); ctx.translate(-zx, -zy); }
-    World.draw(cx); Visual.biome(); Visual2.lights();
+    World.draw(cx); Visual.biome(); Visual4.fog(); Visual2.lights();
     Events.drawHazards();
     for (const k of G.pickups) Art.pickup(k);
     if (G.boss) { const b = G.boss, br = 1 + Math.sin(b.t * 2) * .012; ctx.save(); ctx.translate(b.shx || 0, b.shy || 0); ctx.translate(b.x, b.y); ctx.scale(br, br); ctx.translate(-b.x, -b.y); Visual3.bossDraw(b); ctx.restore(); Visual.bossAura(b); }
@@ -433,7 +433,7 @@ const Game = {
       for (const g of p.ghosts) { ctx.globalAlpha = g.t / .28 * .45; Art.ship(g.x, g.y, { vx: g.vx, t: p.t, lookx: 0, looky: -1, blinkT: 0, inv: 0, scale: SHIP_S, pal, orbi: ob }); }
       ctx.globalAlpha = 1;
       Art.ship(p.x, p.y + bob, { pal, orbi: ob, vx: p.vx, t: p.t, lookx: p.lookx, looky: p.looky, blinkT: p.blinkT, inv: p.inv, shield: p.shieldReady, scale: SHIP_S, mood: p.mood,
-        sx: (1 + p.recoil * .05 - Math.abs(p.vx) / 500 * .05) * (p.dashT > 0 ? .78 : 1), sy: (1 - p.recoil * .08 + Math.abs(p.vy) / 500 * .04) * (p.dashT > 0 ? 1.3 : 1) });
+        sx: (1 + p.recoil * .05 - Math.abs(p.vx) / 500 * .14) * (p.dashT > 0 ? .78 : 1), sy: (1 - p.recoil * .08 + Math.abs(p.vy) / 500 * .04) * (p.dashT > 0 ? 1.3 : 1) });
       Visual2.shipFx(p);
       for (const o of p.orbPos) {
         ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(o[0], o[1], 26, '#ffb340', .9); ctx.restore();
@@ -472,7 +472,7 @@ const Game = {
     for (const o of G.pops) { ctx.globalAlpha = clamp(o.life, 0, 1); txt(o.text, o.x, o.y, o.size, o.c, 'center'); }
     ctx.globalAlpha = 1;
     ctx.restore();
-    Visual3.furyDraw();
+    Visual3.furyDraw(); Visual4.cutinDraw(); Visual4.faceDraw(); Visual4.introDraw();
     if (G.hurtFlash > 0) {
       const g = ctx.createRadialGradient(W / 2, H / 2, H * .3, W / 2, H / 2, H * .85);
       g.addColorStop(0, 'rgba(255,40,90,0)'); g.addColorStop(1, `rgba(255,40,90,${G.hurtFlash * 1.2})`); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
@@ -628,12 +628,7 @@ const Game = {
     }
     // progresso / chefe
     if (G.boss && G.boss.state !== 'intro') {
-      const b = G.boss, w = 560, x = W / 2 - w / 2, y = 52;
-      txt(b.name.toUpperCase(), W / 2, 22, 22, '#ffe9a8', 'center');
-      ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.beginPath(); ctx.roundRect(x - 3, y - 3, w + 6, 20, 10); ctx.fill();
-      const g = ctx.createLinearGradient(x, 0, x + w, 0); g.addColorStop(0, '#ff5a3c'); g.addColorStop(1, '#ffb340');
-      ctx.fillStyle = g; ctx.beginPath(); ctx.roundRect(x, y, Math.max(8, w * b.ratio), 14, 7); ctx.fill();
-      ctx.strokeStyle = 'rgba(255,255,255,.4)'; ctx.lineWidth = 2; for (const f of [.33, .66]) { ctx.beginPath(); ctx.moveTo(x + w * f, y); ctx.lineTo(x + w * f, y + 14); ctx.stroke(); }
+      Visual4.bossBar(G.boss);
     } else if (G.training) {
       txt('MODO TREINO', W / 2, 8, 15, '#7fe0a0', 'center', 800);
     } else if (G.endless && !G.boss) {

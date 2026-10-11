@@ -189,65 +189,90 @@ const Screens = {
   blinkAt(t) { const ph = t % 4; return ph < .16 ? .16 - ph : 0; },
   stars() { return '★ ' + Save.data.coins; },
 
-  // ---- menu principal cinematografico ----
+  // ---- menu principal: o Olienzinho voando rumo ao eclipse do Vazio ----
   dyingStars(t) {
-    const pos = [[180, 130], [430, 78], [770, 150], [1110, 96], [300, 340], [930, 310], [1210, 270]];
+    const pos = [[150, 110], [380, 70], [700, 120], [1180, 90], [250, 560], [820, 610], [1230, 560], [520, 640]];
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
     pos.forEach(([x, y], i) => {
       const c = (t * .1 + i * .37) % 1; let b = 1;
       if (c > .55 && c < .8) b = Math.random() < .5 ? .15 : .9; else if (c >= .8 && c < .95) b = .04; else if (c >= .95) b = (c - .95) / .05;
-      drawGlow(x, y, 26, '#e2d4ff', b * .8);
-      ctx.globalAlpha = b; ctx.fillStyle = '#fff'; ctx.beginPath(); for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4, r = k % 2 ? 2.5 : 9; ctx.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r); } ctx.closePath(); ctx.fill();
+      drawGlow(x, y, 22, '#e2d4ff', b * .7);
+      ctx.globalAlpha = b; ctx.fillStyle = '#fff'; ctx.beginPath(); for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4, r = k % 2 ? 2 : 8; ctx.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r); } ctx.closePath(); ctx.fill();
     });
     ctx.restore(); ctx.globalAlpha = 1;
   },
-  voidEdges(t) {
-    for (const [x, y, sg] of [[0, H, 1], [W, 0, -1]]) {
-      const r = 560 + Math.sin(t * .6 + sg) * 40;
-      ctx.fillStyle = rdl(x, y, 20, r, [[0, 'rgba(2,0,12,.96)'], [.55, 'rgba(8,2,30,.7)'], [1, 'rgba(8,2,30,0)']]); ctx.fillRect(0, 0, W, H);
-      ctx.save(); ctx.lineCap = 'round';
-      for (let i = 0; i < 5; i++) {
-        const a = (i / 5) * 1.3 + .1, sw = Math.sin(t * .8 + i * 1.7) * 30, l = 340 + i * 36;
-        ctx.strokeStyle = `rgba(150,90,255,${.22 - i * .02})`; ctx.lineWidth = 6 - i * .8;
-        ctx.beginPath(); ctx.moveTo(x, y); ctx.bezierCurveTo(x + sg * l * .3, y - sg * (l * .2 + sw), x + sg * l * .7, y - sg * (l * .6 - sw), x + sg * l * Math.cos(a), y - sg * l * Math.sin(a) * .9); ctx.stroke();
-      }
-      ctx.restore();
+
+  eclipse(cx, cy, r, t) {
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    drawGlow(cx, cy, r * 3.6, '#ff8a1f', .34 + Math.sin(t * .7) * .04);
+    drawGlow(cx, cy, r * 2.3, '#ffd36a', .55);
+    ctx.lineCap = 'round';
+    for (let i = 0; i < 90; i++) {
+      const a = i / 90 * TAU + t * .03, n = Math.sin(i * 12.9898) * 43758.5453, rr = n - Math.floor(n);
+      const l1 = r * 1.02, l2 = r * (1.25 + rr * .9 + Math.sin(t * 1.3 + i) * .06);
+      ctx.strokeStyle = `rgba(255,${190 + (rr * 50 | 0)},120,${.12 + rr * .24})`; ctx.lineWidth = 1 + rr * 2.2;
+      ctx.beginPath(); ctx.moveTo(cx + Math.cos(a) * l1, cy + Math.sin(a) * l1); ctx.lineTo(cx + Math.cos(a) * l2, cy + Math.sin(a) * l2); ctx.stroke();
     }
+    ctx.restore(); ctx.globalAlpha = 1;
+    ctx.fillStyle = '#010005'; ctx.beginPath(); ctx.arc(cx, cy, r, 0, TAU); ctx.fill();
+    ctx.lineWidth = 5;
+    for (let k = 0; k < 48; k++) { const a0 = k / 48 * TAU, w = Math.max(0, Math.cos(a0 - Math.PI * 1.25)); ctx.strokeStyle = `rgba(255,226,150,${.1 + w * .85})`; ctx.beginPath(); ctx.arc(cx, cy, r + 1, a0, a0 + TAU / 48 + .02); ctx.stroke(); }
+    const fa = Math.PI * 1.25, fx = cx + Math.cos(fa) * r, fy = cy + Math.sin(fa) * r;
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    drawGlow(fx, fy, 100, '#ffffff', .9 * (.85 + Math.sin(t * 2) * .15)); drawGlow(fx, fy, 190, '#ffd36a', .5);
+    ctx.strokeStyle = 'rgba(255,240,200,.75)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(fx - 170, fy); ctx.lineTo(fx + 170, fy); ctx.moveTo(fx, fy - 100); ctx.lineTo(fx, fy + 100); ctx.stroke();
+    ctx.restore(); ctx.globalAlpha = 1;
+    // tentaculos do Vazio saindo do disco (comem a luz)
+    ctx.save(); ctx.lineCap = 'round';
+    for (let i = 0; i < 8; i++) {
+      const a = i / 8 * TAU + .3 + Math.sin(t * .4 + i) * .05, sw = Math.sin(t * .9 + i * 1.7) * 22, L = r * (.8 + (i % 3) * .22);
+      const x0 = cx + Math.cos(a) * r * .96, y0 = cy + Math.sin(a) * r * .96, x1 = cx + Math.cos(a + .35) * (r + L * .6) + sw, y1 = cy + Math.sin(a + .35) * (r + L * .6), x2 = cx + Math.cos(a + .1) * (r + L), y2 = cy + Math.sin(a + .1) * (r + L) - sw;
+      ctx.strokeStyle = 'rgba(150,90,255,.38)'; ctx.lineWidth = 11; ctx.beginPath(); ctx.moveTo(x0, y0); ctx.quadraticCurveTo(x1, y1, x2, y2); ctx.stroke();
+      ctx.strokeStyle = '#010005'; ctx.lineWidth = 7; ctx.beginPath(); ctx.moveTo(x0, y0); ctx.quadraticCurveTo(x1, y1, x2, y2); ctx.stroke();
+    }
+    ctx.restore();
   },
+
   titleBackdrop() {
     const t = World.t, tt = t - (G.titleStart ?? t), dt = Math.min(.05, t - (this.tl ?? t)); this.tl = t;
-    const mx = Input.mouse.x - W / 2;
+    const mx = (Input.mouse.x - W / 2) / W, my = (Input.mouse.y - H / 2) / H;
     ctx.save();
-    const z = 1.07 - easeOut(tt / 7) * .06 + Math.sin(t * .15) * .006;
-    ctx.translate(W / 2, H / 2); ctx.scale(z, z); ctx.translate(-W / 2, -H / 2);
-    World.draw(mx * .3);
-    // planeta gigante com anel (luz de borda)
-    const P = this.bigPlanet || (this.bigPlanet = { x: 1040, y: 760, r: 340, a: 1, pal: PLANET_PALS.violet, tilt: -.38, par: .04, ph: 0 });
-    World.drawPlanet(P, mx);
-    ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = 'rgba(255,233,168,.55)'; ctx.lineWidth = 5; ctx.beginPath(); ctx.arc(P.x - mx * P.par, P.y, P.r + 2, Math.PI * 1.08, Math.PI * 1.5); ctx.stroke(); drawGlow(P.x - 250 - mx * P.par, P.y - 240, 140, '#ffe9a8', .5); ctx.restore(); ctx.globalAlpha = 1;
+    const z = 1.06 - easeOut(tt / 7) * .05;
+    ctx.translate(W / 2 - mx * 14, H / 2 - my * 10); ctx.scale(z, z); ctx.translate(-W / 2, -H / 2);
+    ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = lin(0, 0, 0, H, [[0, '#050118'], [.6, '#0b052b'], [1, '#160936']]); ctx.fillRect(-80, -80, W + 160, H + 160);
+    ctx.globalAlpha = .35; ctx.drawImage(World.nebA, -80 - mx * 24, 0, W + 160, H); ctx.globalAlpha = 1;
+    ctx.lineCap = 'round'; ctx.strokeStyle = '#e8e0ff';
+    for (const s of World.stars) { const x = s.x - mx * 90 * s.par * 10; ctx.globalAlpha = (.28 + s.l * .25) * (.65 + .35 * Math.sin(t * 2 + s.ph)); ctx.lineWidth = s.r * 1.3; ctx.beginPath(); ctx.moveTo(x, s.y); ctx.lineTo(x, s.y - s.sp * .03); ctx.stroke(); }
+    ctx.globalAlpha = 1;
     this.dyingStars(t);
-    // feixes de luz
-    ctx.save(); ctx.globalCompositeOperation = 'lighter';
-    for (let i = 0; i < 4; i++) { ctx.save(); ctx.translate(120 + i * 280 + Math.sin(t * .2 + i) * 40, -60); ctx.rotate(.45); ctx.fillStyle = lin(0, 0, 0, 900, [[0, 'rgba(255,233,168,.1)'], [1, 'rgba(255,233,168,0)']]); ctx.fillRect(-40, 0, 80, 900); ctx.restore(); }
-    ctx.restore();
-    this.voidEdges(t);
-    // nave entra voando e depois paira
-    const fl = easeOut(clamp((tt - .5) / 3.4, 0, 1)), sx = lerp(-260, 800, fl), sy = 320 + Math.sin(t * 1.4) * 14 - fl * 20, mov = (1 - fl) * 700 + 60;
+    const ex = 1010 - mx * 34, ey = 330 - my * 22;
+    this.eclipse(ex, ey, 175, t);
+
+    // asteroides em silhueta no primeiro plano (parallax forte)
+    if (!this.fg) this.fg = [[60, 700, 150], [420, 790, 120], [1220, 720, 170], [1030, 800, 110], [-20, 90, 110], [1290, 40, 100]].map(([x, y, r]) => ({ x, y, r, rot: rand(0, 6), vr: rand(-.08, .08), pts: Array.from({ length: 9 }, (_, i) => [Math.cos(i / 9 * TAU) * r * rand(.78, 1.12), Math.sin(i / 9 * TAU) * r * rand(.78, 1.12)]) }));
+    for (const k of this.fg) {
+      k.rot += k.vr * dt; ctx.save(); ctx.translate(k.x - mx * 120, k.y - my * 60); ctx.rotate(k.rot);
+      ctx.fillStyle = '#03010b'; ctx.strokeStyle = 'rgba(255,200,120,.22)'; ctx.lineWidth = 3;
+      ctx.beginPath(); k.pts.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
+    }
+
+    // o Olienzinho entra voando e paira, rumo ao eclipse
+    const fl = easeOut(clamp((tt - .4) / 3.2, 0, 1));
+    const sx = lerp(-240, 600, fl) - mx * 40, sy = lerp(840, 500, fl) + Math.sin(t * 1.5) * 9 * fl - my * 20, ang = .62 - (1 - fl) * .22;
     this.trail = this.trail || [];
-    this.trail.push({ x: sx - 16, y: sy + 44, vx: rand(-30, 10) - mov * .4, vy: rand(60, 120), life: .6 });
+    const back = [-Math.sin(ang), Math.cos(ang)], nx = sx + back[0] * 64, ny = sy + back[1] * 64;
+    for (let i = 0; i < 2; i++) this.trail.push({ x: nx + rand(-4, 4), y: ny + rand(-4, 4), vx: back[0] * rand(90, 240) + rand(-30, 30), vy: back[1] * rand(90, 240) + rand(-30, 30), life: rand(.35, .7), c: Math.random() < .55 ? '#ffb340' : '#ffe9a8' });
     for (const q of this.trail) { q.life -= dt; q.x += q.vx * dt; q.y += q.vy * dt; }
-    this.trail = this.trail.filter(q => q.life > 0).slice(-120);
-    ctx.save(); ctx.globalCompositeOperation = 'lighter'; for (const q of this.trail) drawGlow(q.x, q.y, 12 + q.life * 16, Math.random() < .5 ? '#ffb340' : '#ffe9a8', q.life); ctx.restore(); ctx.globalAlpha = 1;
-    ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(sx, sy, 200, '#8b4dff', .45); ctx.restore(); ctx.globalAlpha = 1;
-    ctx.save(); ctx.translate(sx, sy); ctx.rotate(-.5 + fl * .22); ctx.translate(-sx, -sy);
-    Art.ship(sx, sy, { vx: (1 - fl) * 500, t, lookx: clamp((Input.mouse.x - sx) / 500, -1, 1), looky: clamp((Input.mouse.y - sy) / 500, -1, 1), blinkT: this.blinkAt(t), scale: 1.35, boost: .6 });
+    this.trail = this.trail.filter(q => q.life > 0).slice(-160);
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; for (const q of this.trail) drawGlow(q.x, q.y, 7 + q.life * 14, q.c, q.life * 1.2); ctx.restore(); ctx.globalAlpha = 1;
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(sx, sy, 170, '#8b4dff', .5); drawGlow(sx + 26, sy - 30, 90, '#ffd36a', .35); ctx.restore(); ctx.globalAlpha = 1;
+    ctx.save(); ctx.translate(sx, sy); ctx.rotate(ang);
+    Art.ship(0, 0, { vx: 0, t, lookx: .8, looky: -.5, blinkT: this.blinkAt(t), scale: 1.1, boost: .9 });
     ctx.restore();
-    // reflexo de lente
-    ctx.save(); ctx.globalCompositeOperation = 'lighter'; const fx = P.x - 250 - mx * P.par, fy = P.y - 240;
-    ctx.globalAlpha = .22 + Math.sin(t * .8) * .06; ctx.fillStyle = lin(fx - 380, fy, fx + 380, fy, [[0, 'rgba(255,233,168,0)'], [.5, 'rgba(255,233,168,1)'], [1, 'rgba(255,233,168,0)']]); ctx.fillRect(fx - 380, fy - 2, 760, 4);
-    for (const [k, r, c] of [[.4, 26, '#8b4dff'], [.8, 14, '#33c4ff'], [1.3, 40, '#ffb340']]) drawGlow(lerp(fx, W / 2, k * .5), lerp(fy, H / 2, k * .5), r, c, .25);
-    ctx.restore(); ctx.globalAlpha = 1;
     ctx.restore();
+    // vinheta (fica atras do logo e do menu)
+    ctx.fillStyle = rdl(W / 2, H / 2, H * .45, H * 1.0, [[0, 'rgba(0,0,0,0)'], [1, 'rgba(0,0,0,.5)']]); ctx.fillRect(0, 0, W, H);
   },
 
   title() {
@@ -255,36 +280,51 @@ const Screens = {
     if (G.titleStart === undefined) G.titleStart = t;
     let tt = t - G.titleStart;
     if (tt < 3.2 && (Input.any() || Input.mouse.click)) { G.titleStart = t - 3.3; tt = 3.3; }
-    const bh = 54 * easeOut(tt / 1.2);
-    // logotipo, letra por letra
-    const word = 'OLIENZINHO', X0 = 112, Y0 = 262;
-    ctx.save(); ctx.font = `900 124px ${FONT}`; ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
-    const ws = [...word].map(c => ctx.measureText(c).width), total = ws.reduce((a, b) => a + b, 0), sweep = (t * .22) % 1.8 - .3;
-    ctx.fillStyle = lin(X0, 0, X0 + total, 0, [[0, '#ffffff'], [clamp(sweep - .12, 0, 1), '#c9a8ff'], [clamp(sweep, 0, 1), '#ffffff'], [clamp(sweep + .12, 0, 1), '#c9a8ff'], [1, '#a77bff']]);
+    const bh = 46 * easeOut(tt / 1.2), X0 = 112;
+    // logotipo (letra por letra), limpo e legivel
+    const word = 'OLIENZINHO', Y0 = 214;
+    ctx.save(); ctx.font = `900 96px ${FONT}`; ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
+    const ws = [...word].map(c => ctx.measureText(c).width);
+    ctx.fillStyle = lin(0, Y0 - 80, 0, Y0 + 6, [[0, '#ffffff'], [.55, '#ffffff'], [1, '#d6c4ff']]);
     let x = X0;
     [...word].forEach((c, i) => {
-      const a = clamp((tt - (1 + i * .085)) / .5, 0, 1);
-      if (a > 0) { ctx.save(); ctx.globalAlpha = a; ctx.shadowColor = '#8b4dff'; ctx.shadowBlur = 44; ctx.fillText(c, x, Y0 + (1 - easeOut(a)) * 46); ctx.restore(); }
+      const a = clamp((tt - (1 + i * .08)) / .5, 0, 1);
+      if (a > 0) { ctx.save(); ctx.globalAlpha = a; ctx.shadowColor = 'rgba(139,77,255,1)'; ctx.shadowBlur = 38; ctx.fillText(c, x, Y0 + (1 - easeOut(a)) * 40); ctx.shadowBlur = 0; ctx.fillText(c, x, Y0 + (1 - easeOut(a)) * 40); ctx.restore(); }
       x += ws[i];
     });
     ctx.restore();
-    const sa = clamp((tt - 2.2) / .8, 0, 1);
+    const sa = clamp((tt - 2.1) / .8, 0, 1);
     if (sa > 0) {
-      ctx.globalAlpha = sa; ctx.fillStyle = '#ffb340'; ctx.fillRect(X0 + 4, Y0 + 26, 70 * sa, 4);
-      txt('G U A R D I Ã O   D A S   E S T R E L A S', X0 + 4, Y0 + 44, 24, '#ffb340', 'left', 800); ctx.globalAlpha = 1;
+      ctx.globalAlpha = sa; ctx.fillStyle = '#ffb340'; ctx.fillRect(X0 + 4, Y0 + 28, 64 * sa, 4);
+      txt('GUARDIÃO  DAS  ESTRELAS', X0 + 4, Y0 + 46, 22, '#ffb340', 'left', 800); ctx.globalAlpha = 1;
     }
-    // menu lateral
+    // menu em texto, com marcador dourado
+    const items = [['play', 'JOGAR', 330, 46, ''], ['shop', 'LOJA', 412, 30, '★ ' + Save.data.coins], ['opt', 'OPÇÕES', 462, 30, '']];
     if (tt >= 3) {
-      UI.enterAt = G.titleStart + 3;
-      if (UI.button('play', X0, 372, 360, 66, 'JOGAR', { size: 30, color: '#9a63ff' })) Game.goSelect();
-      if (UI.button('shop', X0, 450, 360, 54, 'LOJA', { size: 22, sub: this.stars() })) { G.shopBack = 'title'; G.state = 'shop'; }
-      if (UI.button('opt', X0, 516, 360, 54, 'OPÇÕES', { size: 22 })) { G.setBack = 'title'; G.state = 'settings'; }
-    } else if (tt > 2.3 && !Snd.ready) { ctx.globalAlpha = .5 + .5 * Math.sin(t * 4); txt('PRESSIONE QUALQUER TECLA', X0 + 4, 400, 22, '#e2d4ff', 'left', 800); ctx.globalAlpha = 1; }
-    txt('olien.digital', X0 + 4, H - bh - 36, 16, '#8a7fb0', 'left', 800);
-    txt('Parte 1 — O Coração Partido', W - 40, H - bh - 36, 16, '#8a7fb0', 'right', 800);
-    // barras de cinema e fade inicial
-    ctx.fillStyle = '#05010f'; ctx.fillRect(0, 0, W, bh); ctx.fillRect(0, H - bh, W, bh);
-    if (tt < 1.6) { ctx.globalAlpha = 1 - easeOut(tt / 1.6); ctx.fillStyle = '#05010f'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; }
+      items.forEach(([id, label, y, size, sub], i) => {
+        const f = UI.focus(id), e = easeBack((tt - 3 - i * .12) / .45), w = size > 40 ? 300 : 230;
+        if (UI.hit(id, X0 - 30, y - 8, w + 60, size + 22, { sound: id === 'play' ? 'uiSelect' : 'uiSelect' })) {
+          if (id === 'play') Game.goSelect(); else if (id === 'shop') { G.shopBack = 'title'; G.state = 'shop'; } else { G.setBack = 'title'; G.state = 'settings'; }
+        }
+        G.mf = G.mf || {}; G.mf[id] = lerp(G.mf[id] || 0, f ? 1 : 0, .18);
+        const k = G.mf[id];
+        ctx.save(); ctx.globalAlpha = clamp(e, 0, 1); ctx.translate(-(1 - e) * 60 + k * 14, 0);
+        if (k > .02) { // marcador (losango) e linha que cresce
+          ctx.save(); ctx.translate(X0 - 24, y + size * .55); ctx.rotate(Math.PI / 4); ctx.fillStyle = '#ffb340'; ctx.shadowColor = '#ffb340'; ctx.shadowBlur = 14 * k; ctx.fillRect(-6, -6, 12, 12); ctx.restore();
+          ctx.fillStyle = lin(X0, 0, X0 + w, 0, [[0, 'rgba(255,179,64,.9)'], [1, 'rgba(255,179,64,0)']]); ctx.fillRect(X0, y + size + 8, w * k, 3);
+        }
+        ctx.save(); if (k > .1) { ctx.shadowColor = 'rgba(139,77,255,.95)'; ctx.shadowBlur = 24 * k; }
+        txt(label, X0, y, size, f ? '#ffffff' : '#a99fd6', 'left', 900); ctx.restore();
+        if (sub) txt(sub, X0 + (label === 'LOJA' ? 96 : 0), y + 6, 20, '#ffcf6b', 'left', 800);
+        ctx.restore();
+      });
+      ctx.globalAlpha = .55; txt('↑ ↓  navegar     ENTER  escolher', X0 + 2, 540, 15, '#8f84c4', 'left', 700); ctx.globalAlpha = 1;
+    } else if (tt > 2.3 && !Snd.ready) { ctx.globalAlpha = .5 + .5 * Math.sin(t * 4); txt('PRESSIONE QUALQUER TECLA', X0 + 4, 330, 22, '#e2d4ff', 'left', 800); ctx.globalAlpha = 1; }
+    txt('olien.digital', X0 + 4, H - bh - 34, 15, '#8f84c4', 'left', 800);
+    txt('Parte 1 — O Coração Partido', W - 44, H - bh - 34, 15, '#a89dd8', 'right', 800);
+    // vinheta, barras de cinema e fade inicial
+    ctx.fillStyle = '#03010b'; ctx.fillRect(0, 0, W, bh); ctx.fillRect(0, H - bh, W, bh);
+    if (tt < 1.6) { ctx.globalAlpha = 1 - easeOut(tt / 1.6); ctx.fillStyle = '#03010b'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; }
   },
 
   lock(x, y, s) {

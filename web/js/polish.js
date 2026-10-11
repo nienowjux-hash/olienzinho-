@@ -55,7 +55,7 @@ Object.assign(SunGuardian.prototype, {
 
 // ===== tela de game over cinematografica =====
 Screens.over = function () {
-  const r = G.result, t = World.t - (G.overAt ?? (G.overAt = World.t)), end = !!(G.endless || G.rush);
+  const r = G.result, t = World.t - (G.overAt ?? (G.overAt = World.t)), end = !!(G.endless || G.rush || G.secret || G.practice);
   if (!G.overQuote) G.overQuote = pick(STORY.defeat.orbi);
   ctx.fillStyle = 'rgba(8,2,22,' + clamp(t / 1.2, 0, .82) + ')'; ctx.fillRect(0, 0, W, H);
   ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(W / 2, 170, 420, end ? '#ffb340' : '#ff5a9a', clamp(t / 1.5, 0, .22) + Math.sin(t * 1.5) * .02); ctx.restore();
@@ -64,21 +64,21 @@ Screens.over = function () {
   for (let i = 0; i < 28; i++) { const y = H - ((t * (30 + (i * 13) % 50) + i * 97) % (H + 40)), x = (i * 211) % W + Math.sin(t + i) * 20; ctx.globalAlpha = .1 + ((i * 7) % 10) / 60; ctx.fillStyle = i % 3 ? '#ff9ac0' : '#ffcf6b'; ctx.beginPath(); ctx.arc(x, y, 1.5 + i % 3, 0, TAU); ctx.fill(); }
   ctx.restore();
   // titulo: surge com um tremor e vai se acomodando
-  const title = end ? (G.rush ? 'CHEFES EM SEQUÊNCIA' : G.daily ? 'DESAFIO ENCERRADO' : 'FIM DA LINHA') : 'NAVE DESTRUÍDA', tc = end ? '#ffb340' : '#ff7ac8';
+  const title = end ? (G.rush ? 'CHEFES EM SEQUÊNCIA' : G.secret ? 'DESAFIO SECRETO' : G.practice ? 'TREINO DE CHEFE' : G.weekly ? 'ARENA SEMANAL' : G.daily ? 'DESAFIO ENCERRADO' : 'FIM DA LINHA') : 'NAVE DESTRUÍDA', tc = end ? '#ffb340' : '#ff7ac8';
   const e = easeOut(clamp((t - .2) / .9, 0, 1)), shk = Math.max(0, .7 - t) * 14;
   ctx.save(); ctx.translate(W / 2 + rand(-1, 1) * shk, 120 + rand(-1, 1) * shk); ctx.scale(1.25 - .25 * e, 1.25 - .25 * e); ctx.globalAlpha = e;
   ctx.shadowColor = tc; ctx.shadowBlur = 40; txt(title, 0, -40, title.length > 14 ? 66 : 80, tc, 'center', 900); ctx.restore(); ctx.globalAlpha = 1;
-  const sub = end ? (G.rush ? 'Você chegou até o chefe ' + (G.rushI + 1) + ' de 6.' : G.daily ? 'Seu melhor de hoje: ' + Extras.dailyBest() + ' pts' : G.rankPos > 0 && G.rankPos <= 10 ? 'Você entrou no ranking: ' + G.rankPos + 'º lugar!' : 'O Vazio venceu desta vez.') : '"' + G.overQuote + '"';
+  const sub = end ? (G.rush ? 'Você chegou até o chefe ' + (G.rushI + 1) + ' de 6.' : (G.secret || G.practice) ? 'Tente de novo: você chegou na fase ' + r.wave + ' de 3.' : G.weekly ? 'Melhor da semana: ' + Visual14.weeklyBest() + ' pts' : G.daily ? 'Seu melhor de hoje: ' + Extras.dailyBest() + ' pts' : G.rankPos > 0 && G.rankPos <= 10 ? 'Você entrou no ranking: ' + G.rankPos + 'º lugar!' : 'O Vazio venceu desta vez.') : '"' + G.overQuote + '"';
   ctx.globalAlpha = clamp((t - .9) / .6, 0, 1); txt(sub, W / 2, 196, 22, '#cdb8ff', 'center', 700); txt(end ? '' : '— Orbi', W / 2, 226, 15, '#7fe0ff', 'center', 800); ctx.globalAlpha = 1;
   // placar com entradas escalonadas
-  const rows = end ? [[G.rush ? 'Chefes derrotados' : 'Onda alcançada', String(r.wave)], ['Pontuação', r.score + ' pts'], ['Inimigos derrotados', String(r.kills)], ['Estrelas guardadas', '★ ' + r.coins]] : [['Pontuação', r.score + ' pts'], ['Inimigos derrotados', String(r.kills)], ['Nível alcançado', String(r.level)], ['Estrelas guardadas', '★ ' + r.coins]];
+  const rows = end ? [[G.rush ? 'Chefes derrotados' : (G.secret || G.practice) ? 'Fase de fúria' : 'Onda alcançada', String(r.wave)], ['Pontuação', r.score + ' pts'], ['Inimigos derrotados', String(r.kills)], ['Estrelas guardadas', '★ ' + r.coins]] : [['Pontuação', r.score + ' pts'], ['Inimigos derrotados', String(r.kills)], ['Nível alcançado', String(r.level)], ['Estrelas guardadas', '★ ' + r.coins]];
   const px = 400, py = 270; UI.panel(px, py, 480, 70 + rows.length * 44, { r: 22 });
   rows.forEach(([a, b], i) => { const k = easeOut(clamp((t - 1.3 - i * .15) / .4, 0, 1)); ctx.globalAlpha = k; txt(a, px + 36 - (1 - k) * 40, py + 28 + i * 44, 21, '#cdb8ff', 'left', 700); txt(b, px + 444, py + 26 + i * 44, 25, i === rows.length - 1 ? '#ffcf6b' : '#fff', 'right'); });
   ctx.globalAlpha = 1;
   Visual8.recapDraw(t, r);
   // menu em texto
   const my = 590; let x = 90;
-  const again = end ? () => { if (G.rush) Visual5.startRush(); else if (G.daily) Game.startDaily(); else Game.startEndless(); } : () => Game.enter(G.stageIdx, { skipStory: true });
+  const again = end ? () => { if (G.secret) Visual14.startSecret(G.secret.i); else if (G.practice) Visual14.startPractice(G.practice.idx, G.practice.ph); else if (G.weekly) Visual14.startWeekly(); else if (G.rush) Visual5.startRush(); else if (G.daily) Game.startDaily(); else Game.startEndless(); } : () => Game.enter(G.stageIdx, { skipStory: true });
   if (this.menuItem('retry', 'TENTAR DE NOVO', x, my - 6, 40, '')) again(); x += this.menuW('TENTAR DE NOVO', 40) + 56;
   const items = end ? [['rk', 'RANKING', () => { G.state = 'rank'; }], ['menu', 'MENU', () => Game.goTitle()]] : [['shop', 'LOJA', () => { G.shopBack = 'over'; G.state = 'shop'; }], ['map', 'MAPA', () => Game.goSelect()]];
   for (const [id, lb, fn] of items) { if (this.menuItem(id, lb, x, my + 4, 26, '')) fn(); x += this.menuW(lb, 26) + 44; }

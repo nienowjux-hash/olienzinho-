@@ -609,9 +609,6 @@ const Screens = {
 
   hangar() {
     const t = World.t, ld = Save.data.loadout, own = Save.data.owned, orbiOK = !!Save.data.cleared[3], isO = ld.char === 'orbi' && orbiOK;
-    if (UI.button('pOl', 70, 36, 180, 40, 'OLIENZINHO', { size: 15, color: !isO ? '#9a63ff' : undefined })) { ld.char = 'olien'; Save.save(); }
-    if (UI.button('pOr', 262, 36, 130, 40, orbiOK ? 'ORBI' : 'ORBI 🔒', { size: 15, disabled: !orbiOK, color: isO ? '#9a63ff' : undefined })) { ld.char = 'orbi'; Save.save(); }
-    if (!orbiOK) txt('zere a Parte 1 para liberar o Orbi', 408, 46, 13, '#8a7fb0', 'left', 700);
     if (isO) { this.hangarOrbi(); return; }
     txt('HANGAR', W / 2, 26, 42, '#fff', 'center'); txt(this.stars(), W - 40, 36, 30, '#ffcf6b', 'right');
     txt('ARMAS', 74, 92, 18, '#ffb340', 'left', 900);

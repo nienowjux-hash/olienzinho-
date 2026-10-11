@@ -69,7 +69,7 @@ ACH.push({ id: 'elite25', name: 'Caçador de Elites', desc: 'Derrote 25 inimigos
     const e = se(type, x, y, o);
     if (G.route === 'danger' || (G.stage && G.stage.id >= 6 && !o.noElite)) { e.hp = Math.ceil(e.hp * 1.25); e.maxHp = e.hp; }
     if (!['drone', 'zig', 'kami', 'shooter', 'shield', 'healer', 'tank'].includes(type) || G.state !== 'play' || G.training || G.rush || o.noElite) return e;
-    const ch = G.endless ? Math.min(.25, .05 + (G.wave || 1) * .012) : .04 + (G.stage ? G.stage.id : 0) * .012 + (G.t / (G.stage ? G.stage.duration : 100)) * .04;
+    const ch = (G.weekly && G.wrule === 2 ? .5 : 0) + (G.endless ? Math.min(.25, .05 + (G.wave || 1) * .012) : .04 + (G.stage ? G.stage.id : 0) * .012 + (G.t / (G.stage ? G.stage.duration : 100)) * .04);
     if (Math.random() >= ch) return e;
     const af = pick(Object.keys(AFFIX)); e.elite = af;
     if (af === 'fast') { e.spd *= 1.45; e.hp = Math.ceil(e.hp * .85); }
@@ -156,12 +156,12 @@ Visual8.spRun = function (dt) {
 // ===== mecanicas dos chefes =====
 Visual8.bossMech = function (dt) {
   const b = G.boss; if (!b || b.state !== 'fight') { G.eclipse = null; return; }
-  if (b.name === 'Gigante de Rocha') { G.boulderT = (G.boulderT ?? 5) - dt; if (G.boulderT <= 0) { G.boulderT = 10 - b.phase * 2; const left = Math.random() < .5; spawnEnemy('boulder', left ? 70 : W - 70, 190, { vx: left ? 22 : -22, mode: 'hover', noElite: true }); popup(left ? 100 : W - 100, 240, 'ATIRE NA PEDRA!', '#ffe9a8', 22); } }
-  if (b.name === 'Olho da Tempestade') {
+  if ((b.baseName || b.name) === 'Gigante de Rocha') { G.boulderT = (G.boulderT ?? 5) - dt; if (G.boulderT <= 0) { G.boulderT = 10 - b.phase * 2; const left = Math.random() < .5; spawnEnemy('boulder', left ? 70 : W - 70, 190, { vx: left ? 22 : -22, mode: 'hover', noElite: true }); popup(left ? 100 : W - 100, 240, 'ATIRE NA PEDRA!', '#ffe9a8', 22); } }
+  if ((b.baseName || b.name) === 'Olho da Tempestade') {
     if (!G.rods || !G.rods.length || G.rods.every(r => r.dead)) { G.rods = [170, W - 170].map(x => spawnEnemy('rod', x, H - 200, { mode: 'hover', noElite: true })); }
     for (const h of G.hazards) if (h.rod && !h._r && h.t >= h.warn) { h._r = true; b.damage(b.maxHp * .014); sparks(h.rod.x, h.rod.y - 60, '#9fe8ff', 18, 420); popup(h.rod.x, h.rod.y - 90, 'DESCARGA!', '#9fe8ff', 24); }
   } else G.rods = null;
-  if (b.name === 'Sol-Guardião' && b.phase >= 1) {
+  if ((b.baseName || b.name) === 'Sol-Guardião' && b.phase >= 1) {
     G.ecT = (G.ecT ?? 7) - dt;
     if (G.ecT <= 0 && !G.eclipse) {
       G.ecT = 16 - b.phase * 3; const x = rand(240, W - 240); G.eclipse = { x, t: 0, dur: 3.4 };
@@ -175,12 +175,12 @@ Visual8.bossMech = function (dt) {
   const hr = Events.hazardRect;
   Events.hazardRect = function (cx, cy, w, h, warn, dur, c, kind) {
     let rod = null;
-    if (kind === 'bolt' && G.boss && G.boss.name === 'Olho da Tempestade' && G.rods) { const rs = G.rods.filter(r => !r.dead); if (rs.length && Math.random() < .65) { rod = pick(rs); cx = rod.x; } }
+    if (kind === 'bolt' && G.boss && (G.boss.baseName || G.boss.name) === 'Olho da Tempestade' && G.rods) { const rs = G.rods.filter(r => !r.dead); if (rs.length && Math.random() < .65) { rod = pick(rs); cx = rod.x; } }
     hr.call(this, cx, cy, w, h, warn, dur, c, kind); if (rod) G.hazards[G.hazards.length - 1].rod = rod;
   };
   const ba = Visual.bossAura;
   Visual.bossAura = function (b) {
-    ba.call(this, b); const ec = G.eclipse; if (!ec || b.name !== 'Sol-Guardião') return;
+    ba.call(this, b); const ec = G.eclipse; if (!ec || (b.baseName || b.name) !== 'Sol-Guardião') return;
     const k = Math.min(1, ec.t / .5) * Math.min(1, (ec.dur - ec.t) / .5);
     ctx.save(); const g = ctx.createLinearGradient(ec.x - 130, 0, ec.x + 130, 0); g.addColorStop(0, 'rgba(0,0,12,0)'); g.addColorStop(.25, 'rgba(0,0,12,' + .42 * k + ')'); g.addColorStop(.75, 'rgba(0,0,12,' + .42 * k + ')'); g.addColorStop(1, 'rgba(0,0,12,0)');
     ctx.fillStyle = g; ctx.fillRect(ec.x - 130, 0, 260, H);

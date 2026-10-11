@@ -60,8 +60,8 @@ const Game = {
     this.slowmo = 0;
     World.setStage(G.stage.pal); Events.reset(G.stage);
     G.player = newPlayer();
-    { const ld = Save.data.loadout; G.player.weapon = Save.data.owned.weapons[ld.weapon] ? ld.weapon : 'violet'; if (ld.char === 'orbi' && Save.data.cleared[3]) G.player.weapon = 'orbi'; }
-    G.stats = { hits: 0, bossHit: 0, maxCombo: 0, minis: 0 }; G.timers = []; G.hitstop = 0; G.mega = null; G.miniDone = false; G.endless = false; G.daily = false; G.training = false; G.dmod = null; G.well = null; G.relic = null; G.grazeN = 0; G.rush = false; G.sanct = false; G.fragSpawned = false; G.encSpawned = false; Extras.reset(); Extras.tutStart();
+    { const ld = Save.data.loadout; G.player.weapon = Save.data.owned.weapons[ld.weapon] ? ld.weapon : 'violet'; const pw = Visual13.pilotWeapon(ld.char); if (pw) G.player.weapon = pw; }
+    G.stats = { hits: 0, bossHit: 0, maxCombo: 0, minis: 0 }; G.timers = []; G.hitstop = 0; G.mega = null; G.miniDone = false; G.endless = false; G.daily = false; G.training = false; G.dmod = null; G.well = null; G.relic = null; G.grazeN = 0; G.rush = false; G.sanct = false; G.practice = null; G.secret = null; G.adv = null; G.weekly = null; G.wrule = null; G.fragSpawned = false; G.encSpawned = false; Extras.reset(); Extras.tutStart();
     recalcStats(G.player); G.player.hp = G.player.maxHp; Visual6.initP2(); Visual8.onStart();
     Events.banner = { t: 0, title: G.stage.name.toUpperCase(), sub: 'FASE ' + (idx + 1), c: G.stage.tint };
     G.finisher = null; G.cut = null; G.story = null;
@@ -205,6 +205,7 @@ const Game = {
     const toOver = () => { G.state = 'over'; G.overAt = undefined; G.overQuote = null; Snd.play('gameOver'); };
     if (G.endless) G.result.wave = G.wave;
     if (G.rush) G.result.wave = G.rushI;
+    if (G.secret || G.practice) G.result.wave = (G.boss ? G.boss.phase : 0) + 1;
     if (this.noStory || G.endless) { toOver(); return; }
     // o vilao (o chefe da fase ou o Vazio) fala com o jogador
     const D = STORY.defeat, inBoss = !!G.boss, bc = ['C', 'P', 'E', 'S', 'X', 'V', 'H', 'Y', 'R'][G.stageIdx];
@@ -322,7 +323,7 @@ const Game = {
     const p = G.player;
     G.t += dt; G.intro += dt;
     World.update(dt, p.vy);
-    Events.update(dt); Events.updateHazards(dt); Extras.update(dt); Visual.update(dt); Visual2.update(dt); Visual5.update(dt); Visual6.update(dt); Visual8.update(dt); Visual11.update(dt); Visual12.beamReset(); Extras.tutUpdate(dt); if (G.training) Extras.trainUpdate(dt);
+    Events.update(dt); Events.updateHazards(dt); Extras.update(dt); Visual.update(dt); Visual2.update(dt); Visual5.update(dt); Visual6.update(dt); Visual8.update(dt); Visual11.update(dt); Visual12.beamReset(); Visual13.update(dt); Extras.tutUpdate(dt); if (G.training) Extras.trainUpdate(dt);
     Snd.setLayers(p.dead ? 0 : G.combo >= 25 ? 2 : G.combo >= 10 ? 1 : 0, !p.dead && p.hp <= Math.max(1, p.maxHp * .25) ? 1 : 0);
     this.director(dt);
     if (!p.dead) this.updatePlayer(dt); else if (!G.p2 || G.p2.dead) { G.overT -= rdt; if (G.overT <= 0) { this.gameOver(); return; } }
@@ -438,9 +439,9 @@ const Game = {
     if (p && !p.dead && !G.cut) {
       const sp = Math.hypot(p.vx, p.vy) / 500, bob = Math.sin(p.t * 3) * 2.5 * (1 - Math.min(1, sp));
       const pal = G.training && G.trainSkin != null ? SKINS[G.trainSkin].pal : skinOf(Save.data.loadout.skin).pal, ob = p.weapon === 'orbi';
-      for (const g of p.ghosts) { ctx.globalAlpha = g.t / .28 * .45; Art.ship(g.x, g.y, { vx: g.vx, t: p.t, lookx: 0, looky: -1, blinkT: 0, inv: 0, scale: SHIP_S, pal, orbi: ob }); }
+      for (const g of p.ghosts) { ctx.globalAlpha = g.t / .28 * .45; Art.ship(g.x, g.y, { vx: g.vx, t: p.t, lookx: 0, looky: -1, blinkT: 0, inv: 0, scale: SHIP_S, pal, orbi: ob, guard: p.weapon.startsWith('g_') ? p.weapon : null }); }
       ctx.globalAlpha = 1;
-      Art.ship(p.x, p.y + bob, { pal, orbi: ob, vx: p.vx, t: p.t, lookx: p.lookx, looky: p.looky, blinkT: p.blinkT, inv: p.inv, shield: p.shieldReady, scale: SHIP_S, mood: p.mood,
+      Art.ship(p.x, p.y + bob, { pal, orbi: ob, guard: p.weapon.startsWith('g_') ? p.weapon : null, vx: p.vx, t: p.t, lookx: p.lookx, looky: p.looky, blinkT: p.blinkT, inv: p.inv, shield: p.shieldReady, scale: SHIP_S, mood: p.mood,
         sx: (1 + p.recoil * .05 - Math.abs(p.vx) / 500 * .14) * (p.dashT > 0 ? .78 : 1), sy: (1 - p.recoil * .08 + Math.abs(p.vy) / 500 * .04) * (p.dashT > 0 ? 1.3 : 1) });
       Visual2.shipFx(p);
       for (const o of p.orbPos) {
@@ -449,7 +450,7 @@ const Game = {
         ctx.fillStyle = '#ff8a1f'; ctx.beginPath(); ctx.arc(o[0], o[1], 4, 0, 7); ctx.fill();
       }
     }
-    Visual6.drawP2(); Visual12.fg(); drawDark(); Visual.overlay(); Visual2.flares();
+    Visual6.drawP2(); Visual13.draw(); Visual12.fg(); drawDark(); Visual.overlay(); Visual2.flares();
     this.drawFinisherBeam();
     for (const q of G.parts) if (q.k === 'smoke') {
       const k = clamp(q.life / q.max, 0, 1);
@@ -654,7 +655,7 @@ const Game = {
     }
     // habilidades: pulso (Espaço), esquiva (Shift) e especial da arma (Q)
     const wp = WEAPONS[p.weapon];
-    [['PULSO', 'ESPAÇO', p.pulseT, p.pulseCd, '#ffb340'], ['ESQUIVA', 'SHIFT', p.dashCd, p.dashCdMax, '#7fe0ff'], [wp.specName.toUpperCase(), 'Q', p.specCd, p.specCdMax, wp.c]].forEach(([name, key, cd, mx, col], i) => {
+    [['PULSO', 'ESPAÇO', p.pulseT, p.pulseCd, '#ffb340'], ['ESQUIVA', 'SHIFT', p.dashCd, p.dashCdMax, '#7fe0ff'], [wp.specName.toUpperCase(), 'Q', p.specCd, p.specCdMax, wp.c], ...Visual13.secHud(p)].forEach(([name, key, cd, mx, col], i) => {
       const cx = 56 + i * 112, cy = H - 66, rdy = cd <= 0, k = rdy ? 1 : 1 - cd / mx;
       G.abPrev = G.abPrev || []; G.abPop = G.abPop || []; if (rdy && G.abPrev[i] === false) G.abPop[i] = World.t; G.abPrev[i] = rdy;
       { const pp = G.abPop[i] !== undefined ? World.t - G.abPop[i] : 9; if (pp < .6) { ctx.save(); ctx.strokeStyle = col; ctx.globalAlpha = 1 - pp / .6; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(cx, cy, 28 + pp * 55, 0, TAU); ctx.stroke(); ctx.restore(); } }

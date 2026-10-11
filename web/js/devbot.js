@@ -24,7 +24,7 @@ Bot.think = function (p, skill) {
 Bot.runStage = function (cfg) {
   const idx = cfg.stage, saved = JSON.stringify(Save.data), res = { stage: idx, diff: cfg.diff, weapon: cfg.weapon, skill: cfg.skill, cleared: false, died: false, t: 0, bossReached: false, bossT: 0, hits: 0, level: 1, sp: 0 };
   try {
-    Save.data.settings.diff = cfg.diff; Save.data.owned.weapons = { violet: 1, fan: 1, laser: 1, cannon: 1, boomerang: 1, chain: 1, flame: 1 }; Save.data.loadout.weapon = cfg.weapon; Save.data.loadout.char = 'olien'; Save.data.loadout.style = cfg.style || 0; Save.data.coop = false;
+    Save.data.settings.diff = cfg.diff; Save.data.owned.weapons = { violet: 1, fan: 1, laser: 1, cannon: 1, boomerang: 1, chain: 1, flame: 1 }; Save.data.owned.weapons[cfg.weapon] = 1; Save.data.loadout.weapon = cfg.weapon; Save.data.loadout.sec = cfg.sec || 'none'; Save.data.loadout.char = 'olien'; Save.data.loadout.style = cfg.style || 0; Save.data.coop = false;
     Save.data.shop = Object.assign({}, cfg.shop || {}); Save.data.wlevel = cfg.wlevel || {};
     Game.noStory = true; Game.startStage(idx, { skipStory: true }); G.state = 'play'; Events.banner = null;
     let plan = [G.player.x, G.player.y], frames = 0, bossStart = null, hitsLog = {};
@@ -47,6 +47,7 @@ Bot.runStage = function (cfg) {
         if (closest < 34 && pl.dashCd <= 0 && cfg.skill > .35 && Math.random() < cfg.skill) Input.hit.shift = true;
         if (pl.specCd <= 0 && ((G.boss && G.boss.state === 'fight') || G.enemies.length >= 5) && Math.random() < .08 * cfg.skill + .02) { Input.hit.q = true; res.sp++; }
         if (near >= 5 && pl.pulseT <= 0) Input.hit[' '] = true;
+        if ((pl.secCd || 0) <= 0 && (G.enemies.length >= 3 || (G.boss && G.boss.state === 'fight')) && Math.random() < .05) Input.hit.r = true;
       }
       Game.update(DT);
       Input.hit = {};

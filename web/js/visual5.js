@@ -55,7 +55,7 @@ Visual5.update = function (dt) {
     }
     if (!by || G.sanct || G.training || e.type === 'crystal') return;
     const big = e.type === 'tank' || e.type === 'captain';
-    if (Math.random() < (big ? .3 : .035)) { const subs = ['rapid', 'double', 'magnet', 'aegis', 'bomb', 'rapid', 'double']; dropPickup('cap', e.x, e.y, pick(subs)); }
+    if (Math.random() < (big ? .3 : .035) + (G.weekly && G.wrule === 3 ? .22 : 0)) { const subs = ['rapid', 'double', 'magnet', 'aegis', 'bomb', 'rapid', 'double']; dropPickup('cap', e.x, e.y, pick(subs)); }
   };
 }
 {

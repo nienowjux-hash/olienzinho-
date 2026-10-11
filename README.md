@@ -15,6 +15,10 @@ Abra o arquivo `web/index.html` no navegador (Chrome ou Edge). Não precisa inst
 | Shift | Esquiva (dash, invulnerável por um instante) |
 | Q / E | Habilidade especial da arma equipada |
 | Esc / P | pausar |
+| C | alternar 1 / 2 jogadores (nos menus) |
+| Setas + Enter / . | P2 no cooperativo: mover, especial, esquiva |
+| F9 / F8 | foto com moldura / esconder interface |
+| Controle | funciona: analógico/direcional, A pulso, X especial, RB esquiva, Start pausa |
 | Enter / clique | avançar nas cenas |
 
 ## O que tem

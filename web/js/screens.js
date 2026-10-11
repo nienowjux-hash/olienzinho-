@@ -584,10 +584,10 @@ const Screens = {
         }
         ctx.save(); if (k > .1) { ctx.shadowColor = 'rgba(139,77,255,.95)'; ctx.shadowBlur = 24 * k; }
         txt(label, X0, y, size, f ? '#ffffff' : '#a99fd6', 'left', 900); ctx.restore();
-        if (sub) txt(sub, X0 + (label === 'LOJA' ? 96 : 0), y + 6, 20, '#ffcf6b', 'left', 800);
+        if (sub) { ctx.save(); ctx.font = '900 ' + size + 'px ' + FONT; const lw = ctx.measureText(label).width; ctx.restore(); txt(sub, X0 + lw + 18, y + (size > 40 ? 6 : 8), 20, '#ffcf6b', 'left', 800); }
         ctx.restore();
       });
-      ctx.globalAlpha = .55; txt('↑ ↓  navegar     ENTER  escolher', X0 + 2, 540, 15, '#8f84c4', 'left', 700); ctx.globalAlpha = 1;
+      ctx.globalAlpha = .55; txt('↑ ↓  navegar     ENTER  escolher', X0 + 2, 596, 15, '#8f84c4', 'left', 700); ctx.globalAlpha = 1;
     } else if (tt > 2.3 && !Snd.ready) { ctx.globalAlpha = .5 + .5 * Math.sin(t * 4); txt('PRESSIONE QUALQUER TECLA', X0 + 4, 330, 22, '#e2d4ff', 'left', 800); ctx.globalAlpha = 1; }
     txt('olien.digital', X0 + 4, H - bh - 34, 15, '#8f84c4', 'left', 800);
     txt('Parte 1 — O Coração Partido', W - 44, H - bh - 34, 15, '#a89dd8', 'right', 800);

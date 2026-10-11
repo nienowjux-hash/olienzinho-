@@ -6,7 +6,7 @@ P3.on = () => !!(G.stage && G.stage.id >= 6);
 // poder de fogo do jogador -> multiplicador que faz os inimigos crescerem junto (1 = jogador novo)
 P3.pw = () => { const p = G.player; if (!p) return 1; return p.dmg * p.shots * (1 + p.crit * (p.critMul - 1)) / (p.fireDelay * (WEAPONS[p.weapon] ? WEAPONS[p.weapon].delay : 1)); };
 P3.REF = 28;
-P3.heat = () => { if (!P3.on()) return 1; return clamp(Math.pow(P3.pw() / (P3.REF || 1), .62), 1, 2.6); };
+P3.heat = () => { if (!P3.on()) return 1; return clamp(Math.pow(P3.pw() / (P3.REF || 1), .5), 1, 1.9); };
 
 const ENEMY3 = {
   prism: { hp: 22, rad: 36, spd: 0, xp: 7, score: 90, coin: .6, glow: '#ffd36a' },
@@ -81,7 +81,7 @@ TRAIN_TYPES.push(...P3.types);
   spawnEnemy = function (type, x, y, o = {}) {
     const e = se(type, x, y, o);
     if (P3.on() && type !== 'bit' && type !== 'dummy' && type !== 'boulder' && type !== 'rod' && !o.noScale) {
-      const m = (1.45 + (G.stage.id - 6) * .25) * P3.heat();
+      const m = (1.15 + (G.stage.id - 6) * .12) * P3.heat();
       e.hp = e.maxHp = Math.ceil(e.hp * m); if (e.shield) e.shield = e.maxShield = Math.ceil(e.shield * m);
     }
     return e;
@@ -318,7 +318,7 @@ addAI(Mirror, function (dt) {
 {
   const bu = Game.updatePlay;
   Game.updatePlay = function (dt) {
-    const b = G.boss; if (b && !b._p3 && P3.on() && (b instanceof Herald || b instanceof Leviathan || b instanceof Mirror)) { b._p3 = 1; const m = 1.6 * (1 + (P3.heat() - 1) * .55); b.maxHp = b.hp = Math.round(b.maxHp * m); }
+    const b = G.boss; if (b && !b._p3 && P3.on() && (b instanceof Herald || b instanceof Leviathan || b instanceof Mirror)) { b._p3 = 1; const m = 1.25 * (1 + (P3.heat() - 1) * .4); b.maxHp = b.hp = Math.round(b.maxHp * m); }
     return bu.call(this, dt);
   };
 }

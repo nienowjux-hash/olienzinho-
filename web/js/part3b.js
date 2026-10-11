@@ -39,7 +39,7 @@ TRAIN_TYPES.push(...P3.types);
   const eb0 = ebullet;
   ebullet = function (x, y, ang, spd, o = {}) {
     const s = G.stage ? G.stage.id : 0;
-    if (s >= 6 && !o.sty) { o = Object.assign({ sty: ['lance', 'bubble', 'shard'][s - 6], c: ['#ffd36a', '#6fe8ff', '#d8a8ff'][s - 6] }, o); if (o.sty === 'bubble') o.r = Math.max(o.r || 7, 7); }
+    if (s >= 6 && !o.sty) { const ix = s === 9 ? (G.boss ? Math.min(2, G.boss.act !== undefined ? G.boss.act : G.boss.phase) : Math.min(2, Math.floor((G.t || 0) / (G.stage.duration || 135) * 3))) : s - 6; o = Object.assign({ sty: ['lance', 'bubble', 'shard'][ix], c: ['#ffd36a', '#6fe8ff', '#d8a8ff'][ix] }, o); if (o.sty === 'bubble') o.r = Math.max(o.r || 7, 7); }
     return eb0(x, y, ang, spd, o);
   };
   const ae = Art.ebullet;
@@ -171,7 +171,7 @@ const leave = (e, dt, at, v = 190) => { if (e.age > at) { e.y -= v * dt; if (e.y
     if (Math.random() < .09) return sw.call(this, { kami: 3, tank: 1, shield: 1 });
     const own = G.enemies.filter(e => !e.dead && P3.types.includes(e.type)).length;
     if (own >= 8) { G.spawnT = Math.min(G.spawnT, .35); return; }
-    const L = POOL[st], tot = L.reduce((a, b) => a + b[1], 0); let r = Math.random() * tot, ty = L[0][0]; for (const [n, w] of L) { if ((r -= w) <= 0) { ty = n; break; } }
+    const act9 = Math.min(2, Math.floor((G.t || 0) / (G.stage.duration || 135) * 3)), L = st === 9 ? (Math.random() < .3 ? POOL[6 + (act9 + 1 + Math.floor(Math.random() * 2)) % 3] : POOL[6 + act9]) : POOL[st], tot = L.reduce((a, b) => a + b[1], 0); let r = Math.random() * tot, ty = L[0][0]; for (const [n, w] of L) { if ((r -= w) <= 0) { ty = n; break; } }
     const x = rand(120, W - 120);
     if (ty === 'prism') spawnEnemy(ty, x, -40, { bx: x });
     else if (ty === 'lantern') { for (let i = 0; i < 2; i++) { const xx = clamp(x + (i ? 170 : 0), 80, W - 80); spawnEnemy(ty, xx, -30 - i * 60, { bx: xx }); } }
@@ -318,7 +318,7 @@ addAI(Mirror, function (dt) {
 {
   const bu = Game.updatePlay;
   Game.updatePlay = function (dt) {
-    const b = G.boss; if (b && !b._p3 && P3.on() && (b instanceof Herald || b instanceof Leviathan || b instanceof Mirror)) { b._p3 = 1; const m = 1.1 * (1 + (P3.heat() - 1) * .35); b.maxHp = b.hp = Math.round(b.maxHp * m); }
+    const b = G.boss; if (b && !b._p3 && P3.on() && (b instanceof Herald || b instanceof Leviathan || b instanceof Mirror || (typeof Heart !== 'undefined' && b instanceof Heart))) { b._p3 = 1; const m = 1.1 * (1 + (P3.heat() - 1) * .35); b.maxHp = b.hp = Math.round(b.maxHp * m); }
     return bu.call(this, dt);
   };
 }

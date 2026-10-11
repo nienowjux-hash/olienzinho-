@@ -81,7 +81,7 @@ Visual16.ambient = function () {
   const se = spawnEnemy;
   spawnEnemy = function (type, x, y, o = {}) {
     const e = se(type, x, y, o); const st = G.stage ? G.stage.id : 0;
-    if (type === 'captain' && st >= 6) { e.name = CAPTAINS[4 + st - 6]; e.hp = e.maxHp = Math.ceil(e.hp * 1.5); }
+    if (type === 'captain' && st >= 6) { e.name = CAPTAINS[4 + (st === 9 ? Math.min(2, Math.floor((G.t || 0) / (G.stage.duration || 135) * 3)) : st - 6)]; e.hp = e.maxHp = Math.ceil(e.hp * 1.5); }
     const tips = { prism: ['Prisma', 'Gira soltando espirais de luz. Contorne os braços sem parar de se mover.'], lantern: ['Lanterna', 'Os orbes dourados explodem em anéis depois de um instante. Afaste-se.'], lancer: ['Lanceiro', 'A linha pontilhada mostra por onde vai a rajada. Saia dela.'], jelly: ['Água-viva', 'Solta anéis de bolhas lentas. Passe pelos vãos.'], eel: ['Enguia', 'Atravessa a tela atirando para baixo. Fique fora do caminho dela.'], urchin: ['Ouriço', 'Explode em espinhos ao morrer. Derrote de longe.'], shade: ['Sombra', 'Fica no lado oposto ao seu e atira reto. Evite a linha roxa.'], facet: ['Faceta', 'Os estilhaços quicam nas paredes e voltam.'], warden: ['Guardião', 'Com o escudo branco ele reflete tiros. Ataque quando o olho abrir.'] };
     if (tips[type] && !o.noElite) Visual16.tip('en_' + type, tips[type][0], tips[type][1]);
     return e;
@@ -90,12 +90,12 @@ Visual16.ambient = function () {
   updateEnemy = function (e, dt) {
     const st = G.stage ? G.stage.id : 0;
     if (e.type === 'captain' && st >= 6 && e.mode === 'hover' && !e.dead) {
-      const hurt = e.hp < e.maxHp * .5 ? .75 : 1, p = G.player; e.mt = e.mt || {};
+      const sv = st === 9 ? 6 + Math.min(2, Math.floor((G.t || 0) / (G.stage.duration || 135) * 3)) : st, hurt = e.hp < e.maxHp * .5 ? .75 : 1, p = G.player; e.mt = e.mt || {};
       const tk = (k, every) => { e.mt[k] = (e.mt[k] ?? every * .7) - dt; if (e.mt[k] <= 0) { e.mt[k] = every * hurt; return true; } return false; };
-      if (st === 6) {
+      if (sv === 6) {
         if (tk('halo', 3.6)) { const cx = p.x, cy = p.y, n = 20, gap = Math.floor(rand(0, n)); for (let i = 0; i < n; i++) { if (((i - gap + n) % n) < 3) continue; const a = i / n * TAU; ebullet(cx + Math.cos(a) * 300, cy + Math.sin(a) * 300, a + Math.PI, 125, { r: 6, life: 5 }); } shockwave(cx, cy, 120, '#ffe9a8'); }
         if (tk('bolt', 6)) Events.hazardRect(clamp(p.x, 70, W - 70), H / 2, 70, H, 1, .3, '#ffe9a8', 'bolt');
-      } else if (st === 7) {
+      } else if (sv === 7) {
         if (tk('tide', 3)) { const gx = rand(120, W - 120); for (let i = 0; i < 12; i++) { const x = 40 + i * 108; if (Math.abs(x - gx) < 100) continue; ebullet(x, e.y + 30, Math.PI / 2, 140, { r: 7 }); } }
         if (tk('sum', 8) && G.enemies.filter(q => !q.dead && q.type === 'jelly').length < 2) spawnEnemy('jelly', clamp(e.x + rand(-120, 120), 80, W - 80), e.y, { bx: e.x, noElite: true });
       } else {
@@ -167,7 +167,7 @@ Screens.records = function () {
   txt('RECORDES', W / 2, 26, 44, '#fff', 'center'); txt('Sua melhor pontuação em cada fase, com o piloto que você usou.', W / 2, 84, 17, '#ffd36a', 'center', 800);
   const rec = Save.data.rec || {}; UI.panel(150, 118, 980, 460, { r: 22 });
   STAGES.forEach((s, i) => {
-    const y = 134 + i * 48, r = rec[i], gi = Save.data.grades[i]; const col = i % 2 ? 'rgba(255,255,255,.04)' : 'rgba(255,255,255,.09)'; ctx.fillStyle = col; ctx.fillRect(166, y - 2, 948, 42);
+    const y = 130 + i * 44, r = rec[i], gi = Save.data.grades[i]; const col = i % 2 ? 'rgba(255,255,255,.04)' : 'rgba(255,255,255,.09)'; ctx.fillStyle = col; ctx.fillRect(166, y - 2, 948, 38);
     txt((i + 1) + '. ' + s.name, 184, y + 4, 19, r ? '#fff' : '#8a7fb0', 'left', 420);
     if (r) {
       const w = WEAPONS[r.w], nm = w ? w.name : r.w; txt(String(r.score).padStart(7, ' ') + ' pts', 660, y + 4, 20, '#ffe9a8', 'right', 200); txt(nm, 700, y + 6, 17, w ? w.c : '#cdb8ff', 'left', 200); txt(['CALMO', 'NORMAL', 'DIFÍCIL', 'PESADELO'][r.d] || '', 900, y + 7, 14, '#cdb8ff', 'left', 120);

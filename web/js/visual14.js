@@ -131,9 +131,9 @@ Visual14.startPractice = function (idx, ph) {
 Screens.practice = function () {
   txt('PRÁTICA DE CHEFES', W / 2, 30, 44, '#fff', 'center'); txt('Escolha o chefe e em qual fase de fúria começar. Nada é salvo.', W / 2, 88, 17, '#ffb340', 'center', 700);
   PBOSS.forEach(([name, idx], i) => {
-    const y = 124 + i * 52, seen = !!(Save.data.codex && Save.data.codex['boss:' + name]), k = Screens.enterK(i * .6, .4);
-    ctx.save(); ctx.globalAlpha = clamp(k, 0, 1); UI.panel(160, y, 960, 44, { r: 14, fill: 'rgba(20,8,55,.7)' }); txt(seen ? name : '???', 186, y + 9, 22, seen ? '#fff' : '#5a4a80', 'left', 800); txt('Setor ' + (idx + 1), 520, y + 13, 14, '#8a7fb0', 'left', 700);
-    ['FASE 1', 'FÚRIA 1', 'FÚRIA 2'].forEach((n, ph) => { if (UI.button('pr' + i + ph, 660 + ph * 150, y + 4, 140, 36, n, { size: 14, disabled: !seen })) Visual14.startPractice(idx, ph); }); ctx.restore();
+    const y = 118 + i * 47, seen = !!(Save.data.codex && Save.data.codex['boss:' + name]), k = Screens.enterK(i * .6, .4);
+    ctx.save(); ctx.globalAlpha = clamp(k, 0, 1); UI.panel(160, y, 960, 42, { r: 14, fill: 'rgba(20,8,55,.7)' }); txt(seen ? name : '???', 186, y + 8, 22, seen ? '#fff' : '#5a4a80', 'left', 800); txt('Setor ' + (idx + 1), 520, y + 13, 14, '#8a7fb0', 'left', 700);
+    ['FASE 1', 'FÚRIA 1', 'FÚRIA 2'].forEach((n, ph) => { if (UI.button('pr' + i + ph, 660 + ph * 150, y + 3, 140, 36, n, { size: 14, disabled: !seen })) Visual14.startPractice(idx, ph); }); ctx.restore();
   });
   if (UI.button('back', W / 2 - 160, 604, 320, 50, 'VOLTAR', { size: 22 }) || Input.pressed('escape')) { Snd.play('uiBack'); G.state = 'modes'; }
   Screens.thinFrame();
@@ -173,11 +173,12 @@ Screens.modes = function () {
     { id: 'sec', name: 'DESAFIOS SECRETOS', c: '#ffd36a', l: 'Chefes dourados que só aparecem com condições.', foot: (Save.data.secrets ? Object.keys(Save.data.secrets).length : 0) + ' / 3 vencidos', go: () => { G.state = 'secrets'; } },
     { id: 'adv', name: 'AVENTURAS', c: '#ffcf6b', l: 'Pequenas missões dos viajantes que você conheceu.', foot: (Save.data.adv ? Object.keys(Save.data.adv).length : 0) + ' / 3 concluídas', go: () => { G.state = 'adventures'; } },
     { id: 'prc', name: 'PRÁTICA DE CHEFES', c: '#c04aff', l: 'Treine qualquer chefe já visto, em qualquer fúria.', foot: 'Nada é salvo', go: () => { G.state = 'practice'; } },
+    Save.data.won4 ? { id: 'epi', name: 'EPÍLOGO', c: '#c8a0ff', l: 'Enfrente o seu reflexo: ele ataca conforme a sua arma.', foot: Save.data.epiDone ? 'Concluído ✓' : 'Recompensa: ★ 300', go: () => Visual16.startEpi() } : null,
     { id: 'orb', name: 'ORBI', c: '#7fe0ff', l: 'Melhore as habilidades do Orbi com estrelas.', foot: 'Nível ' + ['shot', 'grav', 'shield'].reduce((n, k) => n + Visual16.orbiLv(k), 0) + ' / 13', go: () => { G.state = 'orbi'; } },
     { id: 'rec', name: 'RECORDES', c: '#ffd36a', l: 'Sua melhor pontuação em cada fase e o piloto usado.', foot: Object.keys(Save.data.rec || {}).length + ' / ' + STAGES.length + ' fases', go: () => { G.state = 'records'; } },
     { id: 'tr', name: 'TREINO', c: '#7fe0a0', l: 'Arena livre: armas, skins e inimigos.', foot: 'sem pressão :)', go: () => Game.startTraining() },
   ].filter(Boolean);
-  const cw = 232, gap = 12, per = 5;
+  const cw = 198, gap = 10, per = 6;
   cards.forEach((cd, i) => {
     const col = i % per, row = (i / per) | 0, n = row === 0 ? Math.min(per, cards.length) : cards.length - per, x0 = W / 2 - (cw * Math.max(n, 1) + gap * (Math.max(n, 1) - 1)) / 2, x = x0 + col * (cw + gap), y = 90 + row * 250, h = 232, id = 'm_' + cd.id, f = UI.focus(id);
     if (UI.hit(id, x, y, cw, h)) { cd.go(); return; }

@@ -26,7 +26,7 @@ Abra o arquivo `web/index.html` no navegador (Chrome ou Edge). Não precisa inst
 
 ## O que tem
 
-- 9 fases (Partes 1, 2 e 3: Cidade de Luz, Oceano de Estrelas e Espelho do Céu, com inimigos, tiros e ataques de chefe próprios) e com bioma, música e eventos próprios, cada uma com minichefe e um chefe de 3 fases de fúria, até o Vazio.
+- 10 fases (Partes 1, 2, 3 e o Ato Final "O Último Céu", com o Coração do Outro Lado em três atos e o Epílogo contra o seu próprio reflexo; Parte 3: Cidade de Luz, Oceano de Estrelas e Espelho do Céu, com inimigos, tiros e ataques de chefe próprios) e com bioma, música e eventos próprios, cada uma com minichefe e um chefe de 3 fases de fúria, até o Vazio.
 - Armas, pilotos guardiões (Colmeia, Pétreo, Vigia, Solaris), armas secundárias, chefes secretos, aventuras, arena semanal, prática de chefes, recordes por fase, dificuldade Pesadelo, 6 skins, esquiva, especiais, Orbi jogável, Modo Infinito, Desafio do Dia, Modo Treino, conquistas e fragmentos escondidos.
 - RPG: upgrades ao subir de nível, loja permanente, progresso salvo no navegador.
 - História com cenas animadas, retratos dos personagens e música para cada emoção.

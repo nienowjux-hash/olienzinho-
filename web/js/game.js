@@ -195,7 +195,8 @@ const Game = {
     const toClear = () => Visual4.celebrate();
     if (G.stageIdx === 3) this.maybeStory('epi', STORY.epilogue, toClear);
     else if (G.stageIdx === 5) { Save.data.won = true; Save.save(); Ach.check(); this.maybeStory('finale', STORY.finale, toClear); }
-    else if (G.stageIdx === 8) { Save.data.won3 = true; Save.save(); Ach.check(); this.maybeStory('finale3', STORY.finale3, toClear); }
+    else if (G.stageIdx === 8) { Save.data.won3 = true; Save.save(); Ach.check(); toClear(); }
+    else if (G.stageIdx === 9) { Save.data.won4 = true; Save.save(); Ach.check(); this.maybeStory('finale4', STORY.finale4, toClear); }
     else toClear();
   },
 
@@ -208,7 +209,7 @@ const Game = {
     if (G.secret || G.practice) G.result.wave = (G.boss ? G.boss.phase : 0) + 1;
     if (this.noStory || G.endless) { toOver(); return; }
     // o vilao (o chefe da fase ou o Vazio) fala com o jogador
-    const D = STORY.defeat, inBoss = !!G.boss, bc = ['C', 'P', 'E', 'S', 'X', 'V', 'H', 'Y', 'R'][G.stageIdx];
+    const D = STORY.defeat, inBoss = !!G.boss, bc = ['C', 'P', 'E', 'S', 'X', 'V', 'H', 'Y', 'R', 'K'][G.stageIdx];
     const pages = [{ music: 'sad' },
       (inBoss || G.stageIdx >= 6 || Math.random() < .6) && D.boss[G.stageIdx] ? { who: bc, scene: 'boss', mood: 'angry', text: pick(D.boss[G.stageIdx]) } : { who: 'V', scene: 'void', mood: 'angry', text: pick(D.void) }];
     if (Math.random() < .5) pages.push({ who: 'B', mood: 'worry', text: pick(D.orbi) });

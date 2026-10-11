@@ -599,6 +599,11 @@ const Snd = (() => {
     [[0, 14, 1], [1, 14, 1], [2, 16, 2], [4, 17, 2], [6, 16, 2], [8, 14, 4], [12, 12, 4]], [[0, 17, 1], [1, 17, 1], [2, 19, 2], [4, 21, 2], [6, 19, 2], [8, 17, 4], [12, 16, 4]],
     [[0, 12, 2], [2, 14, 2], [4, 16, 2], [6, 17, 2], [8, 19, 8]], [[0, 21, 4], [4, 19, 4], [8, 17, 4], [12, 16, 4]]]),
     { kick: '1010001010100010', snare: '0000100000001000', flair: 'thunder', shaker: true });
+  // Ultimo Ceu: motivos de cada ato da Parte 3 costurados em uma musica so
+  THEMES.s10 = T(52, 114, [0, 5, 3, 4, 0, 3, 6, 4], [THEMES.s7.mel[0], THEMES.s7.mel[3], THEMES.s8.mel[0], THEMES.s8.mel[2], THEMES.s9.mel[0], THEMES.s9.mel[1], THEMES.s7.mel[5], THEMES.s9.mel[7]],
+    { kick: '1000100010001010', snare: '0000100000001000', flair: 'fanfare', shaker: true });
+  THEMES.b10 = T(46, 176, [0, 0, 5, 6, 0, 3, 1, 6], [THEMES.b7.mel[0], THEMES.b7.mel[3], THEMES.b8.mel[0], THEMES.b8.mel[3], THEMES.b9.mel[0], THEMES.b9.mel[2], THEMES.b9.mel[5], THEMES.b7.mel[7]],
+    { kick: '1010101010101010', snare: '0000100000001000', flair: 'thunder', shaker: true });
   const mus = { on: false, key: null, th: null, inten: 0, step: 0, next: 0, timer: null, lay: { combo: 0, danger: 0 } };
   let pending = null;
 

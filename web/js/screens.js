@@ -590,7 +590,7 @@ const Screens = {
       ctx.globalAlpha = .55; txt('↑ ↓  navegar     ENTER  escolher', X0 + 2, 604, 15, '#8f84c4', 'left', 700); ctx.globalAlpha = 1;
     } else if (tt > 2.3 && !Snd.ready) { ctx.globalAlpha = .5 + .5 * Math.sin(t * 4); txt('PRESSIONE QUALQUER TECLA', X0 + 4, 330, 22, '#e2d4ff', 'left', 800); ctx.globalAlpha = 1; }
     txt('olien.digital', X0 + 4, H - bh - 34, 15, '#8f84c4', 'left', 800);
-    txt(Save.data.unlocked >= 7 ? 'Parte 3 — O Outro Lado' : Save.data.unlocked >= 5 ? 'Parte 2 — O Coração do Vazio' : 'Parte 1 — O Coração Partido', W - 44, H - bh - 34, 15, '#a89dd8', 'right', 800);
+    txt(Save.data.unlocked >= 10 ? 'Ato Final — O Último Céu' : Save.data.unlocked >= 7 ? 'Parte 3 — O Outro Lado' : Save.data.unlocked >= 5 ? 'Parte 2 — O Coração do Vazio' : 'Parte 1 — O Coração Partido', W - 44, H - bh - 34, 15, '#a89dd8', 'right', 800);
     // vinheta, barras de cinema e fade inicial
     ctx.fillStyle = '#03010b'; ctx.fillRect(0, 0, W, bh); ctx.fillRect(0, H - bh, W, bh);
     if (tt < 1.6) { ctx.globalAlpha = 1 - easeOut(tt / 1.6); ctx.fillStyle = '#03010b'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; }
@@ -690,7 +690,7 @@ const Screens = {
 
   select() {
     const t = World.t, unlocked = Save.data.unlocked, s = STAGES[G.sel], locked = G.sel >= unlocked;
-    const nS = STAGES.length, pos = i => [nS > 6 ? 96 + i * 136 : 150 + i * 196, 408 + (i % 2 ? 36 : -18)];
+    const nS = STAGES.length, pos = i => [nS > 6 ? 96 + i * (1088 / (nS - 1)) : 150 + i * 196, 408 + (i % 2 ? 36 : -18)];
     // cabecalho do setor escolhido
     ctx.fillStyle = '#ffb340'; ctx.fillRect(88, 92, 64, 4);
     txt('SETOR ' + (G.sel + 1) + ' DE ' + STAGES.length, 90, 104, 17, locked ? '#8a7fb0' : s.tint, 'left', 900);

@@ -173,8 +173,12 @@ const Snd = (() => {
       voice('triangle', 1240, 480, t, .07, .03, { pan: p });
     },
     hit(o) {
-      const t = now();
-      voice('sine', 620 * rnd(.92, 1.08), 300, t, .05, .065, { pan: o.pan, a: .002 });
+      const t = now(), w = o.wpn;
+      if (w === 'fan') { voice('square', 320 * rnd(.9, 1.1), 120, t, .05, .05, { lp: 2200, pan: o.pan }); noiseV(t, .04, .05, { type: 'bandpass', f0: 2400, pan: o.pan }); }
+      else if (w === 'laser') voice('sawtooth', 1500 * rnd(.9, 1.1), 900, t, .04, .035, { lp: 5000, pan: o.pan, a: .002 });
+      else if (w === 'cannon') { voice('sine', 190 * rnd(.9, 1.1), 55, t, .14, .13, { pan: o.pan }); noiseV(t, .1, .1, { type: 'lowpass', f0: 900, f1: 120, pan: o.pan }); }
+      else if (w === 'orbi') voice('sine', 940 * rnd(.95, 1.05), 520, t, .09, .06, { pan: o.pan, a: .004, rev: .3 });
+      else voice('sine', 620 * rnd(.92, 1.08), 300, t, .05, .065, { pan: o.pan, a: .002 });
     },
     bossHit(o) {
       const t = now();
@@ -263,6 +267,38 @@ const Snd = (() => {
       voice('sine', 70, 20, t + 1.6, 1.8, .7);
       [72, 76, 79, 84, 88, 91, 96].forEach((m, i) => voice('triangle', mtof(m), mtof(m), t + 2.3 + i * .09, .9, .12, { rev: .6, del: .3 }));
       duck(.8, 3);
+    },
+    hiveDie() {
+      const t = now();
+      for (let i = 0; i < 8; i++) { voice('sawtooth', 190 + i * 9, 70, t, 2.4, .05, { lp: 900, rev: .3, detune: i * 6 }); }
+      for (let i = 0; i < 18; i++) { const d = i * .12; noiseV(t + d, .09, .1, { type: 'bandpass', f0: 600 + rnd(0, 2500), q: 2 }); voice('triangle', 500 + rnd(0, 500), 120, t + d, .12, .05); }
+      voice('sine', 80, 24, t + 2.2, 1.6, .6); noiseV(t + 2.2, 1.6, .35, { type: 'lowpass', f0: 1500, f1: 80, a: .01, rev: .5 });
+      [64, 67, 72, 76, 79].forEach((m, i) => voice('triangle', mtof(m), mtof(m), t + 2.9 + i * .1, 1.5, .09, { rev: .7, del: .3 }));
+      duck(.7, 3.2);
+    },
+    rockDie() {
+      const t = now();
+      noiseV(t, 3.4, .4, { type: 'lowpass', f0: 260, f1: 40, a: .1, rev: .5 }); voice('sine', 52, 22, t, 3.4, .6);
+      for (let i = 0; i < 14; i++) { const d = rnd(0, 3); noiseV(t + d, .16, .22, { type: 'bandpass', f0: 180 + rnd(0, 500), q: 1.2, rev: .3 }); voice('triangle', 120 + rnd(0, 120), 40, t + d, .2, .12); }
+      voice('sine', 90, 20, t + 3.2, 1.8, .9); noiseV(t + 3.2, 2.2, .5, { type: 'lowpass', f0: 1200, f1: 50, a: .01, rev: .6 });
+      duck(.8, 4);
+    },
+    stormDie() {
+      const t = now();
+      for (let i = 0; i < 12; i++) { const d = i * .26 + rnd(0, .1); noiseV(t + d, .5, .3, { type: 'highpass', f0: 2500, f1: 300, a: .005, rev: .5 }); voice('sine', 70, 28, t + d + .05, .6, .35); }
+      voice('sawtooth', 120, 600, t, 3, .06, { lp: 2400, rev: .5 });
+      noiseV(t + 3.1, 2.6, .5, { type: 'lowpass', f0: 3000, f1: 60, a: .01, rev: .6 }); voice('sine', 100, 22, t + 3.1, 2, .85);
+      [72, 76, 79, 84, 88].forEach((m, i) => voice('triangle', mtof(m), mtof(m), t + 3.6 + i * .09, 1.6, .09, { rev: .7, del: .3 }));
+      duck(.8, 4);
+    },
+    sunDie() {
+      const t = now();
+      voice('sawtooth', 70, 420, t, 3.2, .1, { lp: 1600, a: 1.8, rev: .5 }); voice('sawtooth', 73, 440, t, 3.2, .08, { lp: 1600, a: 1.8 });
+      noiseV(t, 3.4, .3, { type: 'bandpass', f0: 200, f1: 6000, q: 1.5, a: 2.8, rev: .5 });
+      for (let i = 0; i < 6; i++) voice('sine', 120, 40, t + i * .5, .5, .3);
+      voice('sine', 110, 20, t + 3.4, 2.6, .95); noiseV(t + 3.4, 3, .55, { type: 'lowpass', f0: 2600, f1: 60, a: .01, rev: .6 });
+      [60, 64, 67, 72, 76, 79, 84].forEach((m, i) => voice('triangle', mtof(m), mtof(m), t + 3.8 + i * .11, 3, .11, { rev: .8, del: .35, a: .2 }));
+      duck(.9, 5);
     },
     bossIntro() {
       const t = now();

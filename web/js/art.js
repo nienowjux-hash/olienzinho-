@@ -220,10 +220,10 @@ const Art = {
     const a = Math.atan2(b.vy, b.vx) + Math.PI / 2;
     drawGlow(b.x, b.y, 26, c, .9); drawGlow(b.x - b.vx * .018, b.y - b.vy * .018, 16, c, .6);
     ctx.restore(); ctx.save(); ctx.translate(b.x, b.y); ctx.rotate(a);
-    const sp = Math.hypot(b.vx, b.vy), L = clamp(sp * .07, 24, 70), tg = ctx.createLinearGradient(0, 8, 0, 8 + L);
+    const sp = Math.hypot(b.vx, b.vy), L = clamp(sp * .07 * (b.w === 'fan' ? .5 : 1), 14, 70), tg = ctx.createLinearGradient(0, 8, 0, 8 + L);
     tg.addColorStop(0, c); tg.addColorStop(1, 'rgba(0,0,0,0)'); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = tg; ctx.globalAlpha = .8;
     ctx.beginPath(); ctx.moveTo(-5, 8); ctx.lineTo(5, 8); ctx.lineTo(0, 8 + L); ctx.closePath(); ctx.fill(); ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
-    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.roundRect(-3, -18, 6, 36, 3); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.beginPath(); if (b.w === 'fan') ctx.roundRect(-4, -9, 8, 18, 4); else ctx.roundRect(-3, -18, 6, 36, 3); ctx.fill();
     if (b.crit) { ctx.fillStyle = '#ffe9a8'; ctx.rotate(World.t * 9); ctx.fillRect(-9, -2, 18, 4); ctx.fillRect(-2, -9, 4, 18); }
     ctx.restore();
   },

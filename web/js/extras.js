@@ -200,9 +200,12 @@ Screens.achievements = function () {
   const cw = 560, ch = 50, gx = 70, gy = 146;
   ACH.forEach((a, i) => {
     const col = i % 2, row = (i / 2) | 0, x = gx + col * (cw + 20), y = gy + row * (ch + 6), has = Save.data.ach[a.id];
+    const ek = Screens.enterK(i * .6, .4); ctx.save(); ctx.translate(0, (1 - ek) * 30); ctx.globalAlpha = clamp(ek, 0, 1);
     UI.panel(x, y, cw, ch, { r: 16, fill: has ? 'rgba(60,34,140,.8)' : 'rgba(20,8,55,.65)', stroke: has ? '#ffb340' : 'rgba(190,160,255,.25)' });
+    if (has) { ctx.save(); ctx.beginPath(); ctx.roundRect(x, y, cw, ch, 16); ctx.clip(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha *= .12; ctx.fillStyle = '#ffe9a8'; const sx = x + ((t * 150 + i * 90) % (cw + 240)) - 120; ctx.beginPath(); ctx.moveTo(sx, y); ctx.lineTo(sx + 50, y); ctx.lineTo(sx + 20, y + ch); ctx.lineTo(sx - 30, y + ch); ctx.closePath(); ctx.fill(); ctx.restore(); }
     ctx.save(); ctx.globalAlpha = has ? 1 : .35; Extras.star(x + 36, y + ch / 2, 15, has ? '#ffd36a' : '#8a7fb0', t); ctx.restore();
     txt(a.name, x + 72, y + 5, 20, has ? '#fff' : '#a99fd6', 'left', 900); txt(a.desc, x + 72, y + 29, 14, has ? '#cdb8ff' : '#7a70a0', 'left', 700);
+    ctx.restore();
   });
   if (UI.button('back', W / 2 - 160, 660, 320, 48, 'VOLTAR', { size: 22 }) || Input.pressed('escape')) { Snd.play('uiBack'); Game.goSelect(); }
 };

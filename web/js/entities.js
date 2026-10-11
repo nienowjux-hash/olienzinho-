@@ -223,10 +223,16 @@ function killEnemy(e, byPlayer) {
 function damageEnemy(e, dmg, crit, chained) {
   e.hp -= dmg; e.hit = .08;
   if (e.type === 'dummy') { (e.hist = e.hist || []).push([G.t, dmg]); e.hp = e.maxHp; }
-  Snd.play('hit', { pan: Snd.panX(e.x) });
+  Snd.play('hit', { pan: Snd.panX(e.x), wpn: G.player && G.player.weapon });
   const p = G.player, wc = (p && WEAPONS[p.weapon] && WEAPONS[p.weapon].c) || '#e2d4ff', cc = crit ? '#ffe9a8' : wc;
   sparks(e.x + rand(-8, 8), e.y + e.rad * .4, cc, crit ? 11 : 5, crit ? 300 : 220);
   G.rings.push({ x: e.x + rand(-6, 6), y: e.y + e.rad * .5, r: 4, max: crit ? 52 : 30, c: cc, life: .6 });
+  { const wp = p && p.weapon, P = G.parts;
+    if (wp === 'fan') for (let i = 0; i < 3; i++) P.push({ x: e.x + rand(-8, 8), y: e.y + e.rad * .4, vx: rand(-60, 60), vy: -rand(40, 140), life: .45, max: .45, r: rand(3, 6), c: '#ffb340', drag: 2 });
+    else if (wp === 'laser') P.push({ k: 'flash', x: e.x, y: e.y + e.rad * .4, vx: 0, vy: 0, life: .08, max: .08, r: 34, c: '#7fe0ff', drag: 1 });
+    else if (wp === 'cannon') P.push({ k: 'smoke', x: e.x, y: e.y, vx: rand(-50, 50), vy: rand(-50, 10), life: .6, max: .6, r: rand(12, 20), c: '#6a3a30', drag: 2 });
+    else if (wp === 'orbi') G.rings.push({ x: e.x, y: e.y, r: 4, max: 64, c: '#7fe0ff', life: .6 });
+    else if (Math.random() < .5) P.push({ k: 'flash', x: e.x, y: e.y + e.rad * .4, vx: 0, vy: 0, life: .1, max: .1, r: 18, c: '#e2d4ff', drag: 1 }); }
   if (G.pops.length < 26) popup(e.x + rand(-14, 14), e.y - e.rad, String(Math.max(1, Math.round(dmg * 10))) + (crit ? '!' : ''), crit ? '#ffe9a8' : '#ffffff', crit ? 26 : 15);
   if (e.type !== 'tank' && !e.mini && e.mode !== 'enter') e.y -= Math.min(6, 1.5 + dmg);
   if (crit) {
@@ -352,6 +358,8 @@ function updatePlayerWeapons(dt) {
       if (b.kind === 'cannon') G.parts.push({ x: b.x, y: b.y + 14, vx: rand(-20, 20), vy: rand(40, 100), life: .3, max: .3, r: rand(5, 9), c: '#ff9a4a', drag: 2 });
     }
     b.x += b.vx * dt; b.y += b.vy * dt;
+    if (b.w === 'fan' && Math.random() < dt * 40) G.parts.push({ x: b.x, y: b.y, vx: rand(-30, 30), vy: rand(20, 70), life: .35, max: .35, r: rand(2, 4), c: '#ffb340', drag: 2 });
+    else if (b.w === 'violet' && Math.random() < dt * 22) G.parts.push({ k: 'flash', x: b.x + rand(-4, 4), y: b.y + 10, vx: 0, vy: 0, life: .18, max: .18, r: 9, c: '#cdb8ff', drag: 1 });
     if (b.bounce > 0 && ((b.x < 12 && b.vx < 0) || (b.x > W - 12 && b.vx > 0))) { b.vx *= -1; b.bounce--; sparks(b.x, b.y, b.c, 5); }
     if (b.y < -60 || b.y > H + 60 || b.x < -60 || b.x > W + 60) { b.dead = true; continue; }
     for (const e of G.enemies) {

@@ -133,6 +133,7 @@ Screens.modes = function () {
   cards.forEach((cd, i) => {
     const x = 70 + i * 390, y = 130, w = 360, h = 400, id = 'm_' + cd.id, f = UI.focus(id);
     if (UI.hit(id, x, y, w, h)) { cd.go(); return; }
+    const ek = Screens.enterK(i, .5); ctx.save(); ctx.translate(0, (1 - ek) * 70 - (f ? 8 : 0)); ctx.globalAlpha = clamp(ek, 0, 1);
     ctx.save(); if (f) { ctx.shadowColor = cd.c; ctx.shadowBlur = 30; }
     UI.panel(x, y, w, h, { fill: f ? 'rgba(50,28,120,.85)' : 'rgba(20,8,55,.75)', stroke: f ? cd.c : 'rgba(190,160,255,.3)', r: 24 }); ctx.restore();
     ctx.save(); ctx.translate(x + w / 2, y + 100); ctx.globalCompositeOperation = 'lighter'; drawGlow(0, 0, 90, cd.c, .5 + (f ? .2 : 0)); ctx.globalCompositeOperation = 'source-over';
@@ -144,6 +145,7 @@ Screens.modes = function () {
     txt(cd.name, x + w / 2, y + 180, 28, '#fff', 'center', 900);
     cd.lines.forEach((l, k) => UI.wrap(l, x + 30, y + 226 + k * 46, w - 60, 21, 16, k === 1 && cd.id === 'day' ? cd.c : '#cdb8ff'));
     txt(cd.foot, x + w / 2, y + h - 36, 17, cd.c, 'center', 800);
+    ctx.restore();
   });
   if (UI.button('back', W / 2 - 160, 580, 320, 56, 'VOLTAR', { size: 24 }) || Input.pressed('escape')) { Snd.play('uiBack'); Game.goTitle(); }
 };

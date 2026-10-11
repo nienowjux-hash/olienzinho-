@@ -198,7 +198,7 @@ const Game = {
   gameOver() {
     this.endRunSave(0, false);
     G.result = { coins: G.runCoins, score: G.score, kills: G.kills, level: G.level };
-    const toOver = () => { G.state = 'over'; Snd.play('gameOver'); };
+    const toOver = () => { G.state = 'over'; G.overAt = undefined; G.overQuote = null; Snd.play('gameOver'); };
     if (G.endless) G.result.wave = G.wave;
     if (this.noStory || G.endless) { toOver(); return; }
     // o vilao (o chefe da fase ou o Vazio) fala com o jogador

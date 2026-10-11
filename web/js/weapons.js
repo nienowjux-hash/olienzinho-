@@ -2,7 +2,7 @@
 // ---------- armas, habilidades especiais, esquiva e skins ----------
 function mkBullet(p, x, y, ang, speed, dmgMul, o = {}) {
   const crit = Math.random() < p.crit;
-  const b = { x, y, vx: Math.cos(ang) * speed, vy: Math.sin(ang) * speed, dmg: p.dmg * dmgMul * (crit ? p.critMul : 1) * (p.od ? 1.5 : 1), bounce: p.ricochet || 0, crit, pierce: p.pierce, hits: [], c: crit ? '#ffe9a8' : WEAPONS[p.weapon].c };
+  const b = { x, y, vx: Math.cos(ang) * speed, vy: Math.sin(ang) * speed, dmg: p.dmg * dmgMul * (crit ? p.critMul : 1) * (p.od ? 1.5 : 1), bounce: p.ricochet || 0, w: p.weapon, crit, pierce: p.pierce, hits: [], c: crit ? '#ffe9a8' : WEAPONS[p.weapon].c };
   Object.assign(b, o); G.pb.push(b); return b;
 }
 const muzzle = (p, c = '#e2d4ff', r = 18) => G.parts.push({ k: 'flash', x: p.x, y: p.y - 34, vx: 0, vy: 0, life: .07, max: .07, r, c, drag: 1 });

@@ -617,6 +617,7 @@ const Screens = {
     txt('ARMAS', 74, 92, 18, '#ffb340', 'left', 900);
     WEAPON_ORDER.forEach((id, i) => {
       const w = WEAPONS[id], x = 70, y = 118 + i * 104, cw = 580, ch = 94, has = !!own.weapons[id], eq = ld.weapon === id, fid = 'w_' + id, f = UI.focus(fid);
+      const ek = Screens.enterK(i); ctx.save(); ctx.translate((1 - ek) * -80, 0); ctx.globalAlpha = clamp(ek, 0, 1);
       if (UI.hit(fid, x, y, cw, ch, { sound: 'buy' })) {
         if (has) { ld.weapon = id; Save.save(); }
         else if (Save.data.coins >= w.price) { Save.data.coins -= w.price; own.weapons[id] = true; ld.weapon = id; Save.save(); }
@@ -629,6 +630,7 @@ const Screens = {
       txt('Especial: ' + w.specName, x + 112, y + 66, 14, w.c, 'left', 800);
       if (eq) txt('EQUIPADA', x + cw - 20, y + 14, 16, '#7fe0a0', 'right'); else if (has) txt('equipar', x + cw - 20, y + 14, 15, '#8a7fb0', 'right', 700);
       else txt('★ ' + w.price, x + cw - 20, y + 12, 24, Save.data.coins >= w.price ? '#ffcf6b' : '#7a70a0', 'right');
+      ctx.restore();
     });
     // direita: nave e skins
     const sk = SKINS[G.skinIdx || 0], unlocked = sk.ok(), eqs = ld.skin === sk.id;
@@ -636,14 +638,14 @@ const Screens = {
     txt('SKINS', 726, 110, 18, '#ffb340', 'left', 900);
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(960, 290, 230, sk.pal.glow, .4); ctx.restore(); ctx.globalAlpha = 1;
     ctx.save(); ctx.globalAlpha = unlocked ? 1 : .35;
-    Art.ship(960, 290 + Math.sin(t * 1.6) * 8, { vx: Math.sin(t * .8) * 80, t, pal: sk.pal, scale: 1.55, boost: .4, lookx: clamp((Input.mouse.x - 960) / 400, -1, 1), looky: clamp((Input.mouse.y - 290) / 400, -1, 1), blinkT: this.blinkAt(t) });
+    Art.ship(960, 290 + Math.sin(t * 1.6) * 8, { vx: Math.sin(t * .8) * 80, t, pal: sk.pal, scale: 1.55 * (1 + .22 * Math.max(0, 1 - (World.t - (G.skinPop || -9)) * 3.5)), boost: .4, lookx: clamp((Input.mouse.x - 960) / 400, -1, 1), looky: clamp((Input.mouse.y - 290) / 400, -1, 1), blinkT: this.blinkAt(t) });
     ctx.restore();
     if (!unlocked) this.lock(960, 290, 2);
     txt(sk.name, 960, 440, 28, '#fff', 'center');
     txt(unlocked ? (eqs ? 'EQUIPADA' : 'liberada') : '🔒 ' + sk.how, 960, 478, 16, unlocked ? '#7fe0a0' : '#ffb340', 'center', 800);
     const n = SKINS.length;
-    if (UI.button('skL', 726, 250, 54, 80, '◀', { size: 30 })) { G.skinIdx = (G.skinIdx + n - 1) % n; }
-    if (UI.button('skR', 1140, 250, 54, 80, '▶', { size: 30 })) { G.skinIdx = (G.skinIdx + 1) % n; }
+    if (UI.button('skL', 726, 250, 54, 80, '◀', { size: 30 })) { G.skinIdx = (G.skinIdx + n - 1) % n; G.skinPop = World.t; }
+    if (UI.button('skR', 1140, 250, 54, 80, '▶', { size: 30 })) { G.skinIdx = (G.skinIdx + 1) % n; G.skinPop = World.t; }
     if (unlocked && !eqs && (UI.hit('skEquip', 870, 486, 180, 30))) { ld.skin = sk.id; Save.save(); Snd.play('buy'); }
     if (unlocked && !eqs) { ctx.fillStyle = UI.focus('skEquip') ? '#9a63ff' : 'rgba(70,40,150,.9)'; ctx.beginPath(); ctx.roundRect(870, 486, 180, 30, 15); ctx.fill(); txt('EQUIPAR', 960, 501, 15, '#fff', 'center', 900, 'middle'); }
     if (UI.button('back', W / 2 - 160, 600, 320, 56, 'VOLTAR', { size: 24 }) || Input.pressed('escape')) { Snd.play('uiBack'); Game.goSelect(); }

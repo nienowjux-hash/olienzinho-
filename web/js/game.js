@@ -268,7 +268,6 @@ const Game = {
 
   director(dt) {
     if (G.training) return;
-    if (G.sanct) { Visual5.sanctDir(dt); return; }
     if (G.endless) { this.endlessDirector(dt); return; }
     const st = G.stage;
     if (G.bossDone) return;

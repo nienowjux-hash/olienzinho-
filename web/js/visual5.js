@@ -14,7 +14,6 @@ ACH.push(
   { id: 'relic4', name: 'Colecionador de Relíquias', desc: 'Jogue com 4 relíquias diferentes.', ok: () => Object.keys(Save.data.relicsUsed || {}).length >= 4 },
   { id: 'rush', name: 'Domador de Chefes', desc: 'Zere os Chefes em Sequência.', ok: () => !!(Save.data.rush && Save.data.rush.best) },
   { id: 'rush_perfect', name: 'Perfeição Absoluta', desc: 'Zere os Chefes em Sequência sem tomar dano.', ok: () => !!(Save.data.rush && Save.data.rush.perfect) },
-  { id: 'sanct', name: 'Chuva Dourada', desc: 'Complete o Santuário da Luz.', ok: () => !!(Save.data.sanct && Save.data.sanct.done) },
 );
 
 // ===== graze =====
@@ -214,33 +213,11 @@ Visual5.rushStep = function (i) {
 }
 Visual5.rushEnd = function () {
   const r = Visual5.rush, secs = (performance.now() - r.t0) / 1000, perfect = r.hits === 0, d = Save.data; d.rush = d.rush || {};
-  const nb = !d.rush.best || secs < d.rush.best; if (nb) d.rush.best = secs; if (perfect) d.rush.perfect = true;
-  const reward = 250 + (perfect ? 300 : 0); d.coins += reward + G.runCoins; Save.save(); Ach.check();
+  const firstClear = !d.rush.best, firstPerfect = perfect && !d.rush.perfect, nb = firstClear || secs < d.rush.best; if (nb) d.rush.best = secs; if (perfect) d.rush.perfect = true;
+  const reward = (firstClear ? 150 : 0) + (firstPerfect ? 250 : 0); d.coins += reward + G.runCoins; // recompensa so na primeira vez: nada de farmar estrelas Save.save(); Ach.check();
   const fmt = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
-  G.bonusEnd = { title: 'CHEFES DERROTADOS!', sub: perfect ? 'SEM TOMAR DANO. Perfeito!' : 'Os seis guardiões caíram.', rows: [['Tempo', fmt(secs)], ['Pontuação', r.score + ' pts'], ['Golpes sofridos', String(r.hits)], ['Recompensa', '★ ' + reward]], again: () => Visual5.startRush(), best: nb ? 'NOVO RECORDE DE TEMPO!' : 'Recorde: ' + fmt(d.rush.best) };
+  G.bonusEnd = { title: 'CHEFES DERROTADOS!', sub: perfect ? 'SEM TOMAR DANO. Perfeito!' : 'Os seis guardiões caíram.', rows: [['Tempo', fmt(secs)], ['Pontuação', r.score + ' pts'], ['Golpes sofridos', String(r.hits)], ['Recompensa (1ª vez)', '★ ' + reward]], again: () => Visual5.startRush(), best: nb ? 'NOVO RECORDE DE TEMPO!' : 'Recorde: ' + fmt(d.rush.best) };
   G.state = 'bonusEnd'; G.bonusAt = undefined; Snd.play('stageClear'); Snd.musicPlay('triumph', 1);
-};
-// ===== santuario da luz =====
-Visual5.startSanct = function () {
-  if (Game._nsPrev === undefined) Game._nsPrev = Game.noStory; Game.noStory = true;
-  Game.startStage(0, { skipStory: true }); G.sanct = true; G.sT = 0; G.sN = 0; G.stage = { ...STAGES[0], name: 'Santuário da Luz', duration: 45, events: [] }; Events.reset(null);
-  G.state = 'play'; Events.banner = { t: 0, title: 'SANTUÁRIO DA LUZ', sub: 'COLETE TODAS AS ESTRELAS', c: '#ffd36a' }; Snd.musicPlay('hope', 1); G.player.inv = 99;
-};
-Visual5.sanctDir = function (dt) {
-  G.sT += dt; G.player.inv = 99;
-  if (G.t >= 45) { // fim
-    const coins = G.runCoins, bonus = 120, d = Save.data; d.coins += coins + bonus; d.sanct = d.sanct || {}; d.sanct.done = true; d.sanct.best = Math.max(d.sanct.best || 0, coins); Save.save(); Ach.check();
-    G.bonusEnd = { title: 'SANTUÁRIO COMPLETO', sub: 'A luz agradece.', rows: [['Estrelas coletadas', '★ ' + coins], ['Bônus', '★ ' + bonus], ['Melhor coleta', '★ ' + d.sanct.best]], again: () => Visual5.startSanct(), best: '' };
-    G.state = 'bonusEnd'; G.bonusAt = undefined; G.sanct = false; Snd.play('stageClear'); return;
-  }
-  const every = .45; if (G.sT < G.sN * every) return; G.sN++;
-  const pat = Math.floor(G.sN / 4) % 4, x0 = rand(160, W - 160), put = (x, y) => { dropPickup('coin', x, y, 2); const k = G.pickups[G.pickups.length - 1]; k.vx = 0; k.vy = 80; };
-  if (pat === 0) for (let i = 0; i < 8; i++) put(x0 + (i - 3.5) * 46, -20 - Math.abs(i - 3.5) * 24);
-  else if (pat === 1) for (let i = 0; i < 10; i++) put(W / 2 + Math.sin(i * .8 + G.sN) * 300, -20 - i * 34);
-  else if (pat === 2) for (let i = 0; i < 10; i++) { const a = i / 10 * TAU; put(x0 + Math.cos(a) * 80, -100 + Math.sin(a) * 80); }
-  else { for (let i = 0; i < 12; i++) put(x0 - 90 + i * 16 + (i % 2) * 6, -20 - (i % 3) * 30); }
-  if (G.sN % 26 === 0) dropPickup('cap', rand(200, W - 200), -30, 'magnet');
-  if (G.sN % 40 === 0) dropPickup('heart', rand(200, W - 200), -30, 1);
 };
 Screens.bonusEnd = function () {
   const b = G.bonusEnd; if (!b) { Game.goTitle(); return; }
@@ -262,28 +239,26 @@ Screens.bonusEnd = function () {
 
 // ===== tela de modos (5 cartoes) =====
 Screens.modes = function () {
-  const day = Extras.todayMod(), frags = Extras.fragCount();
+  const day = Extras.todayMod();
   txt('MODOS EXTRAS', W / 2, 36, 46, '#fff', 'center');
   const cards = [
     { id: 'inf', name: 'MODO INFINITO', c: '#ffb340', lines: ['Ondas sem fim, cada vez mais difíceis.', 'Um chefe a cada 5 ondas.'], foot: 'Melhor onda: ' + (Save.data.bestWave || 0), go: () => Game.startEndless() },
     { id: 'day', name: 'DESAFIO DO DIA', c: '#7fe0ff', lines: ['Mesma sequência de inimigos para todos, hoje.', day.name + ': ' + day.desc], foot: 'Seu melhor: ' + Extras.dailyBest(), go: () => Game.startDaily() },
     { id: 'rush', name: 'CHEFES EM SEQUÊNCIA', c: '#ff8a5f', lines: ['Os 6 chefes, um atrás do outro.', 'Pouca cura entre as lutas. Dá para zerar sem dano?'], foot: Save.data.rush && Save.data.rush.best ? 'Melhor tempo: ' + Math.floor(Save.data.rush.best / 60) + ':' + String(Math.floor(Save.data.rush.best % 60)).padStart(2, '0') : 'Ainda não zerado', go: () => Visual5.startRush() },
-    { id: 'sanct', name: 'SANTUÁRIO DA LUZ', c: '#ffd36a', lines: ['Fase secreta de bônus: uma chuva de estrelas.', 'Sem inimigos, só coragem de coletar.'], foot: frags >= 6 ? 'Melhor coleta: ★ ' + ((Save.data.sanct && Save.data.sanct.best) || 0) : '🔒 Ache os 6 fragmentos (' + frags + '/6)', lock: frags < 6, go: () => Visual5.startSanct() },
     { id: 'tr', name: 'TREINO', c: '#7fe0a0', lines: ['Teste armas, skins e inimigos sem risco.', 'Nada é salvo.'], foot: 'sem pressão :)', go: () => Game.startTraining() },
   ];
-  const cw = 232, gap = 14, x0 = W / 2 - (cw * 5 + gap * 4) / 2;
+  const cw = 290, gap = 18, x0 = W / 2 - (cw * 4 + gap * 3) / 2;
   cards.forEach((cd, i) => {
     const x = x0 + i * (cw + gap), y = 120, h = 430, id = 'm_' + cd.id, f = UI.focus(id);
-    if (UI.hit(id, x, y, cw, h, { disabled: !!cd.lock })) { cd.go(); return; }
-    const ek = Screens.enterK(i, .5); ctx.save(); ctx.translate(0, (1 - ek) * 70 - (f ? 8 : 0)); ctx.globalAlpha = clamp(ek, 0, 1) * (cd.lock ? .6 : 1);
-    ctx.save(); if (f && !cd.lock) { ctx.shadowColor = cd.c; ctx.shadowBlur = 30; }
+    if (UI.hit(id, x, y, cw, h, {})) { cd.go(); return; }
+    const ek = Screens.enterK(i, .5); ctx.save(); ctx.translate(0, (1 - ek) * 70 - (f ? 8 : 0)); ctx.globalAlpha = clamp(ek, 0, 1);
+    ctx.save(); if (f) { ctx.shadowColor = cd.c; ctx.shadowBlur = 30; }
     UI.panel(x, y, cw, h, { fill: f ? 'rgba(50,28,120,.85)' : 'rgba(20,8,55,.75)', stroke: f ? cd.c : 'rgba(190,160,255,.3)', r: 22 }); ctx.restore();
     ctx.save(); ctx.translate(x + cw / 2, y + 82); ctx.globalCompositeOperation = 'lighter'; drawGlow(0, 0, 80, cd.c, .5 + (f ? .2 : 0)); ctx.globalCompositeOperation = 'source-over';
     ctx.strokeStyle = cd.c; ctx.fillStyle = cd.c; ctx.lineWidth = 6; ctx.lineCap = 'round';
     if (cd.id === 'inf') { ctx.beginPath(); for (let a = 0; a <= TAU + .1; a += .1) { const px = Math.cos(a) * 40, py = Math.sin(2 * a) * 19; a ? ctx.lineTo(px, py) : ctx.moveTo(px, py); } ctx.stroke(); }
     else if (cd.id === 'day') { ctx.beginPath(); ctx.arc(0, 0, 33, 0, TAU); ctx.stroke(); ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(0, -19); ctx.lineTo(0, 0); ctx.lineTo(14, 9); ctx.stroke(); }
     else if (cd.id === 'rush') { for (let k = 0; k < 3; k++) { ctx.globalAlpha *= .8; ctx.beginPath(); ctx.arc(-26 + k * 26, 0, 14, 0, TAU); ctx.stroke(); } }
-    else if (cd.id === 'sanct') { ctx.beginPath(); for (let k = 0; k < 10; k++) { const rr = k % 2 ? 14 : 34, a = k * TAU / 10 - Math.PI / 2; ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); } ctx.closePath(); ctx.fill(); }
     else { ctx.beginPath(); ctx.arc(0, 0, 33, 0, TAU); ctx.stroke(); ctx.beginPath(); ctx.arc(0, 0, 17, 0, TAU); ctx.stroke(); ctx.beginPath(); ctx.arc(0, 0, 6, 0, TAU); ctx.fill(); }
     ctx.restore();
     UI.wrap(cd.name, x + cw / 2, y + 150, cw - 30, 26, 21, '#fff', 'center');

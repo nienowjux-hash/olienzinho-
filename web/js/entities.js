@@ -54,11 +54,15 @@ const ENEMY_DEF = {
   mine: { hp: 4, rad: 24, spd: 60, xp: 2, score: 20, coin: .2, glow: '#ff4a4a' },
   bit: { hp: 1, rad: 14, spd: 210, xp: 1, score: 8, coin: .05, glow: '#7fe0ff' },
   rock: { hp: 2, rad: 28, spd: 0, xp: 1, score: 5, coin: .1, glow: '#ff6a1a' },
+  shield: { hp: 8, rad: 30, spd: 70, xp: 3, score: 40, coin: .3, glow: '#7fe0ff' },
+  healer: { hp: 7, rad: 26, spd: 60, xp: 4, score: 45, coin: .35, glow: '#7fffa0' },
+  captain: { hp: 60, rad: 54, spd: 60, xp: 25, score: 600, coin: 0, glow: '#ff5a3c' },
 };
+const CAPTAINS = ['Capitão Zangão', 'Perfuratriz', 'Para-raios', 'Sentinela Solar'];
 
 function spawnEnemy(type, x, y, o = {}) {
   const d = ENEMY_DEF[type], st = G.stage.id;
-  const mul = 1 + st * .45 + (G.t / G.stage.duration) * .35;
+  const mul = G.endless ? 1 + st * .2 + ((G.wave || 1) - 1) * .17 : 1 + st * .45 + (G.t / G.stage.duration) * .35;
   const e = {
     type, x, y, bx: x, rad: d.rad, hp: Math.max(1, Math.ceil(d.hp * mul)), spd: d.spd * (1 + st * .06),
     xp: d.xp, score: d.score, coin: d.coin, glow: d.glow, age: 0, ph: rand(0, TAU), hit: 0,
@@ -66,6 +70,8 @@ function spawnEnemy(type, x, y, o = {}) {
     vx: 0, vy: 0, shootT: rand(.8, 1.6), fuse: 0, life: 0, dead: false, orbCd: 0, aim: Math.PI / 2,
   };
   e.maxHp = e.hp;
+  if (type === 'shield') e.shield = e.maxShield = Math.ceil(5 * mul);
+  if (type === 'captain') { e.mini = true; e.name = CAPTAINS[st % 4]; e.stopY = 150; e.pat = 0; e.shootT = 2; }
   Object.assign(e, o);
   G.enemies.push(e);
   return e;
@@ -95,6 +101,38 @@ function updateEnemy(e, dt) {
         e.vx = Math.cos(e.dir) * sp; e.vy = Math.sin(e.dir) * sp; e.x += e.vx * dt; e.y += e.vy * dt;
       }
       break;
+    case 'healer':
+      if (e.mode === 'enter') { e.y += e.spd * 1.8 * dt; if (e.y >= e.stopY) { e.mode = 'hover'; e.vx = (Math.random() < .5 ? -1 : 1) * 45; e.life = 0; e.shootT = 1.4; } }
+      else if (e.mode === 'hover') {
+        e.x += e.vx * dt; if (e.x < 80 || e.x > W - 80) e.vx *= -1;
+        e.life += dt; e.shootT -= dt; e.healFx = Math.max(0, (e.healFx || 0) - dt);
+        if (e.shootT <= 0) {
+          e.shootT = 2.2; let best = null, br = 1;
+          for (const a of G.enemies) if (a !== e && !a.dead && a.hp < a.maxHp && Math.hypot(a.x - e.x, a.y - e.y) < 520 && a.hp / a.maxHp < br) { br = a.hp / a.maxHp; best = a; }
+          if (best) {
+            best.hp = Math.min(best.maxHp, best.hp + best.maxHp * .3); e.healTo = best; e.healFx = .45; Snd.play('shield', { pan: Snd.panX(e.x) });
+            for (let i = 0; i < 8; i++) G.parts.push({ x: best.x + rand(-best.rad, best.rad), y: best.y + rand(-best.rad, best.rad), vx: 0, vy: -rand(40, 110), life: .6, max: .6, r: rand(3, 6), c: '#7fffa0', drag: 1.5 });
+          }
+        }
+        if (e.life > 16) e.mode = 'leave';
+      } else e.y += 140 * dt;
+      break;
+    case 'captain': {
+      if (e.mode === 'enter') { e.y += 90 * dt; if (e.y >= e.stopY) { e.mode = 'hover'; e.life = 0; e.bx = e.x; } }
+      else {
+        e.life += dt; e.x = clamp(e.bx + Math.sin(e.life * .7) * 380, 120, W - 120);
+        const fury = e.hp < e.maxHp * .5; e.shootT -= dt * (fury ? 1.5 : 1);
+        if (e.shootT <= 0) {
+          e.shootT = 1.8; e.pat = (e.pat + 1) % 3; const sg = G.stage.id;
+          if (e.pat === 0) fanAimed(e.x, e.y, 5 + sg, .9 + sg * .1, 250);
+          else if (e.pat === 1) ring(e.x, e.y, 14 + sg * 2, 190, e.life);
+          else { fanAimed(e.x, e.y, 3, .5, 330); G.timers.push({ t: .3, fn: () => { if (!e.dead) fanAimed(e.x, e.y, 3, .5, 330); } }); G.timers.push({ t: .6, fn: () => { if (!e.dead) fanAimed(e.x, e.y, 3, .5, 330); } }); }
+          Snd.play('enemyShoot', { pan: Snd.panX(e.x) });
+        }
+      }
+      break;
+    }
+    case 'shield':
     case 'shooter':
     case 'tank': {
       const tk = e.type === 'tank';
@@ -129,7 +167,7 @@ function updateEnemy(e, dt) {
   // contato com o jogador
   if (!e.dead && Math.hypot(p.x - e.x, p.y - e.y) < e.rad + 12) {
     hurtPlayer(e.type === 'kami' ? 2 : 1);
-    if (e.type !== 'tank') { killEnemy(e, false); }
+    if (e.type !== 'tank' && e.type !== 'captain') { killEnemy(e, false); }
   }
 }
 
@@ -142,7 +180,7 @@ function mineBlast(e) {
 function killEnemy(e, byPlayer) {
   if (e.dead && e.counted) return;
   e.dead = true; e.counted = true;
-  const big = e.type === 'tank';
+  const big = e.type === 'tank' || e.type === 'captain';
   burst(e.x, e.y, [e.glow, '#ffe9a8', '#ffffff', '#b98cff'], big ? 40 : 26, big ? 380 : 300, 6);
   shockwave(e.x, e.y, big ? 150 : 90, e.glow);
   Snd.play('explode', { size: big ? 1.6 : .8, pan: Snd.panX(e.x) });
@@ -158,6 +196,12 @@ function killEnemy(e, byPlayer) {
   const pl = G.player;
   if (Math.random() < e.coin * pl.coinMul) dropPickup('coin', e.x, e.y, big ? 6 : 1 + (Math.random() < .15 ? 1 : 0));
   if (big) { for (let i = 0; i < 3; i++) dropPickup('coin', e.x + rand(-30, 30), e.y + rand(-20, 20), 2); }
+  if (e.type === 'captain') {
+    for (let i = 0; i < 8; i++) dropPickup('coin', e.x + rand(-60, 60), e.y + rand(-40, 40), 3);
+    dropPickup('heart', e.x, e.y, 1); G.stats.minis = (G.stats.minis || 0) + 1; G.hitstop = Math.max(G.hitstop || 0, .12);
+    for (let i = 0; i < 3; i++) shockwave(e.x, e.y, 200 + i * 110, i % 2 ? '#ffe9a8' : e.glow); flashScreen(.3); shake(14);
+    for (const q of G.eb) q.dead = true;
+  }
   if ((big && Math.random() < .35) || (!big && Math.random() < .012)) dropPickup('heart', e.x, e.y, 1);
 }
 

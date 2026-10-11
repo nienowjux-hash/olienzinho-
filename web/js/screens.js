@@ -568,12 +568,12 @@ const Screens = {
       txt('GUARDIÃO  DAS  ESTRELAS', X0 + 4, Y0 + 46, 22, '#ffb340', 'left', 800); ctx.globalAlpha = 1;
     }
     // menu em texto, com marcador dourado
-    const items = [['play', 'JOGAR', 330, 46, ''], ['shop', 'LOJA', 412, 30, '★ ' + Save.data.coins], ['opt', 'OPÇÕES', 462, 30, '']];
+    const items = [['play', 'JOGAR', 318, 46, ''], ['endless', 'MODO INFINITO', 390, 30, 'onda ' + (Save.data.bestWave || 0)], ['rank', 'RANKING', 436, 30, ''], ['shop', 'LOJA', 482, 30, '★ ' + Save.data.coins], ['opt', 'OPÇÕES', 528, 30, '']];
     if (tt >= 3) {
       items.forEach(([id, label, y, size, sub], i) => {
         const f = UI.focus(id), e = easeBack((tt - 3 - i * .12) / .45), w = size > 40 ? 300 : 230;
         if (UI.hit(id, X0 - 30, y - 8, w + 60, size + 22, { sound: id === 'play' ? 'uiSelect' : 'uiSelect' })) {
-          if (id === 'play') Game.goSelect(); else if (id === 'shop') { G.shopBack = 'title'; G.state = 'shop'; } else { G.setBack = 'title'; G.state = 'settings'; }
+          if (id === 'play') Game.goSelect(); else if (id === 'endless') Game.startEndless(); else if (id === 'rank') G.state = 'rank'; else if (id === 'shop') { G.shopBack = 'title'; G.state = 'shop'; } else { G.setBack = 'title'; G.state = 'settings'; }
         }
         G.mf = G.mf || {}; G.mf[id] = lerp(G.mf[id] || 0, f ? 1 : 0, .18);
         const k = G.mf[id];
@@ -808,8 +808,28 @@ const Screens = {
     if (UI.button('shop', 660, 570, 280, 62, 'LOJA', { size: 24, sub: this.stars() })) { G.shopBack = 'clear'; G.state = 'shop'; }
   },
 
+  rank() {
+    txt('RANKING', W / 2, 36, 56, '#fff', 'center'); txt('Modo Infinito  •  melhor onda: ' + (Save.data.bestWave || 0), W / 2, 112, 20, '#ffb340', 'center', 800);
+    UI.panel(280, 160, 720, 400);
+    const rk = Save.data.rank || [];
+    txt('#', 320, 176, 16, '#8a7fb0', 'left', 800); txt('PONTOS', 380, 176, 16, '#8a7fb0', 'left', 800); txt('ONDA', 640, 176, 16, '#8a7fb0', 'left', 800); txt('INIMIGOS', 740, 176, 16, '#8a7fb0', 'left', 800); txt('DATA', 960, 176, 16, '#8a7fb0', 'right', 800);
+    if (!rk.length) txt('Ninguém no ranking ainda. Que tal tentar o Modo Infinito?', W / 2, 340, 22, '#cdb8ff', 'center', 700);
+    rk.forEach((e, i) => { const y = 206 + i * 34, c = i === 0 ? '#ffd36a' : i < 3 ? '#e2d4ff' : '#cdb8ff'; txt(String(i + 1), 320, y, 22, c, 'left', 900); txt(String(e.score), 380, y, 22, '#fff', 'left'); txt(String(e.wave), 640, y, 22, c); txt(String(e.kills), 740, y, 22, c); txt(e.d || '', 960, y + 3, 16, '#8a7fb0', 'right', 700); });
+    if (UI.button('back', W / 2 - 160, 600, 320, 58, 'VOLTAR', { size: 24 }) || Input.pressed('escape')) { Snd.play('uiBack'); Game.goTitle(); }
+  },
+
   over() {
     const r = G.result; this.dim(.75);
+    if (G.endless) {
+      txt('FIM DA LINHA', W / 2, 90, 74, '#ffb340', 'center');
+      txt(G.rankPos <= 10 && G.rankPos > 0 ? 'Você entrou no ranking: ' + G.rankPos + 'º lugar!' : 'O Vazio venceu desta vez.', W / 2, 180, 24, '#cdb8ff', 'center', 700);
+      UI.panel(400, 230, 480, 230);
+      [['Onda alcançada', String(r.wave)], ['Pontuação', r.score + ' pts'], ['Inimigos derrotados', String(r.kills)], ['Estrelas guardadas', '★ ' + r.coins]].forEach(([a, b], i) => { txt(a, 436, 256 + i * 46, 22, '#cdb8ff', 'left', 700); txt(b, 844, 254 + i * 46, 26, i > 2 ? '#ffcf6b' : '#fff', 'right'); });
+      if (UI.button('retry', 300, 500, 300, 62, 'TENTAR DE NOVO', { size: 24, color: '#9a63ff' })) Game.startEndless();
+      if (UI.button('rk', 620, 500, 180, 62, 'RANKING', { size: 22 })) G.state = 'rank';
+      if (UI.button('menu', 820, 500, 160, 62, 'MENU', { size: 22 })) Game.goTitle();
+      return;
+    }
     txt('NAVE DESTRUÍDA', W / 2, 100, 74, '#ff7ac8', 'center');
     txt('O Olienzinho vai tentar de novo.', W / 2, 190, 24, '#cdb8ff', 'center', 700);
     UI.panel(400, 240, 480, 190);

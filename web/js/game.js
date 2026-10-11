@@ -55,7 +55,7 @@ const Game = {
     World.setStage(G.stage.pal); Events.reset(G.stage);
     G.player = newPlayer();
     { const ld = Save.data.loadout; G.player.weapon = Save.data.owned.weapons[ld.weapon] ? ld.weapon : 'violet'; }
-    G.stats = { hits: 0, bossHit: 0, maxCombo: 0 }; G.timers = []; G.hitstop = 0; G.mega = null;
+    G.stats = { hits: 0, bossHit: 0, maxCombo: 0, minis: 0 }; G.timers = []; G.hitstop = 0; G.mega = null; G.miniDone = false; G.endless = false;
     recalcStats(G.player); G.player.hp = G.player.maxHp;
     Events.banner = { t: 0, title: G.stage.name.toUpperCase(), sub: 'FASE ' + (idx + 1), c: G.stage.tint };
     G.finisher = null; G.cut = null; G.story = null;
@@ -88,12 +88,70 @@ const Game = {
   endRunSave(bonus = 0, cleared = false) {
     const d = Save.data;
     d.coins += G.runCoins + bonus;
+    if (G.endless) { G.rankPos = this.addRank(); Save.save(); return; }
     const prev = d.best[G.stageIdx] || 0; if (G.score > prev) d.best[G.stageIdx] = G.score;
     if (cleared) { d.unlocked = Math.max(d.unlocked, Math.min(STAGES.length, G.stageIdx + 2)); d.cleared[G.stageIdx] = true; }
     Save.save();
   },
 
-  quitRun() { this.endRunSave(0, false); this.goSelect(); },
+  quitRun() { this.endRunSave(0, false); if (G.endless) this.goTitle(); else this.goSelect(); },
+
+  // ---------- modo infinito ----------
+  startEndless() {
+    this.startStage(0, { skipStory: true });
+    G.endless = true; G.wave = 1; G.waveT = 0; G.waveMini = false; G.biome = 0;
+    G.stage = { ...STAGES[0], duration: 1e9, events: [] }; Events.reset(null);
+    Events.banner = { t: 0, title: 'MODO INFINITO', sub: 'ONDA 1', c: '#ffb340' };
+    G.state = 'play'; Snd.musicPlay(G.stage.music, 1);
+  },
+  setBiome(b) {
+    G.biome = b; G.stageIdx = b; G.stage = { ...STAGES[b], duration: 1e9, events: [] };
+    World.setStage(G.stage.pal); Snd.musicPlay(G.stage.music, 1);
+  },
+  nextWave() {
+    G.wave++; G.waveT = 0; G.waveMini = false; G.bossPending = false;
+    Save.data.bestWave = Math.max(Save.data.bestWave || 0, G.wave);
+    const b = Math.floor((G.wave - 1) / 5) % 4; if (b !== G.biome) this.setBiome(b);
+    Events.banner = { t: 0, title: 'ONDA ' + G.wave, sub: STAGES[G.biome].name, c: STAGES[G.biome].tint };
+  },
+  addRank() {
+    const d = Save.data; d.rank = d.rank || [];
+    const ent = { score: G.score, wave: G.wave, kills: G.kills, d: new Date().toLocaleDateString('pt-BR') };
+    d.rank.push(ent); d.rank.sort((a, b) => b.score - a.score); d.rank = d.rank.slice(0, 10);
+    d.bestWave = Math.max(d.bestWave || 0, G.wave);
+    return d.rank.indexOf(ent) + 1;
+  },
+  endlessDirector(dt) {
+    const st = G.stage;
+    if (G.boss) return;
+    if (G.bossPending) {
+      G.bossPendingT -= dt;
+      if (G.bossPendingT <= 0) {
+        G.bossPending = false; G.boss = new BOSS_CLASSES[st.boss](); const k = 1 + (G.wave / 5 - 1) * .3; G.boss.maxHp = G.boss.hp = Math.round(G.boss.maxHp * k);
+        Snd.play('impact'); Snd.musicPlay(st.bossMusic, 2); G.bossShown = 0;
+      }
+      return;
+    }
+    G.waveT += dt;
+    if (G.waveT >= 28) {
+      if (G.wave % 5 === 0) { // chefe no fim de cada 5 ondas
+        G.bossPending = true; G.bossPendingT = 3.2; World.boost = .6; Snd.musicStop();
+        Events.banner = { t: 0, title: 'CHEFE APROXIMANDO', sub: st.bossName, c: '#ff8a5f' }; Snd.play('bossWarn'); return;
+      }
+      this.nextWave(); return;
+    }
+    if (!G.waveMini && G.wave % 5 === 3 && G.waveT > 10) {
+      G.waveMini = true; spawnEnemy('captain', rand(300, W - 300), -80);
+      Events.banner = { t: 0, title: 'MINICHEFE', sub: CAPTAINS[G.biome % 4], c: '#ff8a5f' }; Snd.play('bossWarn');
+    }
+    const w = G.wave, pool = { drone: 3, zig: 2 };
+    if (w >= 2) { pool.kami = 2; pool.shooter = 1; }
+    if (w >= 3) { pool.mine = 1; pool.bit = 1; pool.shield = 1; }
+    if (w >= 4) pool.healer = 1;
+    if (w >= 5) pool.tank = 1;
+    G.spawnT -= dt;
+    if (G.spawnT <= 0) { G.spawnT = Math.max(.4, 1.1 - w * .045) * 1.4 * rand(.85, 1.2); this.spawnWave(pool); }
+  },
 
   playerDied() {
     const p = G.player; p.dead = true;
@@ -105,6 +163,11 @@ const Game = {
   },
 
   bossDefeated() {
+    if (G.endless) { // no infinito o jogo segue
+      G.player.mood = 'happy'; G.player.moodT = 3; for (const k of G.pickups) k.mag = true;
+      G.player.hp = Math.min(G.player.maxHp, G.player.hp + 2); Snd.play('stinger'); flashScreen(.4);
+      this.nextWave(); Snd.musicPlay(G.stage.music, 1); return;
+    }
     G.player.mood = 'happy'; G.player.moodT = 9;
     G.bossDone = true; G.clearT = 0; G.finisher = null;
     for (const k of G.pickups) k.mag = true;
@@ -129,7 +192,8 @@ const Game = {
     this.endRunSave(0, false);
     G.result = { coins: G.runCoins, score: G.score, kills: G.kills, level: G.level };
     const toOver = () => { G.state = 'over'; Snd.play('gameOver'); };
-    if (this.noStory) { toOver(); return; }
+    if (G.endless) G.result.wave = G.wave;
+    if (this.noStory || G.endless) { toOver(); return; }
     // o vilao (o chefe da fase ou o Vazio) fala com o jogador
     const D = STORY.defeat, inBoss = !!G.boss, bc = ['C', 'P', 'E', 'S'][G.stageIdx];
     const pages = [{ music: 'sad' },
@@ -169,7 +233,7 @@ const Game = {
   wpick(pool) { const e = Object.entries(pool), tot = e.reduce((a, [, w]) => a + w, 0); let r = Math.random() * tot; for (const [k, w] of e) { r -= w; if (r <= 0) return k; } return e[0][0]; },
 
   spawnWave(pool) {
-    if (G.enemies.length > 13) return;
+    if (G.enemies.length > 13 + (G.endless ? Math.min(6, (G.wave / 2) | 0) : 0)) return;
     const type = this.wpick(pool), m = 70;
     const rx = () => rand(m, W - m);
     switch (type) {
@@ -184,12 +248,15 @@ const Game = {
       case 'kami': { const n = randi(1, 2); for (let i = 0; i < n; i++) spawnEnemy('kami', rx(), -30 - i * 50); break; }
       case 'shooter': { const n = 1; for (let i = 0; i < n; i++) spawnEnemy('shooter', rx(), -30 - i * 60); break; }
       case 'tank': spawnEnemy('tank', rand(250, W - 250), -60); break;
+      case 'shield': spawnEnemy('shield', rx(), -30); break;
+      case 'healer': { const x0 = rx(); spawnEnemy('healer', x0, -30); spawnEnemy('drone', clamp(x0 - 90, m, W - m), -50); spawnEnemy('drone', clamp(x0 + 90, m, W - m), -50); break; }
       case 'mine': { const n = randi(1, 2); for (let i = 0; i < n; i++) spawnEnemy('mine', rx(), -30 - i * 60); break; }
       case 'bit': { const n = randi(5, 7), x0 = rx(); for (let i = 0; i < n; i++) spawnEnemy('bit', clamp(x0 + (i % 2 ? 30 : -30), m, W - m), -30 - i * 38); break; }
     }
   },
 
   director(dt) {
+    if (G.endless) { this.endlessDirector(dt); return; }
     const st = G.stage;
     if (G.bossDone) return;
     if (G.boss || G.bossPending) {
@@ -203,6 +270,10 @@ const Game = {
       }
       return;
     }
+    if (!G.miniDone && G.t >= st.duration * .5) {
+      G.miniDone = true; spawnEnemy('captain', rand(300, W - 300), -80);
+      Events.banner = { t: 0, title: 'MINICHEFE', sub: CAPTAINS[G.stageIdx % 4], c: '#ff8a5f' }; Snd.play('bossWarn');
+    }
     if (G.t >= st.duration) {
       G.bossPending = true; G.bossPendingT = 3.2;
       Events.cancel(); World.boost = .6; Snd.musicStop();
@@ -210,7 +281,9 @@ const Game = {
       Snd.play('bossWarn');
       return;
     }
-    const ph = st.phases.find(p => G.t < p.until) || st.phases[st.phases.length - 1];
+    const ph0 = st.phases.find(p => G.t < p.until) || st.phases[st.phases.length - 1], fr = G.t / st.duration;
+    const ph = { every: ph0.every, pool: { ...ph0.pool } };
+    if (fr > .55) { ph.pool.shield = G.stageIdx >= 1 ? 1 : .5; if (G.stageIdx >= 2) ph.pool.healer = 1; }
     const ev = Events.active;
     const slow = ev === 'rain' || ev === 'storm' || ev === 'flare' ? 1.7 : ev === 'worm' ? 3 : ev === 'mines' ? 1.4 : 1;
     G.spawnT -= dt;
@@ -332,6 +405,10 @@ const Game = {
     for (const k of G.pickups) Art.pickup(k);
     if (G.boss) { const b = G.boss, br = 1 + Math.sin(b.t * 2) * .012; ctx.save(); ctx.translate(b.shx || 0, b.shy || 0); ctx.translate(b.x, b.y); ctx.scale(br, br); ctx.translate(-b.x, -b.y); b.draw(); ctx.restore(); }
     for (const e of G.enemies) Art.enemy(e);
+    for (const e of G.enemies) {
+      if (e.healFx > 0 && e.healTo && !e.healTo.dead) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = '#7fffa0'; ctx.globalAlpha = e.healFx * 2; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(e.x, e.y); ctx.lineTo(e.healTo.x, e.healTo.y); ctx.stroke(); ctx.restore(); }
+      if (e.mini && e.mode !== 'enter') { const bw = 120, bx = e.x - bw / 2, by = e.y - e.rad - 26; ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.beginPath(); ctx.roundRect(bx - 2, by - 2, bw + 4, 12, 6); ctx.fill(); ctx.fillStyle = e.glow; ctx.beginPath(); ctx.roundRect(bx, by, Math.max(6, bw * clamp(e.hp / e.maxHp, 0, 1)), 8, 4); ctx.fill(); txt(e.name, e.x, by - 20, 15, '#ffe9a8', 'center', 800); }
+    }
     for (const b of G.pb) Art.pbullet(b);
     this.drawBeams();
     for (const b of G.eb) Art.ebullet(b);
@@ -517,6 +594,11 @@ const Game = {
       const g = ctx.createLinearGradient(x, 0, x + w, 0); g.addColorStop(0, '#ff5a3c'); g.addColorStop(1, '#ffb340');
       ctx.fillStyle = g; ctx.beginPath(); ctx.roundRect(x, y, Math.max(8, w * b.ratio), 14, 7); ctx.fill();
       ctx.strokeStyle = 'rgba(255,255,255,.4)'; ctx.lineWidth = 2; for (const f of [.33, .66]) { ctx.beginPath(); ctx.moveTo(x + w * f, y); ctx.lineTo(x + w * f, y + 14); ctx.stroke(); }
+    } else if (G.endless && !G.boss) {
+      const w = 420, x = W / 2 - w / 2, y = 30, k = clamp(G.waveT / 28, 0, 1);
+      txt(G.bossPending ? 'CHEFE CHEGANDO!' : 'ONDA ' + G.wave + (G.wave % 5 === 0 ? '  •  CHEFE NO FIM' : ''), W / 2, 8, 15, '#e2d4ff', 'center', 800);
+      ctx.fillStyle = 'rgba(255,255,255,.14)'; ctx.beginPath(); ctx.roundRect(x, y, w, 8, 4); ctx.fill();
+      ctx.fillStyle = '#ffb340'; ctx.beginPath(); ctx.roundRect(x, y, Math.max(6, w * k), 8, 4); ctx.fill();
     } else if (!G.boss && !G.bossDone) {
       const w = 420, x = W / 2 - w / 2, y = 30, k = clamp(G.t / st.duration, 0, 1);
       txt(G.bossPending ? 'CHEFE CHEGANDO!' : st.name.toUpperCase(), W / 2, 8, 15, '#e2d4ff', 'center', 800);

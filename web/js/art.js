@@ -103,6 +103,31 @@ const Art = {
         ctx.fillStyle = '#ffe9a8'; for (const s of [-1, 1]) { ctx.beginPath(); ctx.arc(s * r * .25, r * .05, 3, 0, 7); ctx.fill(); }
         break;
       }
+      case 'shield': {
+        this.ball(r * .85, '#bff0ff', '#2b7bff', hit); this.visor(r * .85, '#10265a', e.look || 0);
+        if (e.shield > 0) {
+          const k = e.shield / (e.maxShield || 1);
+          ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = '#7fe0ff'; ctx.lineWidth = 6; ctx.globalAlpha = .35 + k * .55 + Math.sin(t * 8) * .08;
+          ctx.beginPath(); ctx.arc(0, 0, r * 1.45, .15, Math.PI - .15); ctx.stroke(); ctx.lineWidth = 2; ctx.globalAlpha *= .6; ctx.beginPath(); ctx.arc(0, 0, r * 1.62, .25, Math.PI - .25); ctx.stroke(); ctx.restore();
+        }
+        break;
+      }
+      case 'healer': {
+        this.ball(r, '#d8ffe4', '#2fb865', hit); this.visor(r, '#0f4a2a', e.look || 0);
+        ctx.fillStyle = '#fff'; ctx.globalAlpha = .9; const cr = r * .28 + Math.sin(t * 4) * 1.5; ctx.fillRect(-cr * .35, -r - cr - 4, cr * .7, cr * 2); ctx.fillRect(-cr, -r - 4 - cr * .35 + cr * .0, cr * 2, cr * .7); ctx.globalAlpha = 1;
+        ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = '#7fffa0'; ctx.globalAlpha = .4 + Math.sin(t * 3) * .2; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(0, 0, r * 1.5 + Math.sin(t * 3) * 3, 0, 7); ctx.stroke(); ctx.restore();
+        break;
+      }
+      case 'captain': {
+        const c = e.glow || '#ff5a3c';
+        ctx.rotate(Math.sin(t * 1.2) * .04);
+        for (const s of [-1, 1]) { ctx.fillStyle = '#2a1040'; ctx.beginPath(); ctx.roundRect(s * r * .9 - 9, -r * .2, 18, r * 1.1, 6); ctx.fill(); ctx.fillStyle = c; ctx.beginPath(); ctx.arc(s * r * .9, r * .95, 8, 0, 7); ctx.fill(); }
+        this.ball(r, '#ffd0c0', c, hit);
+        ctx.strokeStyle = 'rgba(60,10,20,.55)'; ctx.lineWidth = 5; for (const a of [-.9, 0, .9]) { ctx.beginPath(); ctx.arc(0, 0, r * .96, -Math.PI / 2 + a - .22, -Math.PI / 2 + a + .22); ctx.stroke(); }
+        this.visor(r, '#2a0f1e', e.look || 0);
+        ctx.fillStyle = '#ffe9a8'; ctx.beginPath(); ctx.moveTo(-r * .5, -r * .55); ctx.lineTo(0, -r * 1.25); ctx.lineTo(r * .5, -r * .55); ctx.closePath(); ctx.fill();
+        break;
+      }
       case 'shooter': {
         this.ball(r, '#ff9ad0', '#c2185b', hit); this.visor(r, '#ffd6e8', e.look || 0);
         ctx.save(); ctx.rotate(e.aim || Math.PI / 2); ctx.fillStyle = '#4a1060';

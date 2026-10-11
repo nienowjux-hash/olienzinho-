@@ -390,7 +390,7 @@ const Screens = {
       ctx.fillStyle = '#ffb340'; const lw = 560 * k; ctx.fillRect(-lw / 2, -112, lw, 3); ctx.fillRect(-lw / 2, 62, lw, 3);
       ctx.globalAlpha = clamp((S.t - .25) / .5, 0, 1); txt(pg.title.split('').join(' '), 0, -96, 28, '#ffb340', 'center', 900);
       const sk = 1 + (1 - easeOut((S.t - .6) / 1)) * .12;
-      ctx.globalAlpha = clamp((S.t - .6) / .7, 0, 1); ctx.save(); ctx.scale(sk, sk); ctx.shadowColor = '#8b4dff'; ctx.shadowBlur = 40; txt(pg.sub, 0, -56, pg.sub.length > 16 ? 70 : 84, '#ffffff', 'center', 900); ctx.restore();
+      ctx.globalAlpha = clamp((S.t - .6) / .7, 0, 1); ctx.save(); ctx.scale(sk, sk); ctx.shadowColor = '#8b4dff'; ctx.shadowBlur = 40; txt(pg.sub, 0, -56, Math.min(pg.sub.length > 16 ? 70 : 84, 1100 / (pg.sub.length * .64)), '#ffffff', 'center', 900); ctx.restore();
       ctx.globalAlpha = 1; ctx.save(); ctx.globalCompositeOperation = 'lighter'; const sw = (S.t * .5) % 1.6 - .3; drawGlow(-300 + sw * 600, -4, 160, '#ffe9a8', .5 * k); ctx.restore(); ctx.globalAlpha = 1;
       if (S.t > 2) { ctx.globalAlpha = .5 + .4 * Math.sin(t * 5); txt('clique ou ENTER para continuar', 0, 100, 17, '#cdb8ff', 'center', 700); ctx.globalAlpha = 1; }
       ctx.restore();

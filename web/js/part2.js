@@ -267,7 +267,7 @@ const CREDITS = [
   ['h', 'OLIENZINHO'], ['s', 'GUARDIÃO DAS ESTRELAS'], ['', ''],
   ['r', 'Uma produção'], ['h2', 'OLIEN DIGITAL'], ['', ''],
   ['r', 'Ideia e direção'], ['h2', 'Olien Digital'], ['', ''],
-  ['r', 'Programação, arte, animação e roteiro'], ['h2', 'Feito com Claude, da Anthropic'], ['', ''],
+  ['r', 'Programação, arte, animação e roteiro'], ['h2', 'Equipe Olien Digital'], ['', ''],
   ['r', 'Música e efeitos sonoros'], ['h2', 'Sintetizados em tempo real, sem arquivos de áudio'], ['', ''],
   ['r', 'Personagens'], ['h2', 'Olienzinho'], ['h2', 'Orbi'], ['h2', 'Mestra Lumi'], ['h2', 'Colmeia, Pétreo, Vigia e Solaris'], ['h2', 'O Eco'], ['h2', 'O Vazio'], ['', ''],
   ['r', 'Agradecimento especial'], ['h2', 'A você, que acendeu as estrelas'], ['', ''], ['', ''],

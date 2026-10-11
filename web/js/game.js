@@ -208,7 +208,7 @@ const Game = {
     for (const k of G.pickups) updatePickup(k, dt);
 
     // fx
-    for (const q of G.parts) { q.life -= dt; q.x += q.vx * dt; q.y += q.vy * dt; const d = Math.max(0, 1 - q.drag * dt); q.vx *= d; q.vy *= d; }
+    for (const q of G.parts) { q.life -= dt; if (q.k === 'debris') { q.rot += q.vr * dt; q.vy += 380 * dt; } q.x += q.vx * dt; q.y += q.vy * dt; const d = Math.max(0, 1 - q.drag * dt); q.vx *= d; q.vy *= d; }
     for (const r of G.rings) { r.r += (r.max - r.r) * Math.min(1, 7 * dt) + 20 * dt; r.life -= dt * 2.2; }
     for (const o of G.pops) { o.y -= 50 * dt; o.life -= dt * 1.2; }
     G.enemies = G.enemies.filter(e => !e.dead); G.pb = G.pb.filter(b => !b.dead); G.eb = G.eb.filter(b => !b.dead);
@@ -260,7 +260,7 @@ const Game = {
     World.draw(cx);
     Events.drawHazards();
     for (const k of G.pickups) Art.pickup(k);
-    if (G.boss) { const b = G.boss, br = 1 + Math.sin(b.t * 2) * .012; ctx.save(); ctx.translate(b.x, b.y); ctx.scale(br, br); ctx.translate(-b.x, -b.y); b.draw(); ctx.restore(); }
+    if (G.boss) { const b = G.boss, br = 1 + Math.sin(b.t * 2) * .012; ctx.save(); ctx.translate(b.shx || 0, b.shy || 0); ctx.translate(b.x, b.y); ctx.scale(br, br); ctx.translate(-b.x, -b.y); b.draw(); ctx.restore(); }
     for (const e of G.enemies) Art.enemy(e);
     for (const b of G.pb) Art.pbullet(b);
     for (const b of G.eb) Art.ebullet(b);
@@ -278,10 +278,15 @@ const Game = {
       const k = clamp(q.life / q.max, 0, 1);
       ctx.globalAlpha = k * .4; ctx.fillStyle = q.c; ctx.beginPath(); ctx.arc(q.x, q.y, q.r * (1.6 - k * .6), 0, 7); ctx.fill();
     }
+    for (const q of G.parts) if (q.k === 'debris') {
+      ctx.save(); ctx.translate(q.x, q.y); ctx.rotate(q.rot); ctx.globalAlpha = clamp(q.life / q.max * 1.6, 0, 1);
+      ctx.fillStyle = q.c; ctx.strokeStyle = q.rim || 'rgba(255,200,120,.7)'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); for (let i = 0; i < 5; i++) { const a = i / 5 * TAU, k = q.r * (.7 + (i % 2) * .5); ctx.lineTo(Math.cos(a) * k, Math.sin(a) * k); } ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
+    }
     ctx.globalAlpha = 1;
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round';
     for (const q of G.parts) {
-      if (q.k === 'smoke') continue;
+      if (q.k === 'smoke' || q.k === 'debris') continue;
       const k = clamp(q.life / q.max, 0, 1);
       if (q.k === 'spark') { ctx.globalAlpha = k; ctx.strokeStyle = q.c; ctx.lineWidth = q.r; ctx.beginPath(); ctx.moveTo(q.x, q.y); ctx.lineTo(q.x - q.vx * .04, q.y - q.vy * .04); ctx.stroke(); }
       else if (q.k === 'flash') drawGlow(q.x, q.y, q.r * (1.3 - k * .3), q.c, k);

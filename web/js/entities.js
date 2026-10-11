@@ -33,7 +33,7 @@ const flashScreen = a => { G.flash = Math.max(G.flash, a); };
 const bulletColor = () => '#ff4a2e';
 
 function ebullet(x, y, ang, spd, o = {}) {
-  G.eb.push(Object.assign({ x, y, vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd, r: 7, c: bulletColor(), life: 9, acc: 0 }, o));
+  spd *= dif().bul; G.eb.push(Object.assign({ x, y, vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd, r: 7, c: bulletColor(), life: 9, acc: 0 }, o));
 }
 function aimAt(x, y) { return Math.atan2(G.player.y - y, G.player.x - x); }
 function fanAimed(x, y, n, spread, spd, o) {
@@ -43,6 +43,14 @@ function fanAimed(x, y, n, spread, spd, o) {
 function ring(x, y, n, spd, off = 0, o) {
   for (let i = 0; i < n; i++) ebullet(x, y, off + i / n * TAU, spd, o);
 }
+
+// ---------- dificuldade ----------
+const DIFF = [
+  { name: 'CALMO', desc: 'Inimigos mais fracos e tiros mais lentos. +2 de vida.', hp: .75, bul: .85, php: 2, score: .8, coin: 1 },
+  { name: 'NORMAL', desc: 'A experiência pensada para o jogo.', hp: 1, bul: 1, php: 0, score: 1, coin: 1 },
+  { name: 'DIFÍCIL', desc: 'Inimigos mais fortes e tiros rápidos. -1 de vida. Mais pontos e estrelas.', hp: 1.3, bul: 1.12, php: -1, score: 1.3, coin: 1.25 },
+];
+const dif = () => DIFF[Save.data.settings.diff ?? 1] || DIFF[1];
 
 // ---------- inimigos ----------
 const ENEMY_DEF = {
@@ -62,7 +70,7 @@ const CAPTAINS = ['Capitão Zangão', 'Perfuratriz', 'Para-raios', 'Sentinela So
 
 function spawnEnemy(type, x, y, o = {}) {
   const d = ENEMY_DEF[type], st = G.stage.id;
-  const mul = G.endless ? 1 + st * .2 + ((G.wave || 1) - 1) * .17 : 1 + st * .45 + (G.t / G.stage.duration) * .35;
+  const dm = dif().hp, mul = dm * (G.endless ? 1 + st * .2 + ((G.wave || 1) - 1) * .17 : 1 + st * .45 + (G.t / G.stage.duration) * .35);
   const e = {
     type, x, y, bx: x, rad: d.rad, hp: Math.max(1, Math.ceil(d.hp * mul)), spd: d.spd * (1 + st * .06),
     xp: d.xp, score: d.score, coin: d.coin, glow: d.glow, age: 0, ph: rand(0, TAU), hit: 0,
@@ -189,12 +197,15 @@ function killEnemy(e, byPlayer) {
   if (!byPlayer) return;
   G.kills++;
   G.combo = G.comboT > 0 ? G.combo + 1 : 1; G.comboT = 2.2; G.stats.maxCombo = Math.max(G.stats.maxCombo, G.combo);
-  G.score += Math.round(e.score * (1 + Math.min(G.combo, 60) * .03));
+  { const U = id => G.upCounts[id] || 0, pl2 = G.player;
+    if (U('combochg') && G.combo % 10 === 0) pl2.specCd = Math.max(0, pl2.specCd - U('combochg'));
+    if (U('vamp') && G.kills % (46 - 14 * U('vamp')) === 0 && pl2.hp < pl2.maxHp) { pl2.hp++; popup(pl2.x, pl2.y - 40, '+1', '#ff9ac0', 24); Snd.play('heart'); } }
+  G.score += Math.round(e.score * (1 + Math.min(G.combo, 60) * .03) * dif().score);
   if (big) G.hitstop = Math.max(G.hitstop || 0, .05);
   const xpv = e.xp;
   if (!xpClosed()) for (let i = 0; i < Math.min(3, xpv); i++) dropPickup('xp', e.x + rand(-14, 14), e.y + rand(-10, 10), Math.ceil(xpv / Math.min(3, xpv)));
   const pl = G.player;
-  if (Math.random() < e.coin * pl.coinMul) dropPickup('coin', e.x, e.y, big ? 6 : 1 + (Math.random() < .15 ? 1 : 0));
+  if (Math.random() < e.coin * pl.coinMul * dif().coin) dropPickup('coin', e.x, e.y, big ? 6 : 1 + (Math.random() < .15 ? 1 : 0));
   if (big) { for (let i = 0; i < 3; i++) dropPickup('coin', e.x + rand(-30, 30), e.y + rand(-20, 20), 2); }
   if (e.type === 'captain') {
     for (let i = 0; i < 8; i++) dropPickup('coin', e.x + rand(-60, 60), e.y + rand(-40, 40), 3);
@@ -205,11 +216,24 @@ function killEnemy(e, byPlayer) {
   if ((big && Math.random() < .35) || (!big && Math.random() < .012)) dropPickup('heart', e.x, e.y, 1);
 }
 
-function damageEnemy(e, dmg, crit) {
+function damageEnemy(e, dmg, crit, chained) {
   e.hp -= dmg; e.hit = .08;
   Snd.play('hit', { pan: Snd.panX(e.x) });
-  sparks(e.x + rand(-8, 8), e.y + e.rad * .4, crit ? '#ffe9a8' : '#e2d4ff', crit ? 8 : 4);
-  if (crit) popup(e.x, e.y - e.rad, Math.round(dmg * 10) / 10 + '!', '#ffe9a8', 22);
+  const p = G.player, wc = (p && WEAPONS[p.weapon] && WEAPONS[p.weapon].c) || '#e2d4ff', cc = crit ? '#ffe9a8' : wc;
+  sparks(e.x + rand(-8, 8), e.y + e.rad * .4, cc, crit ? 11 : 5, crit ? 300 : 220);
+  G.rings.push({ x: e.x + rand(-6, 6), y: e.y + e.rad * .5, r: 4, max: crit ? 52 : 30, c: cc, life: .6 });
+  if (G.pops.length < 26) popup(e.x + rand(-14, 14), e.y - e.rad, String(Math.max(1, Math.round(dmg * 10))) + (crit ? '!' : ''), crit ? '#ffe9a8' : '#ffffff', crit ? 26 : 15);
+  if (e.type !== 'tank' && !e.mini && e.mode !== 'enter') e.y -= Math.min(6, 1.5 + dmg);
+  if (crit) {
+    G.hitstop = Math.max(G.hitstop || 0, .02);
+    if (p && p.chainL && !chained) { // raio em cadeia
+      let n = 0;
+      for (const o of G.enemies) if (o !== e && !o.dead && n < 1 + p.chainL && Math.hypot(o.x - e.x, o.y - e.y) < 240) {
+        n++; G.parts.push({ k: 'bolt', x: e.x, y: e.y, x2: o.x, y2: o.y, vx: 0, vy: 0, life: .2, max: .2, r: 3, c: '#ffe9a8', drag: 1 });
+        damageEnemy(o, dmg * .45, false, true);
+      }
+    }
+  }
   if (e.hp <= 0) killEnemy(e, true);
 }
 
@@ -245,6 +269,7 @@ function hurtPlayer(dmg = 1) {
   if (p.shieldReady) {
     p.shieldReady = false; p.shieldT = p.shieldCd; p.inv = 1;
     Snd.play('shield'); shockwave(p.x, p.y, 160, '#7fe0ff'); burst(p.x, p.y, ['#7fe0ff', '#ffffff'], 20, 300, 5); shake(5);
+    { const rf = G.upCounts.reflect || 0; if (rf) { const n = 14 + rf * 8; for (let i = 0; i < n; i++) { const a = i / n * TAU; G.pb.push({ x: p.x, y: p.y, vx: Math.cos(a) * 640, vy: Math.sin(a) * 640, dmg: p.dmg * 2.2, crit: false, pierce: 1, hits: [], c: '#7fe0ff', life: 1 }); } shockwave(p.x, p.y, 320, '#ffffff'); } }
     return;
   }
   p.hp -= dmg; p.inv = 1.4; G.hurtFlash = .35; p.mood = 'hurt'; p.moodT = .7; G.hitstop = Math.max(G.hitstop || 0, .08);
@@ -321,6 +346,7 @@ function updatePlayerWeapons(dt) {
       if (b.kind === 'cannon') G.parts.push({ x: b.x, y: b.y + 14, vx: rand(-20, 20), vy: rand(40, 100), life: .3, max: .3, r: rand(5, 9), c: '#ff9a4a', drag: 2 });
     }
     b.x += b.vx * dt; b.y += b.vy * dt;
+    if (b.bounce > 0 && ((b.x < 12 && b.vx < 0) || (b.x > W - 12 && b.vx > 0))) { b.vx *= -1; b.bounce--; sparks(b.x, b.y, b.c, 5); }
     if (b.y < -60 || b.y > H + 60 || b.x < -60 || b.x > W + 60) { b.dead = true; continue; }
     for (const e of G.enemies) {
       if (e.dead || b.hits.includes(e)) continue;

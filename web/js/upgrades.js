@@ -23,6 +23,12 @@ const RUN_UPGRADES = [
   { id: 'pierce', name: 'Tiro Perfurante', r: 'raro', max: 3, desc: 'Tiros atravessam +1 inimigo.' },
   { id: 'crit', name: 'Mira Crítica', r: 'raro', max: 5, desc: '+8% de chance de crítico (dano x2).' },
   { id: 'shield', name: 'Escudo de Energia', r: 'raro', max: 3, desc: 'Absorve 1 golpe. Recarrega sozinho.' },
+  { id: 'ricochet', name: 'Tiro Ricochete', r: 'raro', max: 3, desc: 'Os tiros quicam nas paredes laterais (+1 quique por nível).' },
+  { id: 'chain', name: 'Relâmpago em Cadeia', r: 'raro', max: 3, desc: 'Críticos soltam um raio que salta para inimigos próximos.' },
+  { id: 'combochg', name: 'Combo Energizado', r: 'raro', max: 3, desc: 'A cada 10 de combo, o especial recarrega 1s mais rápido.' },
+  { id: 'reflect', name: 'Escudo Refletor', r: 'epico', max: 2, desc: 'Quando o escudo absorve um golpe, solta uma onda de tiros.', cond: () => (G.upCounts.shield || 0) > 0 },
+  { id: 'vamp', name: 'Sede de Luz', r: 'epico', max: 2, desc: 'Derrotar inimigos cura você de vez em quando.' },
+  { id: 'overdrive', name: 'Sobrecarga', r: 'epico', max: 1, desc: 'Com 2 de vida ou menos: tiros 80% mais rápidos e +50% de dano.' },
   { id: 'missile', name: 'Mísseis Teleguiados', r: 'epico', max: 4, desc: 'Dispara mísseis que perseguem e explodem em área. +1 míssil por nível.' },
   { id: 'orbit', name: 'Drones Orbitais', r: 'epico', max: 4, desc: 'Drones giram ao seu redor e destroem tudo.' },
 ];

@@ -455,7 +455,7 @@ const Snd = (() => {
   });
   THEMES.triumph = Object.assign({}, THEMES.heroic, { bpm: 100, root: 64, flair: 'bells' });
   THEMES.defeat = Object.assign({}, THEMES.sad, { bpm: 50 });
-  const mus = { on: false, key: null, th: null, inten: 0, step: 0, next: 0, timer: null };
+  const mus = { on: false, key: null, th: null, inten: 0, step: 0, next: 0, timer: null, lay: { combo: 0, danger: 0 } };
   let pending = null;
 
   const noteOf = (th, d) => { const n = th.scale.length; return th.root + th.scale[((d % n) + n) % n] + 12 * Math.floor(d / n); };
@@ -571,6 +571,22 @@ const Snd = (() => {
       if (th.flair === 'thunder' && s === 0 && bar % 4 === 0) noiseV(t, 1.8, .15, { type: 'lowpass', f0: 260, f1: 60, a: .06, bus: musBus, rev: .4 });
       if (th.flair === 'fanfare' && (s === 0 || s === 10)) chord.forEach(m => voice('sawtooth', mtof(m), mtof(m), t, sd * 2.4, .02, { bus: musBus, lp: 1800, a: .02, rev: .3 }));
     } else if (inten === 0 && s % 8 === 4) pluck(chord[(s / 8 | 0) % 3] + 24, t, sd * 6, .012);
+
+    // camadas dinamicas: combo alto deixa a musica mais cheia; vida baixa traz tensao
+    const L = mus.lay;
+    if (inten >= 1 && L.combo >= 1) {
+      if (s % 2 === 0) pluck(chord[(s / 2 | 0) % 3] + 24 + (s % 4 === 0 ? 0 : 12), t, sd * 2, .017);
+      if (L.combo >= 2) {
+        if (s % 4 === 2) noiseV(t, .05, .022, { type: 'bandpass', f0: 7000, q: 1, bus: musBus });
+        if (s % 8 === 4) snare(t, .05);
+        if (s % 8 === 0) voice('sawtooth', mtof(chord[2] + 12), mtof(chord[2] + 12), t, sd * 6, .018, { bus: musBus, lp: 2200, a: .02, rev: .3 });
+      }
+    }
+    if (inten >= 1 && L.danger) {
+      if (s === 0 || s === 6) voice('sine', 64, 38, t, .28, .2, { bus: musBus });
+      if (s === 1 || s === 7) voice('sine', 58, 36, t, .22, .1, { bus: musBus });
+      if (s === 0) voice('sawtooth', mtof(chord[0] - 12 + 6), mtof(chord[0] - 12 + 6), t, sd * 16, .013, { bus: musBus, lp: 600, a: .3 });
+    }
   }
 
   function tick() {
@@ -588,7 +604,7 @@ const Snd = (() => {
     pending = null;
     if (mus.on && mus.key === key) { mus.inten = inten; return; }
     musicStop(true);
-    mus.key = key; mus.th = THEMES[key] || THEMES.s1; mus.inten = inten;
+    mus.key = key; mus.th = THEMES[key] || THEMES.s1; mus.inten = inten; mus.lay = { combo: 0, danger: 0 };
     mus.step = 0; mus.next = now() + .08; mus.on = true;
     const t = now();
     musBus.gain.cancelScheduledValues(t);
@@ -598,6 +614,7 @@ const Snd = (() => {
     mus.timer = setInterval(tick, 40);
   }
   function setIntensity(i) { mus.inten = i; }
+  function setLayers(c, d) { mus.lay.combo = c; mus.lay.danger = d; }
   function musicStop(fast) {
     pending = null;
     if (!mus.on) return;
@@ -621,5 +638,5 @@ const Snd = (() => {
     let p = 0; for (const v of b) p = Math.max(p, Math.abs(v)); return p;
   }
 
-  return { get track() { return mus.on ? mus.key : null; }, init, play, panX, musicPlay, musicStop, setIntensity, setVolumes, peak, duck, get ready() { return !!ac; }, get state() { return ac && ac.state; } };
+  return { get track() { return mus.on ? mus.key : null; }, init, play, panX, musicPlay, musicStop, setIntensity, setLayers, setVolumes, peak, duck, get ready() { return !!ac; }, get state() { return ac && ac.state; } };
 })();

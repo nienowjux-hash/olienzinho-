@@ -664,7 +664,7 @@ const Screens = {
     ctx.beginPath(); STAGES.forEach((s, i) => { const [x, y] = pos(i); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.stroke(); ctx.restore();
     STAGES.forEach((s, i) => {
       const [x, y0] = pos(i), locked = i >= unlocked, sel = i === G.sel, y = y0 + (sel ? Math.sin(t * 3) * 5 : 0), R = sel ? 62 : 52;
-      if (UI.hit('stage' + i, x - R, y - R, R * 2, R * 2, { disabled: false })) { if (!locked) { Game.startStage(i); return; } Snd.play('uiDeny'); }
+      if (UI.hit('stage' + i, x - R, y - R, R * 2, R * 2, { disabled: false })) { if (!locked) { Game.enter(i); return; } Snd.play('uiDeny'); }
       if (UI.focus('stage' + i) && G.sel !== i) { G.sel = i; World.setStage(STAGES[i].pal); }
       ctx.save(); ctx.translate(x, y);
       ctx.globalCompositeOperation = 'lighter'; drawGlow(0, 0, R * 2.2, locked ? '#5a4a90' : s.tint, sel ? .55 : .3); ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
@@ -688,7 +688,7 @@ const Screens = {
     UI.wrap(locked ? 'Derrote o chefe da fase anterior para desbloquear.' : s.desc, 176, 454, 560, 26, 21, '#cdb8ff');
     txt('CHEFE', 800, 380, 18, '#ff8a5f'); txt(locked ? '???' : s.bossName, 800, 402, 28, '#fff');
     txt('MELHOR', 800, 454, 18, '#ffcf6b'); txt(String(Save.data.best[G.sel] || 0) + ' pts', 800, 476, 28, '#fff');
-    if (UI.button('go', 140, 580, 250, 62, locked ? 'BLOQUEADA' : 'JOGAR', { size: 26, disabled: locked, color: '#9a63ff' })) { Game.startStage(G.sel); return; }
+    if (UI.button('go', 140, 580, 250, 62, locked ? 'BLOQUEADA' : 'JOGAR', { size: 26, disabled: locked, color: '#9a63ff' })) { Game.enter(G.sel); return; }
     if (UI.button('hang', 413, 580, 240, 62, 'HANGAR', { size: 24, sub: WEAPONS[Save.data.loadout.weapon].name })) { G.skinIdx = Math.max(0, SKINS.findIndex(s => s.id === Save.data.loadout.skin)); G.state = 'hangar'; }
     if (UI.button('shop2', 676, 580, 240, 62, 'LOJA', { size: 24, sub: this.stars() })) { G.shopBack = 'select'; G.state = 'shop'; }
     if (UI.button('back', 939, 580, 201, 62, 'VOLTAR', { size: 24 })) { Snd.play('uiBack'); Game.goTitle(); }
@@ -727,22 +727,25 @@ const Screens = {
 
   settings() {
     const s = Save.data.settings;
-    UI.panel(300, 120, 680, 440);
-    txt('OPÇÕES', W / 2, 146, 40, '#fff', 'center');
-    txt('MÚSICA  ' + Math.round(s.music * 100) + '%', 360, 230, 22, '#e2d4ff');
-    const m = UI.slider('music', 360, 275, 560, s.music);
-    txt('EFEITOS SONOROS  ' + Math.round(s.sfx * 100) + '%', 360, 330, 22, '#e2d4ff');
-    const e = UI.slider('sfx', 360, 375, 560, s.sfx);
+    UI.panel(300, 70, 680, 560);
+    txt('OPÇÕES', W / 2, 92, 40, '#fff', 'center');
+    txt('MÚSICA  ' + Math.round(s.music * 100) + '%', 360, 170, 22, '#e2d4ff');
+    const m = UI.slider('music', 360, 215, 560, s.music);
+    txt('EFEITOS SONOROS  ' + Math.round(s.sfx * 100) + '%', 360, 258, 22, '#e2d4ff');
+    const e = UI.slider('sfx', 360, 303, 560, s.sfx);
+    txt('DIFICULDADE', 360, 346, 22, '#e2d4ff');
+    DIFF.forEach((d, i) => { if (UI.button('diff' + i, 360 + i * 192, 382, 176, 44, d.name, { size: 18, color: (s.diff ?? 1) === i ? '#9a63ff' : undefined })) { s.diff = i; Save.save(); } });
+    UI.wrap(DIFF[s.diff ?? 1].desc, 360, 436, 560, 22, 15, '#cdb8ff');
     if (m !== s.music || e !== s.sfx) {
       const sfxChanged = e !== s.sfx; s.music = m; s.sfx = e; Snd.setVolumes(s.sfx, s.music); Save.save();
       if (sfxChanged && !G.sfxTest) { Snd.play('explode', { size: .5 }); G.sfxTest = 10; }
     }
     if (G.sfxTest) G.sfxTest--;
     const sure = G.confirmReset;
-    if (UI.button('reset', 360, 440, 560, 50, sure ? 'TEM CERTEZA? CLIQUE DE NOVO' : 'APAGAR PROGRESSO', { size: 20, color: '#c2185b' })) {
+    if (UI.button('reset', 360, 490, 560, 46, sure ? 'TEM CERTEZA? CLIQUE DE NOVO' : 'APAGAR PROGRESSO', { size: 20, color: '#c2185b' })) {
       if (sure) { Save.reset(); G.confirmReset = false; Snd.setVolumes(Save.data.settings.sfx, Save.data.settings.music); G.sel = 0; } else G.confirmReset = true;
     }
-    if (UI.button('back', 360, 502, 560, 44, 'VOLTAR', { size: 22 }) || Input.pressed('escape')) {
+    if (UI.button('back', 360, 552, 560, 44, 'VOLTAR', { size: 22 }) || Input.pressed('escape')) {
       G.confirmReset = false; Snd.play('uiBack');
       if (G.setBack === 'pause') G.state = 'pause'; else Game.goTitle();
     }
@@ -836,7 +839,7 @@ const Screens = {
     txt('O Olienzinho vai tentar de novo.', W / 2, 190, 24, '#cdb8ff', 'center', 700);
     UI.panel(400, 240, 480, 190);
     [['Pontuação', r.score + ' pts'], ['Inimigos derrotados', String(r.kills)], ['Estrelas guardadas', '★ ' + r.coins]].forEach(([a, b], i) => { txt(a, 436, 266 + i * 50, 22, '#cdb8ff', 'left', 700); txt(b, 844, 264 + i * 50, 26, i > 1 ? '#ffcf6b' : '#fff', 'right'); });
-    if (UI.button('retry', 320, 480, 300, 62, 'TENTAR DE NOVO', { size: 24, color: '#9a63ff' })) Game.startStage(G.stageIdx, { skipStory: true });
+    if (UI.button('retry', 320, 480, 300, 62, 'TENTAR DE NOVO', { size: 24, color: '#9a63ff' })) Game.enter(G.stageIdx, { skipStory: true });
     if (UI.button('shop', 640, 480, 140, 62, 'LOJA', { size: 22 })) { G.shopBack = 'over'; G.state = 'shop'; }
     if (UI.button('map', 800, 480, 160, 62, 'MAPA', { size: 22 })) Game.goSelect();
     txt('Dica: gaste as estrelas na loja para ficar mais forte.', W / 2, 570, 18, '#8a7fb0', 'center', 700);

@@ -25,7 +25,7 @@ function newPlayer() {
 
 function recalcStats(p) {
   const s = Save.data.shop, u = G.upCounts, L = id => s[id] || 0, U = id => u[id] || 0;
-  p.maxHp = 5 + L('hp') + U('hp');
+  p.maxHp = Math.max(2, 5 + L('hp') + U('hp') + dif().php);
   p.dmg = (1 + .12 * L('dmg')) * (1 + .2 * U('dmg')) * (1 + .02 * Extras.fragCount());
   p.fireDelay = .2 * Math.pow(.9, U('rate')) / (1 + .06 * L('rate'));
   p.shots = 1 + U('multi');
@@ -36,7 +36,7 @@ function recalcStats(p) {
   p.pulseCd = Math.max(6, 22 - 2 * L('pulse')) * Math.pow(.85, U('pulse'));
   p.coinMul = (1 + .12 * L('luck')) * (1 + .2 * U('lucky'));
   p.xpMul = (1 + .1 * L('xp')) * (1 + .15 * U('xp'));
-  p.missiles = U('missile'); p.orbitals = U('orbit');
+  p.missiles = U('missile'); p.orbitals = U('orbit'); p.ricochet = U('ricochet'); p.chainL = U('chain');
   p.shieldCd = [0, 20, 15, 10][U('shield')] || 10;
   p.dashCdMax = 1.6 * Math.pow(.8, U('dash')); p.specCdMax = 16 * Math.pow(.8, U('spec')); p.specPow = 1 + .25 * U('spec');
 }
@@ -55,7 +55,7 @@ const Game = {
     World.setStage(G.stage.pal); Events.reset(G.stage);
     G.player = newPlayer();
     { const ld = Save.data.loadout; G.player.weapon = Save.data.owned.weapons[ld.weapon] ? ld.weapon : 'violet'; }
-    G.stats = { hits: 0, bossHit: 0, maxCombo: 0, minis: 0 }; G.timers = []; G.hitstop = 0; G.mega = null; G.miniDone = false; G.endless = false; G.fragSpawned = false; G.encSpawned = false; Extras.reset();
+    G.stats = { hits: 0, bossHit: 0, maxCombo: 0, minis: 0 }; G.timers = []; G.hitstop = 0; G.mega = null; G.miniDone = false; G.endless = false; G.fragSpawned = false; G.encSpawned = false; Extras.reset(); Extras.tutStart();
     recalcStats(G.player); G.player.hp = G.player.maxHp;
     Events.banner = { t: 0, title: G.stage.name.toUpperCase(), sub: 'FASE ' + (idx + 1), c: G.stage.tint };
     G.finisher = null; G.cut = null; G.story = null;
@@ -307,7 +307,8 @@ const Game = {
     const p = G.player;
     G.t += dt; G.intro += dt;
     World.update(dt, p.vy);
-    Events.update(dt); Events.updateHazards(dt); Extras.update(dt);
+    Events.update(dt); Events.updateHazards(dt); Extras.update(dt); Extras.tutUpdate(dt);
+    Snd.setLayers(p.dead ? 0 : G.combo >= 25 ? 2 : G.combo >= 10 ? 1 : 0, !p.dead && p.hp <= Math.max(1, p.maxHp * .25) ? 1 : 0);
     this.director(dt);
     if (!p.dead) this.updatePlayer(dt); else { G.overT -= rdt; if (G.overT <= 0) { this.gameOver(); return; } }
 
@@ -379,11 +380,11 @@ const Game = {
     if (tg) { const d = Math.hypot(tg.x - p.x, tg.y - p.y) || 1; tx = (tg.x - p.x) / d; ty = (tg.y - p.y) / d; }
     p.lookx += (tx - p.lookx) * Math.min(1, 8 * dt); p.looky += (ty - p.looky) * Math.min(1, 8 * dt);
     p.blink -= dt; if (p.blink <= 0) { p.blinkT = .16; p.blink = rand(2, 5); } if (p.blinkT > 0) p.blinkT -= dt;
-    p.inv = Math.max(0, p.inv - dt);
+    p.inv = Math.max(0, p.inv - dt); p.od = (G.upCounts.overdrive || 0) > 0 && p.hp <= 2;
 
     // tiro e chama
     p.recoil = Math.max(0, p.recoil - dt * 9); if (p.moodT > 0) { p.moodT -= dt; if (p.moodT <= 0) p.mood = null; }
-    p.fireT -= dt; if (p.fireT <= 0) { playerShoot(); p.fireT = p.fireDelay * WEAPONS[p.weapon].delay; }
+    p.fireT -= dt; if (p.fireT <= 0) { playerShoot(); p.fireT = p.fireDelay * WEAPONS[p.weapon].delay / (p.od ? 1.8 : 1); }
     for (let i = 0; i < 2; i++) G.parts.push({ x: p.x + rand(-4, 4), y: p.y + 27, vx: rand(-30, 30), vy: rand(150, 280), life: rand(.25, .5), max: .5, r: rand(3, 7), c: Math.random() < .5 ? '#ffb340' : '#ffe9a8', drag: 1 });
 
     // pulso e escudo
@@ -441,7 +442,8 @@ const Game = {
     for (const q of G.parts) {
       if (q.k === 'smoke' || q.k === 'debris') continue;
       const k = clamp(q.life / q.max, 0, 1);
-      if (q.k === 'spark') { ctx.globalAlpha = k; ctx.strokeStyle = q.c; ctx.lineWidth = q.r; ctx.beginPath(); ctx.moveTo(q.x, q.y); ctx.lineTo(q.x - q.vx * .04, q.y - q.vy * .04); ctx.stroke(); }
+      if (q.k === 'bolt') { ctx.globalAlpha = k; ctx.strokeStyle = q.c; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(q.x, q.y); const n = 5; for (let i = 1; i < n; i++) { const f = i / n; ctx.lineTo(q.x + (q.x2 - q.x) * f + rand(-12, 12), q.y + (q.y2 - q.y) * f + rand(-12, 12)); } ctx.lineTo(q.x2, q.y2); ctx.stroke(); }
+      else if (q.k === 'spark') { ctx.globalAlpha = k; ctx.strokeStyle = q.c; ctx.lineWidth = q.r; ctx.beginPath(); ctx.moveTo(q.x, q.y); ctx.lineTo(q.x - q.vx * .04, q.y - q.vy * .04); ctx.stroke(); }
       else if (q.k === 'flash') drawGlow(q.x, q.y, q.r * (1.3 - k * .3), q.c, k);
       else drawGlow(q.x, q.y, q.r * 2.4, q.c, k);
     }
@@ -465,7 +467,7 @@ const Game = {
     }
     Events.drawOverlay();
     if (G.flash > 0) { ctx.globalAlpha = Math.min(.7, G.flash * .35); ctx.fillStyle = '#e9e0ff'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; }
-    if (!G.cut) this.drawHud();
+    if (!G.cut) { this.drawHud(); Extras.tutDraw(); }
     this.drawCinematic();
     this.drawCut();
   },

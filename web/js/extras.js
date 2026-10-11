@@ -221,3 +221,78 @@ Portraits.face_Z = function (mood, t, talk) {
   ctx.stroke();
   if (hp) { ctx.fillStyle = 'rgba(255,120,170,.5)'; for (const s of [-1, 1]) { ctx.beginPath(); ctx.ellipse(s * 40, 14, 11, 7, 0, 0, 7); ctx.fill(); } }
 };
+
+// ---------- tutorial curto (so na primeira vez na fase 1) ----------
+Extras.tutStart = function () {
+  const seen = Save.data.seen || {};
+  this.tut = (!Game.noStory && !seen.tutorial && !G.endless && !G.training && G.stageIdx === 0) ? { step: 0, t: 0, done: 0, px: 0, py: 0, moved: 0, d0: Save.data.stats.dashes || 0 } : null;
+};
+const TUT = [
+  { keys: ['W', 'A', 'S', 'D'], text: 'Mova a nave com WASD, as setas ou o mouse.', ok: T => T.moved > 260 },
+  { keys: [], text: 'O Olienzinho atira sozinho. Derrote inimigos para ganhar estrelas e experiência!', ok: T => G.kills >= 3 || T.t > 9 },
+  { keys: ['SHIFT'], text: 'Aperte SHIFT para uma esquiva rápida. Você fica invulnerável por um instante.', ok: T => (Save.data.stats.dashes || 0) > T.d0 },
+  { keys: ['Q'], text: 'Aperte Q para o ESPECIAL da sua arma. Cada arma tem o seu!', ok: () => G.player.specCd > 0 },
+  { keys: ['ESPAÇO'], text: 'Aperte ESPAÇO para o Pulso Olien: ele apaga todos os tiros inimigos da tela.', ok: () => G.player.pulseT > 0 },
+];
+Extras.tutUpdate = function (dt) {
+  const T = this.tut; if (!T || !G.player) return;
+  T.t += dt;
+  if (T.step < TUT.length) {
+    const p = G.player; if (T.px) T.moved += Math.hypot(p.x - T.px, p.y - T.py); T.px = p.x; T.py = p.y;
+    if (TUT[T.step].ok(T)) { T.step++; T.t = 0; Snd.play('uiSelect'); }
+  } else if (T.t > 2.6) { Save.data.seen = Save.data.seen || {}; Save.data.seen.tutorial = true; Save.save(); this.tut = null; }
+};
+Extras.tutDraw = function () {
+  const T = this.tut; if (!T || G.state !== 'play') return;
+  const fin = T.step >= TUT.length, st = fin ? { keys: [], text: 'Muito bem! Agora é com você, Guardião.' } : TUT[T.step];
+  const a = clamp(T.t / .4, 0, 1) * (fin ? clamp((2.6 - T.t) / .5, 0, 1) : 1);
+  ctx.save(); ctx.globalAlpha = a;
+  const w = 720, h = 76, x = W / 2 - w / 2, y = 520 + (1 - a) * 16;
+  ctx.fillStyle = 'rgba(14,5,40,.88)'; ctx.strokeStyle = 'rgba(255,179,64,.8)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(x, y, w, h, 18); ctx.fill(); ctx.stroke();
+  let kx = x + 24;
+  for (const k of st.keys) {
+    const kw = Math.max(38, k.length * 14 + 20), pu = 1 + Math.sin(World.t * 7) * .04;
+    ctx.save(); ctx.translate(kx + kw / 2, y + h / 2); ctx.scale(pu, pu); ctx.fillStyle = '#e2d4ff'; ctx.beginPath(); ctx.roundRect(-kw / 2, -19, kw, 38, 8); ctx.fill(); ctx.fillStyle = '#8b6adb'; ctx.fillRect(-kw / 2 + 4, 10, kw - 8, 4); txt(k, 0, -3, 18, '#2a1060', 'center', 900, 'middle'); ctx.restore();
+    kx += kw + 8;
+  }
+  UI.wrap(st.text, kx + 12, y + 14, x + w - kx - 36, 24, 19, '#fff');
+  for (let i = 0; i < TUT.length; i++) { ctx.fillStyle = i < T.step ? '#7fe0a0' : i === T.step ? '#ffb340' : 'rgba(255,255,255,.25)'; ctx.beginPath(); ctx.arc(x + w - 24 - (TUT.length - 1 - i) * 14, y + h - 12, 4, 0, 7); ctx.fill(); }
+  ctx.restore();
+};
+
+// ---------- tela de carregamento cinematografica ----------
+const TIPS = [
+  'SHIFT faz uma esquiva e deixa você invulnerável por um instante.',
+  'Cada arma tem um especial no Q. Experimente todas no Hangar.',
+  'Combos mais altos rendem mais pontos e notas melhores.',
+  'Fragmentos de Luz aparecem uma vez por fase. Fique de olho nas bordas!',
+  'Viajantes perdidos aparecem no meio da fase. Encoste neles para conversar.',
+  'O escudo dos inimigos só segura tiros vindos de baixo.',
+  'Derrote os curandeiros primeiro, senão os outros se curam.',
+  'No Modo Infinito, um chefe aparece a cada 5 ondas.',
+  'Gaste estrelas na Loja: os bônus valem para sempre.',
+  'O Pulso Olien apaga todos os tiros inimigos da tela.',
+];
+Game.enter = function (idx, opts = {}) {
+  G.load = { idx, opts, t: 0, tip: TIPS[(Math.random() * TIPS.length) | 0], dur: opts.skipStory ? 1.1 : 1.9, go: false };
+  World.setStage(STAGES[idx].pal); G.state = 'loading'; Snd.musicStop();
+};
+Screens.loading = function () {
+  const L = G.load; if (!L) { Game.goSelect(); return; }
+  L.t += 1 / 60; const t = L.t, s = STAGES[L.idx], k = easeOut(clamp(t / .6, 0, 1));
+  ctx.fillStyle = 'rgba(3,1,11,.62)'; ctx.fillRect(0, 0, W, H);
+  const bh = 90 * k; ctx.fillStyle = '#03010b'; ctx.fillRect(0, 0, W, bh); ctx.fillRect(0, H - bh, W, bh);
+  const e = easeOut(clamp((t - .3) / .6, 0, 1)), X = 120;
+  ctx.globalAlpha = e; ctx.fillStyle = s.tint; ctx.fillRect(X + 4, 250, 90 * e, 4);
+  txt('FASE ' + (L.idx + 1), X + 4, 268, 20, s.tint, 'left', 900);
+  ctx.save(); ctx.translate((1 - e) * -50, 0); ctx.shadowColor = s.tint; ctx.shadowBlur = 30; txt(s.name.toUpperCase(), X, 296, 62, '#fff', 'left', 900); ctx.restore();
+  UI.wrap(s.desc, X + 4, 380, 760, 30, 22, '#cdb8ff');
+  ctx.globalAlpha = clamp((t - .9) / .4, 0, 1) * e; txt('DICA', X + 4, 470, 15, '#ffb340', 'left', 900); UI.wrap(L.tip, X + 4, 494, 760, 26, 19, '#e2d4ff');
+  ctx.globalAlpha = 1;
+  // barra e nave
+  const pr = clamp(t / L.dur, 0, 1), bx = X, bw = W - X * 2, by = H - bh - 40;
+  ctx.fillStyle = 'rgba(255,255,255,.14)'; ctx.fillRect(bx, by, bw, 4); ctx.fillStyle = s.tint; ctx.fillRect(bx, by, bw * pr, 4);
+  ctx.save(); ctx.translate(bx + bw * pr, by - 22); ctx.rotate(Math.PI / 2); Art.ship(0, 0, { vx: 0, t, scale: .42, boost: 1, lookx: 0, looky: -.5, blinkT: 0 }); ctx.restore();
+  txt('CARREGANDO...', bx, by + 12, 13, '#8f84c4', 'left', 800);
+  if (t >= L.dur && !L.go) { L.go = true; const o = L.opts; G.load = null; Game.startStage(L.idx, o); }
+};

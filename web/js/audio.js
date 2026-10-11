@@ -119,6 +119,12 @@ const Snd = (() => {
       const t = now(), w = o.who;
       if (w === 'O') { const f = rnd(780, 1150); voice('triangle', f, f * 1.22, t, .07, .05, { a: .003, rev: .15 }); }
       else if (w === 'B') { const f = rnd(430, 640); voice('square', f, f * .96, t, .055, .024, { lp: 2200, a: .003, rev: .1 }); }
+      else if (w === 'L') { const f = rnd(900, 1300); voice('sine', f, f, t, .12, .04, { a: .004, rev: .5 }); voice('sine', f * 1.5, f * 1.5, t, .1, .02, { rev: .5 }); }
+      else if (w === 'V') { const f = rnd(70, 95); voice('sawtooth', f, f * .9, t, .14, .05, { lp: 500, a: .01, rev: .5 }); voice('sine', f * 1.51, f * 1.5, t, .1, .02, { rev: .4 }); }
+      else if (w === 'C') { const f = rnd(420, 560); voice('triangle', f, f * 1.08, t, .08, .045, { a: .006, rev: .25 }); }
+      else if (w === 'P') { const f = rnd(110, 150); voice('square', f, f * .95, t, .1, .04, { lp: 700, a: .006, rev: .2 }); }
+      else if (w === 'E') { const f = rnd(560, 760); voice('sine', f, f * 1.05, t, .11, .04, { a: .008, rev: .45 }); }
+      else if (w === 'S') { const f = rnd(210, 290); voice('sawtooth', f, f * 1.02, t, .1, .035, { lp: 1000, a: .008, rev: .3 }); }
       else { const f = rnd(190, 250); voice('sine', f, f, t, .1, .03, { a: .01, rev: .3 }); }
     },
     stinger() {

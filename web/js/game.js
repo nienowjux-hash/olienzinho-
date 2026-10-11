@@ -55,19 +55,24 @@ const Game = {
     Events.banner = { t: 0, title: G.stage.name.toUpperCase(), sub: 'FASE ' + (idx + 1), c: G.stage.tint };
     G.finisher = null; G.cut = null; G.story = null;
     Save.data.runs++; Save.save();
-    const pages = [];
-    if (!this.noStory && !opts.skipStory) {
-      if (idx === 0 && !Save.data.seenPrologue) { pages.push(...STORY.prologue); Save.data.seenPrologue = true; Save.save(); }
-      pages.push(...STORY.stages[idx].intro);
-    }
+    G.retry = !!opts.skipStory; G.preDone = false;
     const begin = () => { G.state = 'play'; Snd.musicPlay(G.stage.music, 1); };
-    if (pages.length) this.startStory(pages, begin); else begin();
+    const intro = () => this.maybeStory('intro' + idx, STORY.stages[idx].intro, begin);
+    if (idx === 0 && !Save.data.seenPrologue && !this.noStory) { Save.data.seenPrologue = true; Save.save(); this.startStory(STORY.prologue, intro); }
+    else intro();
   },
 
   // ---------- historia ----------
-  startStory(pages, done) {
-    G.story = { pages, i: 0, t: 0, last: undefined, lastShown: 0, done };
-    G.state = 'story'; Snd.musicPlay('menu', 0);
+  startStory(pages, done, opts = {}) {
+    G.story = { pages, i: 0, t: 0, last: undefined, lastShown: 0, doneAt: null, prevWho: null, sw: 0, done };
+    G.state = 'story';
+    if (opts.music !== null) Snd.musicPlay(opts.music || 'menu', 0);
+  },
+  // em tentativas repetidas, cenas ja vistas sao puladas
+  maybeStory(key, pages, done, opts) {
+    const seen = Save.data.seen && Save.data.seen[key];
+    if (this.noStory || !pages || !pages.length || (G.retry && seen)) { done(); return; }
+    this.startStory(pages, () => { Save.data.seen = Save.data.seen || {}; Save.data.seen[key] = true; Save.save(); done(); }, opts);
   },
   endStory() { const d = G.story && G.story.done; G.story = null; if (d) d(); },
 
@@ -108,7 +113,7 @@ const Game = {
     this.endRunSave(bonus, true);
     G.result = { bonus, coins: G.runCoins, score: G.score, kills: G.kills, level: G.level, best: Save.data.best[G.stageIdx], newStage: G.stageIdx + 1 < STAGES.length };
     const toClear = () => { G.state = 'clear'; Snd.musicPlay('menu', 0); Snd.play('stageClear'); };
-    if (G.stageIdx + 1 >= STAGES.length && !this.noStory) this.startStory(STORY.epilogue, toClear); else toClear();
+    if (G.stageIdx + 1 >= STAGES.length) this.maybeStory('epi', STORY.epilogue, toClear); else toClear();
   },
 
   gameOver() {
@@ -173,7 +178,11 @@ const Game = {
     if (G.boss || G.bossPending) {
       if (G.bossPending) {
         G.bossPendingT -= dt;
-        if (G.bossPendingT <= 0) { G.bossPending = false; G.boss = new BOSS_CLASSES[st.boss](); Snd.play('impact'); Snd.musicPlay(st.bossMusic, 2); G.bossShown = 0; }
+        if (G.bossPendingT <= 0 && !G.preDone) {
+          G.preDone = true;
+          const spawn = () => { G.state = 'play'; G.bossPending = false; G.boss = new BOSS_CLASSES[st.boss](); Snd.play('impact'); Snd.musicPlay(st.bossMusic, 2); G.bossShown = 0; };
+          this.maybeStory('pre' + G.stageIdx, STORY.stages[G.stageIdx].pre, spawn, { music: null });
+        }
       }
       return;
     }
@@ -241,7 +250,7 @@ const Game = {
       c.last = typed;
       const adv = (Input.pressed(' ') || Input.pressed('enter') || Input.mouse.click) && c.t > 1;
       if (adv && typed < len) c.t = full + .01;
-      else if ((c.t > full + 2.2) || (adv && c.t > full + .5)) { G.cut = null; this.stageClear(); return; }
+      else if (adv && c.t > full + .6) { G.cut = null; this.maybeStory('after' + G.stageIdx, STORY.stages[G.stageIdx].after, () => this.stageClear()); return; }
     }
     if (G.clearT > 0) { G.clearT -= rdt; if (G.clearT <= 0) { this.stageClear(); return; } }
     if (G.pendingLevels > 0 && !p.dead && G.state === 'play' && !G.bossDone && !(G.boss && G.boss.state === 'dying')) this.openLevelUp();
@@ -374,7 +383,7 @@ const Game = {
   // cena depois do chefe: Olienzinho em destaque com a fala de impacto
   drawCut() {
     const c = G.cut; if (!c) return;
-    const k = easeOut(c.t / .6), h = 70 * k, t = World.t, len = c.text.length;
+    const k = easeOut(c.t / .6), h = 70 * k, t = World.t, len = c.text.length, full = .9 + len / 38;
     ctx.globalAlpha = .5 * k; ctx.fillStyle = '#05010f'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1;
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
     for (let i = 0; i < 7; i++) {
@@ -402,7 +411,7 @@ const Game = {
       Screens.typed(lines, shown, W / 2, by + 28, 44, 34, '#2a1478', 'center', 800);
       ctx.restore();
     }
-    if (c.t > 1.5) { ctx.globalAlpha = .5 + .4 * Math.sin(t * 5); txt('clique ou ENTER para continuar', W / 2, H - h - 34, 16, '#cdb8ff', 'center', 700); ctx.globalAlpha = 1; }
+    if (c.t > full + .6) { ctx.globalAlpha = .5 + .4 * Math.sin(t * 5); txt('clique ou ENTER para continuar', W / 2, H - h - 34, 16, '#cdb8ff', 'center', 700); ctx.globalAlpha = 1; }
   },
 
   // faixas de cinema e cartao de nome na chegada do chefe

@@ -195,6 +195,7 @@ const Game = {
     const toClear = () => Visual4.celebrate();
     if (G.stageIdx === 3) this.maybeStory('epi', STORY.epilogue, toClear);
     else if (G.stageIdx === 5) { Save.data.won = true; Save.save(); Ach.check(); this.maybeStory('finale', STORY.finale, toClear); }
+    else if (G.stageIdx === 8) { Save.data.won3 = true; Save.save(); Ach.check(); this.maybeStory('finale3', STORY.finale3, toClear); }
     else toClear();
   },
 
@@ -206,7 +207,7 @@ const Game = {
     if (G.rush) G.result.wave = G.rushI;
     if (this.noStory || G.endless) { toOver(); return; }
     // o vilao (o chefe da fase ou o Vazio) fala com o jogador
-    const D = STORY.defeat, inBoss = !!G.boss, bc = ['C', 'P', 'E', 'S', 'X', 'V'][G.stageIdx];
+    const D = STORY.defeat, inBoss = !!G.boss, bc = ['C', 'P', 'E', 'S', 'X', 'V', 'H', 'Y', 'R'][G.stageIdx];
     const pages = [{ music: 'sad' },
       inBoss ? { who: bc, scene: 'boss', mood: 'angry', text: pick(D.boss[G.stageIdx]) } : { who: 'V', scene: 'void', mood: 'angry', text: pick(D.void) }];
     if (Math.random() < .5) pages.push({ who: 'B', mood: 'worry', text: pick(D.orbi) });

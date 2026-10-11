@@ -67,7 +67,7 @@ ACH.push({ id: 'elite25', name: 'Caçador de Elites', desc: 'Derrote 25 inimigos
   const se = spawnEnemy;
   spawnEnemy = function (type, x, y, o = {}) {
     const e = se(type, x, y, o);
-    if (G.route === 'danger') { e.hp = Math.ceil(e.hp * 1.25); e.maxHp = e.hp; }
+    if (G.route === 'danger' || (G.stage && G.stage.id >= 6 && !o.noElite)) { e.hp = Math.ceil(e.hp * 1.25); e.maxHp = e.hp; }
     if (!['drone', 'zig', 'kami', 'shooter', 'shield', 'healer', 'tank'].includes(type) || G.state !== 'play' || G.training || G.rush || o.noElite) return e;
     const ch = G.endless ? Math.min(.25, .05 + (G.wave || 1) * .012) : .04 + (G.stage ? G.stage.id : 0) * .012 + (G.t / (G.stage ? G.stage.duration : 100)) * .04;
     if (Math.random() >= ch) return e;

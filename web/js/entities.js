@@ -33,7 +33,7 @@ let flashScreen = a => { G.flash = Math.max(G.flash, a); };
 const bulletColor = () => '#ff4a2e';
 
 function ebullet(x, y, ang, spd, o = {}) {
-  spd *= dif().bul * (G.dmod === 'bullet' ? 1.2 : 1); G.eb.push(Object.assign({ x, y, vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd, r: 7, c: bulletColor(), life: 9, acc: 0, src: G.__src }, o));
+  spd *= dif().bul * (G.dmod === 'bullet' ? 1.2 : 1) * (G.stage && G.stage.id >= 6 ? 1.08 : 1); G.eb.push(Object.assign({ x, y, vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd, r: 7, c: bulletColor(), life: 9, acc: 0, src: G.__src }, o));
 }
 function aimAt(x, y) { return Math.atan2(G.player.y - y, G.player.x - x); }
 function fanAimed(x, y, n, spread, spd, o) {
@@ -71,7 +71,7 @@ const CAPTAINS = ['Capitão Zangão', 'Perfuratriz', 'Para-raios', 'Sentinela So
 
 function spawnEnemy(type, x, y, o = {}) {
   const d = ENEMY_DEF[type], st = G.stage.id;
-  const dm = dif().hp, stm = st <= 3 ? st : 3 + (st - 3) * .5, mul = dm * (G.endless ? 1 + st * .2 + ((G.wave || 1) - 1) * .17 : 1 + stm * .45 + (G.t / G.stage.duration) * .35);
+  const dm = dif().hp, stm = Math.min(4.2, st <= 3 ? st : 3 + (st - 3) * .5), mul = dm * (G.endless ? 1 + st * .2 + ((G.wave || 1) - 1) * .17 : 1 + stm * .45 + (G.t / G.stage.duration) * .35);
   const e = {
     type, x, y, bx: x, rad: d.rad, hp: Math.max(1, Math.ceil(d.hp * mul)), spd: d.spd * (1 + st * .06) * (G.dmod === 'fast' ? 1.25 : 1),
     xp: d.xp, score: d.score, coin: d.coin, glow: d.glow, age: 0, ph: rand(0, TAU), hit: 0,

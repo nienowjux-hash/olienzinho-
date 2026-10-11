@@ -562,6 +562,13 @@ const Snd = (() => {
       { kick: '1010001010100010', snare: '0000100000001000', flair: 'fanfare', shaker: true }),
   });
   THEMES.credits = Object.assign({}, THEMES.hope, { bpm: 64 });
+  // ---- Parte 3 ----
+  THEMES.s7 = Object.assign({}, THEMES.s4, { bpm: 112, root: 60, flair: 'fanfare' });
+  THEMES.s8 = Object.assign({}, THEMES.s3, { bpm: 100, root: 55, flair: 'bells' });
+  THEMES.s9 = Object.assign({}, THEMES.s6, { bpm: 112, root: 50, flair: 'thunder' });
+  THEMES.b7 = Object.assign({}, THEMES.b4, { bpm: 156, root: 55 });
+  THEMES.b8 = Object.assign({}, THEMES.b3, { bpm: 164, root: 47, flair: 'anvil' });
+  THEMES.b9 = Object.assign({}, THEMES.b6, { bpm: 172, root: 44 });
   const mus = { on: false, key: null, th: null, inten: 0, step: 0, next: 0, timer: null, lay: { combo: 0, danger: 0 } };
   let pending = null;
 

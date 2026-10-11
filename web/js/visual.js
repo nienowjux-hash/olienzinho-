@@ -95,6 +95,7 @@ Visual.bossAura = function (b) {
   const t = World.t, ph = b.phase || 0, R = (b.rad || 120);
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
   drawGlow(b.x, b.y, R * 2.6, b.col || '#ff8a5f', .09 + ph * .045 + Math.sin(t * 3) * .02);
+  if (ph > 0) drawGlow(b.x, b.y, R * 2, '#ff3a2a', .05 * ph + Math.sin(t * 6) * .015);
   for (let i = 0; i < ph + 1; i++) { const a = t * (1.2 + i * .4) + i * 2.1; drawGlow(b.x + Math.cos(a) * R * 1.15, b.y + Math.sin(a) * R * .7, 22, b.col || '#ff8a5f', .5); }
   ctx.restore();
 };

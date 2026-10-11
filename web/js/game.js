@@ -310,6 +310,7 @@ const Game = {
 
   updatePlay(rdt) {
     if (Extras.tut && Extras.tut.wait) { Extras.tutWait(); return; }
+    if (G.furyCut) { Visual3.furyUpdate(rdt); return; }
     if (G.hitstop > 0) { G.hitstop -= rdt; return; }
     let dt = rdt;
     if (this.slowmo) dt *= .45;
@@ -412,11 +413,11 @@ const Game = {
     const p = G.player, cx = p ? p.x - W / 2 : 0;
     ctx.save();
     if (G.shake > 0) ctx.translate(rand(-1, 1) * G.shake * .55, rand(-1, 1) * G.shake * .55);
-    G.zoom = (G.zoom || 0) * .92; if (G.zoom <= .002) G.zoomCx = null; if (G.zoom > .001) { const zx = G.zoomCx ?? W / 2, zy = G.zoomCy ?? H / 2; ctx.translate(zx, zy); ctx.scale(1 + G.zoom, 1 + G.zoom); ctx.translate(-zx, -zy); }
+    if (!G.furyCut) G.zoom = (G.zoom || 0) * .92; if (G.zoom <= .002) G.zoomCx = null; if (G.zoom > .001) { const zx = G.zoomCx ?? W / 2, zy = G.zoomCy ?? H / 2; ctx.translate(zx, zy); ctx.scale(1 + G.zoom, 1 + G.zoom); ctx.translate(-zx, -zy); }
     World.draw(cx); Visual.biome(); Visual2.lights();
     Events.drawHazards();
     for (const k of G.pickups) Art.pickup(k);
-    if (G.boss) { const b = G.boss, br = 1 + Math.sin(b.t * 2) * .012; ctx.save(); ctx.translate(b.shx || 0, b.shy || 0); ctx.translate(b.x, b.y); ctx.scale(br, br); ctx.translate(-b.x, -b.y); b.draw(); ctx.restore(); Visual.bossAura(b); }
+    if (G.boss) { const b = G.boss, br = 1 + Math.sin(b.t * 2) * .012; ctx.save(); ctx.translate(b.shx || 0, b.shy || 0); ctx.translate(b.x, b.y); ctx.scale(br, br); ctx.translate(-b.x, -b.y); Visual3.bossDraw(b); ctx.restore(); Visual.bossAura(b); }
     for (const e of G.enemies) Art.enemy(e);
     Extras.drawWorld(); drawWell(); Extras.dummyDraw();
     for (const e of G.enemies) {
@@ -440,7 +441,7 @@ const Game = {
         ctx.fillStyle = '#ff8a1f'; ctx.beginPath(); ctx.arc(o[0], o[1], 4, 0, 7); ctx.fill();
       }
     }
-    drawDark(); Visual.overlay(); Visual2.flares(); Visual2.cine();
+    drawDark(); Visual.overlay(); Visual2.flares();
     this.drawFinisherBeam();
     for (const q of G.parts) if (q.k === 'smoke') {
       const k = clamp(q.life / q.max, 0, 1);
@@ -471,6 +472,7 @@ const Game = {
     for (const o of G.pops) { ctx.globalAlpha = clamp(o.life, 0, 1); txt(o.text, o.x, o.y, o.size, o.c, 'center'); }
     ctx.globalAlpha = 1;
     ctx.restore();
+    Visual3.furyDraw();
     if (G.hurtFlash > 0) {
       const g = ctx.createRadialGradient(W / 2, H / 2, H * .3, W / 2, H / 2, H * .85);
       g.addColorStop(0, 'rgba(255,40,90,0)'); g.addColorStop(1, `rgba(255,40,90,${G.hurtFlash * 1.2})`); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);

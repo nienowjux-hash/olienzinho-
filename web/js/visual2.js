@@ -105,15 +105,7 @@ Visual2.distort = function (s) {
   };
 }
 
-// ===== cinematica nas fases de furia dos chefes =====
-{
-  const op = Boss.prototype.onPhase;
-  Boss.prototype.onPhase = function () {
-    op.call(this);
-    G.phaseCine = { t: 0, dur: 2.2, col: this.col || '#ff8a5f', x: this.x, y: this.y, text: this.phase === 1 ? 'ENFURECIDO' : 'FÚRIA TOTAL', name: this.name };
-    Game.slowmo = 1; G.timers.push({ t: .55, fn: () => { if (!G.boss || G.boss.state !== 'dying') Game.slowmo = 0; } });
-  };
-}
+// (a cutscene de furia dos chefes esta em visual3.js)
 Visual2.cine = function () {
   const c = G.phaseCine; if (!c || G.state !== 'play') return;
   c.t += 1 / 60; if (c.t > c.dur) { G.phaseCine = null; return; }

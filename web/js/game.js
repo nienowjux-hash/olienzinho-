@@ -26,7 +26,7 @@ function newPlayer() {
 function recalcStats(p) {
   const s = Save.data.shop, u = G.upCounts, L = id => s[id] || 0, U = id => u[id] || 0;
   p.maxHp = 5 + L('hp') + U('hp');
-  p.dmg = (1 + .12 * L('dmg')) * (1 + .2 * U('dmg'));
+  p.dmg = (1 + .12 * L('dmg')) * (1 + .2 * U('dmg')) * (1 + .02 * Extras.fragCount());
   p.fireDelay = .2 * Math.pow(.9, U('rate')) / (1 + .06 * L('rate'));
   p.shots = 1 + U('multi');
   p.speed = 470 * (1 + .05 * L('speed')) * (1 + .1 * U('speed'));
@@ -55,7 +55,7 @@ const Game = {
     World.setStage(G.stage.pal); Events.reset(G.stage);
     G.player = newPlayer();
     { const ld = Save.data.loadout; G.player.weapon = Save.data.owned.weapons[ld.weapon] ? ld.weapon : 'violet'; }
-    G.stats = { hits: 0, bossHit: 0, maxCombo: 0, minis: 0 }; G.timers = []; G.hitstop = 0; G.mega = null; G.miniDone = false; G.endless = false;
+    G.stats = { hits: 0, bossHit: 0, maxCombo: 0, minis: 0 }; G.timers = []; G.hitstop = 0; G.mega = null; G.miniDone = false; G.endless = false; G.fragSpawned = false; G.encSpawned = false; Extras.reset();
     recalcStats(G.player); G.player.hp = G.player.maxHp;
     Events.banner = { t: 0, title: G.stage.name.toUpperCase(), sub: 'FASE ' + (idx + 1), c: G.stage.tint };
     G.finisher = null; G.cut = null; G.story = null;
@@ -307,7 +307,7 @@ const Game = {
     const p = G.player;
     G.t += dt; G.intro += dt;
     World.update(dt, p.vy);
-    Events.update(dt); Events.updateHazards(dt);
+    Events.update(dt); Events.updateHazards(dt); Extras.update(dt);
     this.director(dt);
     if (!p.dead) this.updatePlayer(dt); else { G.overT -= rdt; if (G.overT <= 0) { this.gameOver(); return; } }
 
@@ -405,6 +405,7 @@ const Game = {
     for (const k of G.pickups) Art.pickup(k);
     if (G.boss) { const b = G.boss, br = 1 + Math.sin(b.t * 2) * .012; ctx.save(); ctx.translate(b.shx || 0, b.shy || 0); ctx.translate(b.x, b.y); ctx.scale(br, br); ctx.translate(-b.x, -b.y); b.draw(); ctx.restore(); }
     for (const e of G.enemies) Art.enemy(e);
+    Extras.drawWorld();
     for (const e of G.enemies) {
       if (e.healFx > 0 && e.healTo && !e.healTo.dead) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = '#7fffa0'; ctx.globalAlpha = e.healFx * 2; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(e.x, e.y); ctx.lineTo(e.healTo.x, e.healTo.y); ctx.stroke(); ctx.restore(); }
       if (e.mini && e.mode !== 'enter') { const bw = 120, bx = e.x - bw / 2, by = e.y - e.rad - 26; ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.beginPath(); ctx.roundRect(bx - 2, by - 2, bw + 4, 12, 6); ctx.fill(); ctx.fillStyle = e.glow; ctx.beginPath(); ctx.roundRect(bx, by, Math.max(6, bw * clamp(e.hp / e.maxHp, 0, 1)), 8, 4); ctx.fill(); txt(e.name, e.x, by - 20, 15, '#ffe9a8', 'center', 800); }

@@ -679,6 +679,8 @@ const Screens = {
       if (sel) Art.ship(x, y - R - 44, { vx: 0, t, scale: .5, blinkT: 0, lookx: 0, looky: .5 });
       if (Save.data.best[i]) txt('★'.repeat(Math.min(3, 1 + Math.floor(Save.data.best[i] / 2500))), x, y + R + 14, 20, '#ffcf6b', 'center');
     });
+    if (UI.button('ach', 40, 84, 230, 46, 'CONQUISTAS', { size: 20, sub: ACH.filter(a => Save.data.ach[a.id]).length + '/' + ACH.length })) G.state = 'achievements';
+    if (UI.button('orbi', 290, 84, 230, 46, 'CONVERSAR COM O ORBI', { size: 16 })) G.state = 'chatOrbi';
     const s = STAGES[G.sel], locked = G.sel >= unlocked;
     UI.panel(140, 360, 1000, 190);
     txt('FASE ' + (G.sel + 1), 176, 380, 18, s.tint, 'left', 900);

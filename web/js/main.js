@@ -26,6 +26,7 @@ function render() {
   if (s === 'play' || s === 'pause' || s === 'levelup' || s === 'clear' || s === 'over') Game.drawPlay(); else if (s === 'story') Screens.storyBackdrop(); else if (s === 'title') Screens.titleBackdrop(); else World.draw(0);
   ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
   if (Screens[s]) Screens[s]();
+  Ach.draw();
   cv.style.cursor = s === 'play' ? 'none' : 'default';
 
   // bloom: realca so o que e claro

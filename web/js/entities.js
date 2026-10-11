@@ -198,7 +198,7 @@ function killEnemy(e, byPlayer) {
   if (big) { for (let i = 0; i < 3; i++) dropPickup('coin', e.x + rand(-30, 30), e.y + rand(-20, 20), 2); }
   if (e.type === 'captain') {
     for (let i = 0; i < 8; i++) dropPickup('coin', e.x + rand(-60, 60), e.y + rand(-40, 40), 3);
-    dropPickup('heart', e.x, e.y, 1); G.stats.minis = (G.stats.minis || 0) + 1; G.hitstop = Math.max(G.hitstop || 0, .12);
+    dropPickup('heart', e.x, e.y, 1); G.stats.minis = (G.stats.minis || 0) + 1; Save.data.stats.minis = (Save.data.stats.minis || 0) + 1; Save.save(); G.hitstop = Math.max(G.hitstop || 0, .12);
     for (let i = 0; i < 3; i++) shockwave(e.x, e.y, 200 + i * 110, i % 2 ? '#ffe9a8' : e.glow); flashScreen(.3); shake(14);
     for (const q of G.eb) q.dead = true;
   }

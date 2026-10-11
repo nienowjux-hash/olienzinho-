@@ -273,16 +273,16 @@ STORY.stages.push({
   victory: 'Você não está sozinho. Nunca mais vai estar!',
   after: [
     { music: 'sad' },
-    { who: 'V', scene: 'voidBreak', mood: 'sad', text: 'Eu... não queria apagar ninguém. Só queria que alguém ficasse.' },
+    { who: 'V', scene: 'voidBreak', fx: 'voidMelt', mood: 'sad', text: 'Eu... não queria apagar ninguém. Só queria que alguém ficasse.' },
     { who: 'O', scene: 'lit', mood: 'sad', text: 'Eu fico. A gente fica. Mas a luz precisa voltar para o céu.' },
     { music: 'tension' },
     { who: 'B', scene: 'heart', mood: 'worry', text: 'Olienzinho... o Coração de Luz está incompleto. Eu sou a última peça. Eu preciso entrar nele.' },
     { who: 'O', scene: 'heart', mood: 'shock', text: 'Não! Tem que existir outro jeito! Você é o meu parceiro!' },
     { who: 'B', scene: 'heart', mood: 'happy', text: 'E é por isso que eu vou. Não vou deixar de existir. Vou virar a luz de todas as estrelas.' },
     { music: 'sad' },
-    { who: 'O', scene: 'heart', mood: 'sad', text: 'Orbi...' },
-    { who: 'B', scene: 'heart', mood: 'happy', text: 'Sempre que você olhar para cima e uma estrela piscar, vai ser eu dizendo: "Ainda estou aqui".' },
-    { who: 'N', scene: 'heart', text: 'O pequeno orbe azul subiu até o Coração partido, e todas as estrelas se acenderam ao mesmo tempo.' },
+    { who: 'O', scene: 'heart', fx: 'orbiAscend', mood: 'sad', text: 'Orbi...' },
+    { who: 'B', scene: 'heart', fx: 'orbiAscend', mood: 'happy', text: 'Sempre que você olhar para cima e uma estrela piscar, vai ser eu dizendo: "Ainda estou aqui".' },
+    { who: 'N', scene: 'heart', fx: 'orbiAscend', text: 'O pequeno orbe azul subiu até o Coração partido, e todas as estrelas se acenderam ao mesmo tempo.' },
   ],
 });
 STORY.defeat.boss.push(
@@ -296,7 +296,7 @@ STORY.finale = [
   { who: 'L', scene: 'lumi', mood: 'free', text: 'Está em cada brilho, em cada noite limpa. Quem ama de verdade nunca se apaga.' },
   { music: 'hope' },
   { who: 'O', mood: 'happy', text: 'Obrigado, Orbi. Eu vou acender cada uma delas por você.' },
-  { who: 'N', text: 'E assim, o menor foguete da galáxia voltou para casa, com um olho só... e o céu inteiro de olhos abertos.' },
+  { who: 'N', fx: 'dawn', text: 'E assim, o menor foguete da galáxia voltou para casa, com um olho só... e o céu inteiro de olhos abertos.' },
   { title: 'FIM', sub: 'OLIENZINHO — GUARDIÃO DAS ESTRELAS' },
   { who: 'B', mood: 'happy', text: '(Ainda estou aqui, Olienzinho.)' },
 ];

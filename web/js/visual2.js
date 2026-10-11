@@ -216,8 +216,9 @@ Screens.settings = function () {
   ['BAIXO', 'MÉDIO', 'ALTO'].forEach((n, i) => { if (UI.button('ql' + i, 360 + i * 192, 424, 176, 40, n, { size: 17, color: (s.quality ?? 2) === i ? '#9a63ff' : undefined })) { s.quality = i; Save.save(); } });
   UI.wrap(['Sem brilho extra nem efeitos pesados: para PCs mais fracos.', 'Sem distorção de tela nem granulado.', 'Todos os efeitos visuais ligados.'][s.quality ?? 2], 360, 472, 560, 20, 14, '#cdb8ff');
   txt('ACESSIBILIDADE', 360, 510, 21, '#e2d4ff');
-  if (UI.button('calm', 360, 542, 272, 40, s.calm ? 'MENOS TREMOR: SIM' : 'MENOS TREMOR: NÃO', { size: 14, color: s.calm ? '#9a63ff' : undefined })) { s.calm = !s.calm; Save.save(); }
-  if (UI.button('outl', 648, 542, 272, 40, s.outline ? 'CONTORNO NOS TIROS: SIM' : 'CONTORNO NOS TIROS: NÃO', { size: 14, color: s.outline ? '#9a63ff' : undefined })) { s.outline = !s.outline; Save.save(); }
+  if (UI.button('calm', 360, 542, 176, 40, s.calm ? 'MENOS TREMOR: SIM' : 'MENOS TREMOR: NÃO', { size: 12, color: s.calm ? '#9a63ff' : undefined })) { s.calm = !s.calm; Save.save(); }
+  if (UI.button('outl', 552, 542, 176, 40, s.outline ? 'CONTORNO: SIM' : 'CONTORNO: NÃO', { size: 12, color: s.outline ? '#9a63ff' : undefined })) { s.outline = !s.outline; Save.save(); }
+  if (UI.button('assist', 744, 542, 176, 40, s.assist ? 'ASSISTIDO: SIM' : 'ASSISTIDO: NÃO', { size: 12, color: s.assist ? '#9a63ff' : undefined })) { s.assist = !s.assist; Save.save(); }
   const sure = G.confirmReset;
   if (UI.button('reset', 360, 598, 270, 40, sure ? 'TEM CERTEZA? CLIQUE DE NOVO' : 'APAGAR PROGRESSO', { size: 14, color: '#c2185b' })) {
     if (sure) { Save.reset(); G.confirmReset = false; Snd.setVolumes(Save.data.settings.sfx, Save.data.settings.music); G.sel = 0; } else G.confirmReset = true;

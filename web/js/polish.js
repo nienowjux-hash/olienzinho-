@@ -75,6 +75,7 @@ Screens.over = function () {
   const px = 400, py = 270; UI.panel(px, py, 480, 70 + rows.length * 44, { r: 22 });
   rows.forEach(([a, b], i) => { const k = easeOut(clamp((t - 1.3 - i * .15) / .4, 0, 1)); ctx.globalAlpha = k; txt(a, px + 36 - (1 - k) * 40, py + 28 + i * 44, 21, '#cdb8ff', 'left', 700); txt(b, px + 444, py + 26 + i * 44, 25, i === rows.length - 1 ? '#ffcf6b' : '#fff', 'right'); });
   ctx.globalAlpha = 1;
+  Visual8.recapDraw(t, r);
   // menu em texto
   const my = 590; let x = 90;
   const again = end ? () => { if (G.rush) Visual5.startRush(); else if (G.daily) Game.startDaily(); else Game.startEndless(); } : () => Game.enter(G.stageIdx, { skipStory: true });

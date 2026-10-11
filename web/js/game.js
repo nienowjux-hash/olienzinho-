@@ -44,7 +44,7 @@ function recalcStats(p) {
   if (p.weapon === 'orbi') { p.maxHp = Math.max(2, p.maxHp - 2); p.magnet += 40; p.dashCdMax *= .9; p.specCdMax *= 1.35; p.dmg *= .85; }
   if (G.dmod === 'glass') { p.maxHp = 3; p.dmg *= 1.5; }
   { const lv = Visual5.wl(p.weapon); p.dmg *= 1 + .12 * (lv - 1); p.specCdMax *= Math.pow(.93, lv - 1); if (lv >= 5) p.crit += .1; }
-  Visual5.relicStats(p);
+  Visual5.relicStats(p); Visual8.styleStats(p);
 }
 
 const Game = {
@@ -62,7 +62,7 @@ const Game = {
     G.player = newPlayer();
     { const ld = Save.data.loadout; G.player.weapon = Save.data.owned.weapons[ld.weapon] ? ld.weapon : 'violet'; if (ld.char === 'orbi' && Save.data.cleared[3]) G.player.weapon = 'orbi'; }
     G.stats = { hits: 0, bossHit: 0, maxCombo: 0, minis: 0 }; G.timers = []; G.hitstop = 0; G.mega = null; G.miniDone = false; G.endless = false; G.daily = false; G.training = false; G.dmod = null; G.well = null; G.relic = null; G.grazeN = 0; G.rush = false; G.sanct = false; G.fragSpawned = false; G.encSpawned = false; Extras.reset(); Extras.tutStart();
-    recalcStats(G.player); G.player.hp = G.player.maxHp; Visual6.initP2();
+    recalcStats(G.player); G.player.hp = G.player.maxHp; Visual6.initP2(); Visual8.onStart();
     Events.banner = { t: 0, title: G.stage.name.toUpperCase(), sub: 'FASE ' + (idx + 1), c: G.stage.tint };
     G.finisher = null; G.cut = null; G.story = null;
     Save.data.runs++; Save.save();
@@ -200,7 +200,7 @@ const Game = {
 
   gameOver() {
     this.endRunSave(0, false);
-    G.result = { coins: G.runCoins, score: G.score, kills: G.kills, level: G.level };
+    G.result = { coins: G.runCoins, score: G.score, kills: G.kills, level: G.level, recap: Visual8.recap() };
     const toOver = () => { G.state = 'over'; G.overAt = undefined; G.overQuote = null; Snd.play('gameOver'); };
     if (G.endless) G.result.wave = G.wave;
     if (G.rush) G.result.wave = G.rushI;
@@ -321,7 +321,7 @@ const Game = {
     const p = G.player;
     G.t += dt; G.intro += dt;
     World.update(dt, p.vy);
-    Events.update(dt); Events.updateHazards(dt); Extras.update(dt); Visual.update(dt); Visual2.update(dt); Visual5.update(dt); Visual6.update(dt); Extras.tutUpdate(dt); if (G.training) Extras.trainUpdate(dt);
+    Events.update(dt); Events.updateHazards(dt); Extras.update(dt); Visual.update(dt); Visual2.update(dt); Visual5.update(dt); Visual6.update(dt); Visual8.update(dt); Extras.tutUpdate(dt); if (G.training) Extras.trainUpdate(dt);
     Snd.setLayers(p.dead ? 0 : G.combo >= 25 ? 2 : G.combo >= 10 ? 1 : 0, !p.dead && p.hp <= Math.max(1, p.maxHp * .25) ? 1 : 0);
     this.director(dt);
     if (!p.dead) this.updatePlayer(dt); else if (!G.p2 || G.p2.dead) { G.overT -= rdt; if (G.overT <= 0) { this.gameOver(); return; } }
@@ -334,7 +334,7 @@ const Game = {
       b.x += b.vx * dt; b.y += b.vy * dt; b.life -= dt;
       if (b.acc) { const s = Math.hypot(b.vx, b.vy) + b.acc * dt, a = Math.atan2(b.vy, b.vx); b.vx = Math.cos(a) * s; b.vy = Math.sin(a) * s; }
       if (b.life <= 0 || b.x < -60 || b.x > W + 60 || b.y < -60 || b.y > H + 60) b.dead = true;
-      else if (!p.dead && Math.hypot(b.x - p.x, b.y - p.y - 6) < b.r + 10) { b.dead = true; hurtPlayer(1); }
+      else if (!p.dead && Math.hypot(b.x - p.x, b.y - p.y - 6) < b.r + 10) { b.dead = true; G.hitSrc = 'bullet:' + b.src; hurtPlayer(1); }
       else if (!p.dead && !b.grazed && Math.hypot(b.x - p.x, b.y - p.y - 6) < b.r + 30) Visual5.graze(b);
       if (!b.dead && G.p2 && !G.p2.dead && Math.hypot(b.x - G.p2.x, b.y - G.p2.y - 6) < b.r + 10) { b.dead = true; Visual6.hurtP2(1); }
     }

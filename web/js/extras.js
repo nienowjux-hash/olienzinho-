@@ -306,7 +306,7 @@ Game.enter = function (idx, opts = {}) {
 Screens.loading = function () {
   const L = G.load; if (!L) { Game.goSelect(); return; }
   L.t += 1 / 60; const t = L.t, s = STAGES[L.idx], k = easeOut(clamp(t / .6, 0, 1));
-  ctx.fillStyle = 'rgba(3,1,11,.62)'; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = 'rgba(3,1,11,.45)'; ctx.fillRect(0, 0, W, H);
   const bh = 90 * k; ctx.fillStyle = '#03010b'; ctx.fillRect(0, 0, W, bh); ctx.fillRect(0, H - bh, W, bh);
   const e = easeOut(clamp((t - .3) / .6, 0, 1)), X = 120;
   ctx.globalAlpha = e; ctx.fillStyle = s.tint; ctx.fillRect(X + 4, 250, 90 * e, 4);

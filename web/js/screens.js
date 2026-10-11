@@ -568,12 +568,12 @@ const Screens = {
       txt('GUARDIÃO  DAS  ESTRELAS', X0 + 4, Y0 + 46, 22, '#ffb340', 'left', 800); ctx.globalAlpha = 1;
     }
     // menu em texto, com marcador dourado
-    const items = [['play', 'JOGAR', 318, 46, ''], ['endless', 'MODOS EXTRAS', 390, 30, ''], ['rank', 'RANKING', 436, 30, ''], ['shop', 'LOJA', 482, 30, '★ ' + Save.data.coins], ['opt', 'OPÇÕES', 528, 30, '']];
+    const items = [['play', 'JOGAR', 296, 46, ''], ['endless', 'MODOS EXTRAS', 366, 30, ''], ['rank', 'RANKING', 410, 30, ''], ['mis', 'MISSÕES', 454, 30, Visual8.missionsEnsure().list.filter(m => m.done).length + '/3'], ['shop', 'LOJA', 498, 30, '★ ' + Save.data.coins], ['opt', 'OPÇÕES', 542, 30, '']];
     if (tt >= 3) {
       items.forEach(([id, label, y, size, sub], i) => {
         const f = UI.focus(id), e = easeBack((tt - 3 - i * .12) / .45), w = size > 40 ? 300 : 230;
         if (UI.hit(id, X0 - 30, y - 8, w + 60, size + 22, { sound: id === 'play' ? 'uiSelect' : 'uiSelect' })) {
-          if (id === 'play') Game.goSelect(); else if (id === 'endless') G.state = 'modes'; else if (id === 'rank') G.state = 'rank'; else if (id === 'shop') { G.shopBack = 'title'; G.state = 'shop'; } else { G.setBack = 'title'; G.state = 'settings'; }
+          if (id === 'play') Game.goSelect(); else if (id === 'endless') G.state = 'modes'; else if (id === 'rank') G.state = 'rank'; else if (id === 'mis') G.state = 'missions'; else if (id === 'shop') { G.shopBack = 'title'; G.state = 'shop'; } else { G.setBack = 'title'; G.state = 'settings'; }
         }
         G.mf = G.mf || {}; G.mf[id] = lerp(G.mf[id] || 0, f ? 1 : 0, .18);
         const k = G.mf[id];
@@ -587,7 +587,7 @@ const Screens = {
         if (sub) { ctx.save(); ctx.font = '900 ' + size + 'px ' + FONT; const lw = ctx.measureText(label).width; ctx.restore(); txt(sub, X0 + lw + 18, y + (size > 40 ? 6 : 8), 20, '#ffcf6b', 'left', 800); }
         ctx.restore();
       });
-      ctx.globalAlpha = .55; txt('↑ ↓  navegar     ENTER  escolher', X0 + 2, 596, 15, '#8f84c4', 'left', 700); ctx.globalAlpha = 1;
+      ctx.globalAlpha = .55; txt('↑ ↓  navegar     ENTER  escolher', X0 + 2, 604, 15, '#8f84c4', 'left', 700); ctx.globalAlpha = 1;
     } else if (tt > 2.3 && !Snd.ready) { ctx.globalAlpha = .5 + .5 * Math.sin(t * 4); txt('PRESSIONE QUALQUER TECLA', X0 + 4, 330, 22, '#e2d4ff', 'left', 800); ctx.globalAlpha = 1; }
     txt('olien.digital', X0 + 4, H - bh - 34, 15, '#8f84c4', 'left', 800);
     txt(Save.data.unlocked >= 5 ? 'Parte 2 — O Coração do Vazio' : 'Parte 1 — O Coração Partido', W - 44, H - bh - 34, 15, '#a89dd8', 'right', 800);

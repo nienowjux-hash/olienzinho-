@@ -624,12 +624,14 @@ const Game = {
     if (p.hp !== G.hpPrev) { G.hpPulse = 1; G.hpIdx = Math.min(p.hp, G.hpPrev); G.hpPrev = p.hp; }
     G.hpPulse = Math.max(0, G.hpPulse - dtH * 3);
     const low = p.hp <= Math.max(1, p.maxHp * .25);
+    const hsp = Math.min(38, 520 / Math.max(1, p.maxHp));
     for (let i = 0; i < p.maxHp; i++) {
-      const sc = i === G.hpIdx ? 1 + G.hpPulse * .6 : 1, cxh = 24 + i * 38 + 15;
+      const sc = i === G.hpIdx ? 1 + G.hpPulse * .6 : 1, cxh = 24 + i * hsp + 15;
       ctx.save(); ctx.translate(cxh, 66); ctx.scale(sc, sc * (low && i < p.hp ? 1 + Math.sin(World.t * 9) * .12 : 1));
-      ctx.fillStyle = i < p.hp ? (low ? '#ff3b5f' : '#ff5f8f') : 'rgba(255,255,255,.15)'; ctx.beginPath(); ctx.roundRect(-15, -6, 30, 12, 6); ctx.fill(); ctx.restore();
+      ctx.beginPath(); ctx.moveTo(0, 12); ctx.bezierCurveTo(-19, -1, -13, -16, 0, -7); ctx.bezierCurveTo(13, -16, 19, -1, 0, 12); ctx.closePath();
+      if (i < p.hp) { ctx.fillStyle = low ? '#ff3b5f' : '#ff5f8f'; ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,.75)'; ctx.lineWidth = 1.6; ctx.stroke(); ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.beginPath(); ctx.ellipse(-7, -6, 4, 2.4, -.6, 0, TAU); ctx.fill(); } else { ctx.fillStyle = 'rgba(255,255,255,.07)'; ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,.28)'; ctx.lineWidth = 1.4; ctx.stroke(); } ctx.restore();
     }
-    if (p.shieldReady) { ctx.strokeStyle = '#7fe0ff'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(24 + p.maxHp * 38 + 10, 66, 9, 0, 7); ctx.stroke(); }
+    if (p.shieldReady) { ctx.strokeStyle = '#7fe0ff'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(24 + p.maxHp * hsp + 10, 66, 9, 0, 7); ctx.stroke(); }
     // direita
     G.scoreShown += (G.score - G.scoreShown) * Math.min(1, 10 * dtH); if (Math.abs(G.score - G.scoreShown) < 1) G.scoreShown = G.score;
     if (G.score !== G.scorePrev) { G.scorePop = 1; G.scorePrev = G.score; } G.scorePop = Math.max(0, G.scorePop - dtH * 4);

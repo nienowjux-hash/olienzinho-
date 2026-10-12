@@ -808,6 +808,18 @@ const Snd = (() => {
   }
   function setIntensity(i) { mus.inten = i; }
   function setTempo(m) { mus.tempoMul = m; }
+  // ambiente de cada setor: ruido filtrado que respira devagar, bem baixinho
+  let amb = null;
+  const AMB = { espaco: { type: 'lowpass', f: 180, q: .5, lfo: .07, d: 60, g: .03 }, poeira: { type: 'bandpass', f: 260, q: .7, lfo: .11, d: 120, g: .04 }, tempestade: { type: 'bandpass', f: 900, q: .6, lfo: .35, d: 500, g: .05 }, solar: { type: 'lowpass', f: 320, q: .8, lfo: .09, d: 140, g: .06 }, cemiterio: { type: 'bandpass', f: 420, q: 1.6, lfo: .08, d: 160, g: .035 }, vazio: { type: 'lowpass', f: 120, q: 1, lfo: .05, d: 40, g: .07 }, luz: { type: 'highpass', f: 2400, q: .8, lfo: .13, d: 800, g: .012 }, ondas: { type: 'lowpass', f: 650, q: .7, lfo: .16, d: 380, g: .07 }, espelho: { type: 'highpass', f: 3200, q: 3, lfo: .22, d: 1200, g: .01 }, coracao: { type: 'lowpass', f: 150, q: 1.2, lfo: 1.1, d: 90, g: .07 } };
+  function setAmbience(kind) {
+    if (!ac) return; if (amb && amb.kind === kind) return; const t = now();
+    if (amb) { const o = amb; amb = null; try { o.g.gain.cancelScheduledValues(t); o.g.gain.setTargetAtTime(.0001, t, .6); } catch (e) { } setTimeout(() => { try { o.src.stop(); o.lfo.stop(); } catch (e) { } }, 3500); }
+    const P = AMB[kind]; if (!P) return;
+    const src = ac.createBufferSource(); src.buffer = noiseBuf; src.loop = true; const f = ac.createBiquadFilter(); f.type = P.type; f.frequency.value = P.f; f.Q.value = P.q;
+    const lfo = ac.createOscillator(), ld = ac.createGain(); lfo.frequency.value = P.lfo; ld.gain.value = P.d; lfo.connect(ld); ld.connect(f.frequency);
+    const g = ac.createGain(); g.gain.value = .0001; g.gain.setTargetAtTime(P.g * vol.sfx, t, 1.5); src.connect(f); f.connect(g); route(g, {}); src.start(t, Math.random() * 1.5); lfo.start(t);
+    amb = { kind, src, lfo, g };
+  }
   function setLayers(c, d) { mus.lay.combo = c; mus.lay.danger = d; }
   function musicStop(fast) {
     pending = null;
@@ -832,5 +844,5 @@ const Snd = (() => {
     let p = 0; for (const v of b) p = Math.max(p, Math.abs(v)); return p;
   }
 
-  return { get track() { return mus.on ? mus.key : null; }, init, play, panX, musicPlay, musicStop, setIntensity, setTempo, setLayers, setVolumes, peak, duck, get ready() { return !!ac; }, get state() { return ac && ac.state; } };
+  return { get track() { return mus.on ? mus.key : null; }, init, play, panX, musicPlay, musicStop, setIntensity, setTempo, setAmbience, setLayers, setVolumes, peak, duck, get ready() { return !!ac; }, get state() { return ac && ac.state; } };
 })();

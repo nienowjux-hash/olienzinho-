@@ -15851,8 +15851,8 @@ const h71 = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s 
     const r = cl.call(this); if (QL() < 1 || !G.stage || !G.bossDone) return r; const t = World.t - (G.clearAt ?? World.t), a = clamp((t - 1.2) / .8, 0, 1) * (.55 + .2 * Math.sin(World.t * 1.5)); if (a <= .02) return r;
     if (!Visual71.ghost || Visual71.ghostFor !== G.stageIdx) { try { Visual71.ghost = new BOSS_CLASSES[G.stage.boss](); Visual71.ghostFor = G.stageIdx; } catch (e) { Visual71.ghost = null; } }
     const gh = Visual71.ghost; if (!gh) return r; gh.t = World.t; gh.x = 0; gh.y = 0; gh.phase = 0; gh.flash = 0; gh.state = 'fight'; gh.dive = null; gh.clones = gh.clones || []; gh.hp = gh.maxHp;
-    ctx.save(); ctx.globalAlpha = a; ctx.translate(1160, 500); const sc = clamp(110 / (gh.rad || 110), .25, .7); ctx.scale(sc, sc); try { gh.draw(); } catch (e) { } ctx.restore();
-    ctx.save(); ctx.globalAlpha = a + .2; txt('“' + (FARE[G.stageIdx] || '...') + '”', 1160, 585, 13, '#cdb8ff', 'center', 700); ctx.restore(); return r;
+    ctx.save(); ctx.globalAlpha = a; ctx.translate(1160, 522); const sc = clamp(80 / (gh.rad || 110), .2, .5); ctx.scale(sc, sc); try { gh.draw(); } catch (e) { } ctx.restore();
+    ctx.save(); ctx.globalAlpha = a + .2; txt('“' + (FARE[G.stageIdx] || '...') + '”', 1160, 636, 13, '#cdb8ff', 'center', 700); ctx.restore(); return r;
   };
 }
 

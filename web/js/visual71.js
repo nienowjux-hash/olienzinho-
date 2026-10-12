@@ -54,7 +54,7 @@ const h71 = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s 
 {
   const vd = Visual13.draw;
   Visual13.draw = function () {
-    vd.call(this); if (QL() < 1 || G.state !== 'play') return; const E = G.enemies, t = World.t; ctx.save(); ctx.lineCap = 'round';
+    vd.call(this); if (QL() < 1 || G.state !== 'play' || G.enemies.length > 24) return; const E = G.enemies, t = World.t; ctx.save(); ctx.lineCap = 'round';
     for (const e of E) { if (e.dead || e.type !== 'shooter' && e.type !== 'captain' || e.shootT === undefined || e.mode === 'enter') continue; const k = 1 - clamp(e.shootT / .7, 0, 1); if (e.shootT > .7 || e.shootT <= 0) continue; ctx.globalAlpha = .35 + .5 * k; ctx.strokeStyle = '#ff6a6a'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(e.x, e.y, (e.rad || 24) + 8, -Math.PI / 2, -Math.PI / 2 + TAU * k); ctx.stroke(); }
     const W2 = E.filter(e => !e.dead && e.wv).sort((a, b) => a.x - b.x); ctx.globalCompositeOperation = 'lighter'; ctx.lineWidth = 2;
     for (let i = 1; i < W2.length; i++) { const a = W2[i - 1], b = W2[i]; if (Math.hypot(a.x - b.x, a.y - b.y) < 110) { ctx.globalAlpha = .28; ctx.strokeStyle = ok71(a.glow) ? a.glow : '#ffd36a'; ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); } }

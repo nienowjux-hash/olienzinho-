@@ -42,7 +42,7 @@ Screens.codex = function () {
         const bossId = id.startsWith('boss:');
         if (bossId) { ctx.save(); ctx.translate(x + 44, y + 44); ctx.globalCompositeOperation = 'lighter'; drawGlow(0, 0, 40, '#ff8a5f', .6); ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = '#2a1050'; ctx.strokeStyle = '#ff8a5f'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(0, 0, 22, 0, TAU); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#ffe9a8'; ctx.beginPath(); ctx.arc(0, 0, 7, 0, TAU); ctx.fill(); ctx.restore(); }
         else { ctx.save(); ctx.translate(0, 0); try { Art.enemy({ x: x + 44, y: y + 46, rad: Math.min(22, (ENEMY_DEF[id] || { rad: 22 }).rad * .8), type: id, age: 9 + t, ph: i, hit: 0, glow: (ENEMY_DEF[id] || {}).glow || '#ff8a1f', look: 0, mode: 'hover', shield: 0 }); } catch (e) { } ctx.restore(); }
-        txt(name, x + 84, y + 12, 17, '#fff', 'left', 900); UI.wrap(desc, x + 84, y + 36, 190, 17, 12, '#cdb8ff'); UI.wrap('Dica: ' + tip, x + 14, y + 84, 258, 16, 11, '#ffe9a8');
+        txt(name, x + 84, y + 12, name.length > 12 ? 14 : 17, '#fff', 'left', 900); UI.wrap(desc, x + 84, y + 36, 190, 17, 12, '#cdb8ff'); UI.wrap('Dica: ' + tip, x + 14, y + 84, 258, 16, 11, '#ffe9a8');
         if (!bossId) txt('derrotados: ' + (cdx[id].kills || 0), x + 270, y + 12, 11, '#8a7fb0', 'right', 800);
       } else { txt('???', x + 142, y + 44, 38, '#4a3a70', 'center', 900); txt('ainda não encontrado', x + 142, y + 98, 12, '#5a4a80', 'center', 700); }
       ctx.restore();

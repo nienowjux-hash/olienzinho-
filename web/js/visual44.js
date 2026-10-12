@@ -224,3 +224,30 @@ B.warden = (e, r, _t, hit) => {
   if (cl) { ctx.fillStyle = hit ? '#fff' : V44.lg(-r, -r, r, r, [[0, '#ffffff'], [.4, '#c8d8ff'], [.6, '#ffffff'], [1, '#8a9aff']]); V44.poly(Array.from({ length: 6 }, (_, i) => [Math.cos(i / 6 * TAU + .5236) * r * .86, Math.sin(i / 6 * TAU + .5236) * r * 1.0])); ctx.fill(); const gl = ((World.t * 1.5) % 1) * r * 2.4 - r * 1.2; ctx.save(); ctx.clip(); ctx.fillStyle = 'rgba(255,255,255,.8)'; ctx.fillRect(gl, -r, 8, r * 2); ctx.restore(); V44.glowAt(0, 0, r * 1.2, '#c8d8ff', .35); }
   else { ctx.fillStyle = '#0a0418'; ctx.beginPath(); ctx.ellipse(0, 0, r * .72, r * .52, 0, 0, TAU); ctx.fill(); V44.eye(0, 0, r * .36, e, hit ? '#ff3a3a' : '#c040ff', hit); V44.glowAt(0, 0, r * 1.1, '#c040ff', .3); }
 };
+
+// Enguia: corpo em segmentos (coordenadas do mundo) seguindo o historico de posicoes + cabeca com dentes e olho
+Visual44.eel = function (e, r, _t, hit) {
+  const t = World.t + (e.ph || 0), H_ = e.hist || [], dir = e.dir || 1, pts = [[e.x, e.y]];
+  for (let i = 1; i <= 10; i++) { const q = H_[Math.min(H_.length - 1, i * 6)]; if (q) pts.push(q); }
+  ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  // sombra e barbatana dorsal
+  for (let i = pts.length - 1; i >= 1; i--) { const q = pts[i], rr = r * (1 - i * .075), n = pts[i - 1], a = Math.atan2(n[1] - q[1], n[0] - q[0]);
+    ctx.save(); ctx.translate(q[0], q[1]); ctx.rotate(a); ctx.fillStyle = hit ? '#fff' : (i % 2 ? '#e8924a' : '#ff6a8a'); ctx.beginPath(); ctx.moveTo(-rr * .5, -rr * .85); ctx.lineTo(0, -rr * (1.45 + Math.sin(t * 6 + i) * .1)); ctx.lineTo(rr * .5, -rr * .85); ctx.fill(); ctx.restore(); }
+  // corpo: circulos que diminuem com escamas e barriga clara
+  for (let i = pts.length - 1; i >= 1; i--) { const q = pts[i], rr = r * (1 - i * .075), n = pts[i - 1], a = Math.atan2(n[1] - q[1], n[0] - q[0]);
+    ctx.save(); ctx.translate(q[0], q[1]); ctx.rotate(a); ctx.fillStyle = hit ? '#fff' : V44.lg(0, -rr, 0, rr, [[0, i % 2 ? '#1fb89a' : '#2ad8b0'], [.65, '#0f7a68'], [1, '#c8fff0']]); ctx.beginPath(); ctx.ellipse(0, 0, rr * 1.12, rr, 0, 0, TAU); ctx.fill(); ctx.strokeStyle = 'rgba(4,50,44,.75)'; ctx.lineWidth = 2.6; ctx.stroke();
+    ctx.strokeStyle = 'rgba(180,255,235,.45)'; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.arc(-rr * .2, 0, rr * .6, -1.1, 1.1); ctx.stroke(); ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.beginPath(); ctx.ellipse(-rr * .15, -rr * .38, rr * .3, rr * .14, 0, 0, TAU); ctx.fill(); ctx.restore(); }
+  // arcos eletricos entre segmentos
+  ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = '#9fffe8'; ctx.lineWidth = 2; for (let i = 1; i < pts.length - 1; i += 2) { if (Math.sin(t * 9 + i * 2.1) < .2) continue; const a = pts[i], b = pts[i + 1]; ctx.globalAlpha = .7; ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo((a[0] + b[0]) / 2 + Math.sin(t * 40 + i) * 7, (a[1] + b[1]) / 2 + Math.cos(t * 37 + i) * 7); ctx.lineTo(b[0], b[1]); ctx.stroke(); } ctx.restore();
+  // cabeca
+  ctx.save(); ctx.translate(e.x, e.y); ctx.scale(dir, 1); const sc = easeBack(clamp((e.age || 1) / .35, 0, 1)); ctx.scale(sc, sc);
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(0, 0, r * 2.2, '#35f0c0', .3); ctx.restore();
+  ctx.fillStyle = hit ? '#fff' : V44.lg(0, -r, 0, r, [[0, '#5affd8'], [.55, '#18b090'], [1, '#bfffee']]); ctx.beginPath(); ctx.ellipse(4, 0, r * 1.3, r * .98, 0, 0, TAU); ctx.fill(); ctx.strokeStyle = 'rgba(4,50,44,.8)'; ctx.lineWidth = 3.2; ctx.stroke();
+  // mandibula com dentes
+  ctx.fillStyle = '#0a3a30'; ctx.beginPath(); ctx.moveTo(r * .35, r * .08); ctx.quadraticCurveTo(r * 1.1, r * .2, r * 1.5, r * .5); ctx.quadraticCurveTo(r * 1.0, r * .75, r * .35, r * .55); ctx.fill(); ctx.fillStyle = '#fff'; for (let i = 0; i < 4; i++) { const x = r * (.55 + i * .22); ctx.beginPath(); ctx.moveTo(x, r * .16 + i * r * .04); ctx.lineTo(x + 5, r * .4 + i * r * .04); ctx.lineTo(x + 10, r * .18 + i * r * .06); ctx.fill(); }
+  // barbilhoes e pontos eletricos
+  ctx.strokeStyle = '#ff6a8a'; ctx.lineWidth = 3; for (const k of [-1, 1]) { ctx.beginPath(); ctx.moveTo(r * 1.1, r * .12); ctx.quadraticCurveTo(r * 1.5, r * .12 + k * r * .35 + Math.sin(t * 5 + k) * 4, r * 1.75, r * .25 + k * r * .55); ctx.stroke(); }
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = '#9fffe8'; for (let i = 0; i < 3; i++) { ctx.globalAlpha = .5 + Math.sin(t * 12 + i * 2) * .3; ctx.beginPath(); ctx.arc(-r * .3 + i * r * .28, -r * .6, 3.4, 0, TAU); ctx.fill(); } ctx.restore();
+  ctx.scale(1, 1); V44.eye(r * .52, -r * .22, r * .26, { x: e.x, y: e.y, ph: e.ph }, '#ff6a8a', hit);
+  ctx.restore();
+};

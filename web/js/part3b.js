@@ -193,6 +193,7 @@ const leave = (e, dt, at, v = 190) => { if (e.age > at) { e.y -= v * dt; if (e.y
     const t = World.t + e.ph, r = e.rad, hit = e.hit > 0;
     ctx.save(); ctx.translate(e.x, e.y); const sc = easeBack(e.age / .35); ctx.scale(sc, sc);
     ctx.globalCompositeOperation = 'lighter'; drawGlow(0, 0, r * 2.3, e.glow, .3); ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
+    if (e.type === 'eel' && typeof Visual44 !== 'undefined' && Visual44.eel) { ctx.restore(); Visual44.eel(e, r, t, hit); return; }
     if (typeof Visual44 !== 'undefined' && Visual44.bodies[e.type] && e.type !== 'eel') { Visual44.bodies[e.type](e, r, t, hit); ctx.restore(); return; }
     const K = e.type;
     if (K === 'prism') {

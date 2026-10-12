@@ -411,7 +411,7 @@ const Screens = {
       const ch = CHARS[pg.who], text = pg.text, len = text.length;
       const mood = pg.mood, spd = (mood === 'sad' ? .75 : mood === 'fade' ? .6 : mood === 'angry' ? 1.1 : mood === 'shock' ? 1.25 : pg.who === 'V' ? .85 : 1);
       const sp = 44 * spd, shown = Math.min(len, Math.floor(S.t * sp));
-      if (shown > S.lastShown && text[shown - 1] !== ' ' && shown % 2 === 0) Snd.play('blip', { who: pg.who });
+      if (shown > S.lastShown && text[shown - 1] !== ' ' && shown % 2 === 0) Snd.play('blip', { who: pg.who, mood: pg.mood });
       S.lastShown = shown;
       if (shown >= len && S.doneAt === null) S.doneAt = now;
       if (S.prevWho !== pg.who) { if (S.prevWho && S.prevWho !== 'N' && pg.who !== 'N') S.other = { who: S.prevWho, mood: S.prevMood }; S.prevWho = pg.who; S.sw = 0; } S.sw += dt; S.prevMood = mood;

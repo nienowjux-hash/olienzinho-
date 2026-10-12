@@ -53,7 +53,7 @@ Visual3.furyUpdate = function (dt) {
   // dialogo
   if (c.t > 2.05 && c.endAt === null) {
     const ln = c.lines[c.li], full = ln[1].length;
-    if (c.typed < full) { const was = Math.floor(c.typed); c.typed = Math.min(full, c.typed + dt * 46); if (Math.floor(c.typed) !== was && Math.floor(c.typed) % 2 === 0) Snd.play('blip', { who: ln[0] }); }
+    if (c.typed < full) { const was = Math.floor(c.typed); c.typed = Math.min(full, c.typed + dt * 46); if (Math.floor(c.typed) !== was && Math.floor(c.typed) % 2 === 0) Snd.play('blip', { who: ln[0], mood: ln[0] === 'O' ? 'determined' : 'angry' }); }
     else c.wait += dt;
     const adv = c.t > 2.4 && (Input.pressed('enter') || Input.mouse.click);
     if (adv && c.typed < full) c.typed = full;

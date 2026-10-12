@@ -139,17 +139,25 @@ const Snd = (() => {
       voice('triangle', f * 2.3, f * 1.2, t, .06, .02, { pan: p, a: .003 });
     },
     blip(o) {
-      // "voz" de cada personagem ao digitar o texto
-      const t = now(), w = o.who;
-      if (w === 'O') { const f = rnd(780, 1150); voice('triangle', f, f * 1.22, t, .07, .05, { a: .003, rev: .15 }); }
-      else if (w === 'B') { const f = rnd(430, 640); voice('square', f, f * .96, t, .055, .024, { lp: 2200, a: .003, rev: .1 }); }
-      else if (w === 'L') { const f = rnd(900, 1300); voice('sine', f, f, t, .12, .04, { a: .004, rev: .5 }); voice('sine', f * 1.5, f * 1.5, t, .1, .02, { rev: .5 }); }
-      else if (w === 'V') { const f = rnd(70, 95); voice('sawtooth', f, f * .9, t, .14, .05, { lp: 500, a: .01, rev: .5 }); voice('sine', f * 1.51, f * 1.5, t, .1, .02, { rev: .4 }); }
-      else if (w === 'C') { const f = rnd(420, 560); voice('triangle', f, f * 1.08, t, .08, .045, { a: .006, rev: .25 }); }
-      else if (w === 'P') { const f = rnd(110, 150); voice('square', f, f * .95, t, .1, .04, { lp: 700, a: .006, rev: .2 }); }
-      else if (w === 'E') { const f = rnd(560, 760); voice('sine', f, f * 1.05, t, .11, .04, { a: .008, rev: .45 }); }
-      else if (w === 'S') { const f = rnd(210, 290); voice('sawtooth', f, f * 1.02, t, .1, .035, { lp: 1000, a: .008, rev: .3 }); }
-      else { const f = rnd(190, 250); voice('sine', f, f, t, .1, .03, { a: .01, rev: .3 }); }
+      // "voz" de cada personagem ao digitar o texto, que muda com a emocao da fala
+      const t = now(), w = o.who, m = o.mood;
+      const pm = { happy: 1.1, laugh: 1.22, sad: .84, angry: .88, shock: 1.3, worry: 1.04, fear: 1.16, determined: .93, free: 1.08, fade: .9 }[m] || 1, vm = { sad: .7, fade: .55, angry: 1.25, shock: 1.2, laugh: 1.1 }[m] || 1, dm = { sad: 1.6, fade: 1.8, shock: .7, angry: .85, laugh: .8 }[m] || 1;
+      const V = (ty, f0, f1, tt, d, g, op) => {
+        const f = f0 * pm, ff = f1 * pm * (m === 'sad' ? .93 : m === 'shock' ? 1.12 : 1);
+        voice(ty, f, ff, tt, d * dm, g * vm, op);
+        if (m === 'laugh') voice('sine', f * 1.5, f * 1.6, tt + .045, d * .7, g * .6, { a: .003, rev: .15 });
+        else if (m === 'fear' || m === 'worry') voice('sine', f * 1.03, f * 1.09, tt + .03, d * .8, g * .5, { a: .004 });
+        else if (m === 'angry') voice('sawtooth', f * .5, f * .46, tt, d * .9, g * .7, { lp: 700, a: .004 });
+      };
+      if (w === 'O') { const f = rnd(780, 1150); V('triangle', f, f * 1.22, t, .07, .05, { a: .003, rev: .15 }); }
+      else if (w === 'B') { const f = rnd(430, 640); V('square', f, f * .96, t, .055, .024, { lp: 2200, a: .003, rev: .1 }); }
+      else if (w === 'L') { const f = rnd(900, 1300); V('sine', f, f, t, .12, .04, { a: .004, rev: .5 }); V('sine', f * 1.5, f * 1.5, t, .1, .02, { rev: .5 }); }
+      else if (w === 'V') { const f = rnd(70, 95); V('sawtooth', f, f * .9, t, .14, .05, { lp: 500, a: .01, rev: .5 }); V('sine', f * 1.51, f * 1.5, t, .1, .02, { rev: .4 }); }
+      else if (w === 'C') { const f = rnd(420, 560); V('triangle', f, f * 1.08, t, .08, .045, { a: .006, rev: .25 }); }
+      else if (w === 'P') { const f = rnd(110, 150); V('square', f, f * .95, t, .1, .04, { lp: 700, a: .006, rev: .2 }); }
+      else if (w === 'E') { const f = rnd(560, 760); V('sine', f, f * 1.05, t, .11, .04, { a: .008, rev: .45 }); }
+      else if (w === 'S') { const f = rnd(210, 290); V('sawtooth', f, f * 1.02, t, .1, .035, { lp: 1000, a: .008, rev: .3 }); }
+      else { const f = rnd(190, 250); V('sine', f, f, t, .1, .03, { a: .01, rev: .3 }); }
     },
     stinger() {
       // acorde heroico quando o chefe cai

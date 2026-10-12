@@ -195,14 +195,3 @@ SunGuardian.prototype.draw = function () {
   ctx.fillStyle = '#d9a04a'; ctx.beginPath(); ctx.moveTo(-14, 24); ctx.lineTo(0, 38); ctx.lineTo(14, 24); ctx.lineTo(0, 30); ctx.closePath(); ctx.fill(); ink48(2);
   this.flashOverlay(122); ctx.restore();
 };
-
-// ================= O VAZIO e O CORACAO: acabamento extra (as cenas especiais de morte e as 3 faces foram mantidas) =================
-{
-  const bd = Visual3.bossDraw;
-  Visual3.bossDraw = function (b) {
-    bd.call(this, b); if (!b || QL() < 2 || b.state === 'intro' || b.state === 'dying') return;
-    const n = b.constructor.name, t = World.t;
-    if (n === 'VoidBoss' && !b.nova) { ctx.save(); ctx.translate(b.x, b.y); ctx.globalCompositeOperation = 'lighter'; for (let k = 0; k < 2; k++) { ctx.save(); ctx.rotate(t * (.15 + k * .1) * (k ? -1 : 1)); ctx.strokeStyle = k ? 'rgba(255,233,168,.28)' : 'rgba(192,74,255,.4)'; ctx.lineWidth = 2.4; ctx.setLineDash([3, 14]); ctx.beginPath(); ctx.ellipse(0, 0, 170 + k * 30, 120 + k * 20, 0, 0, TAU); ctx.stroke(); ctx.restore(); } for (let i = 0; i < 12; i++) { const a = t * .5 + i * TAU / 12, R = 138 + Math.sin(t * 2 + i) * 6; ctx.fillStyle = '#e8d0ff'; ctx.globalAlpha = .6; ctx.fillRect(Math.cos(a) * R - 1.5, Math.sin(a) * R * .9 - 4, 3, 8); } ctx.restore(); }
-    if (n === 'Heart') { ctx.save(); ctx.translate(b.x, b.y); ctx.globalCompositeOperation = 'lighter'; const k = .5 + .5 * Math.sin(t * 2.4); ctx.strokeStyle = 'rgba(255,240,200,.35)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(0, 0, 100 + k * 8, Math.PI * .9, Math.PI * 2.1); ctx.stroke(); for (let i = 0; i < 6; i++) { const a = -Math.PI / 2 + (i - 2.5) * .26; drawGlow(Math.cos(a) * 112, Math.sin(a) * 112 - 4, 6, '#fff0b8', .55); } ctx.restore(); }
-  };
-}

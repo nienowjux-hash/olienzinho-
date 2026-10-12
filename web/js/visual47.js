@@ -57,7 +57,7 @@ Visual47.big = [
   const t0 = txt;
   txt = function (s, x, y, size, color = '#e2d4ff', align = 'left', weight = 900, base = 'top') {
     if (size >= 38 && (color === '#fff' || color === '#ffffff') && base === 'top' && QL() >= 1) {
-      ctx.save(); ctx.font = `${weight} ${size}px ${FONT}`; ctx.textAlign = align; ctx.textBaseline = 'top'; const g = ctx.createLinearGradient(0, y, 0, y + size * 1.15); g.addColorStop(0, '#ffffff'); g.addColorStop(.55, '#efe4ff'); g.addColorStop(1, '#b89aff'); ctx.shadowColor = 'rgba(150,100,255,.65)'; ctx.shadowBlur = 16; ctx.fillStyle = g; ctx.fillText(s, x, y); ctx.restore(); return;
+      ctx.save(); ctx.font = `400 ${size}px "Lilita One", ${FONT}`; ctx.textAlign = align; ctx.textBaseline = 'top'; const g = ctx.createLinearGradient(0, y, 0, y + size * 1.15); g.addColorStop(0, '#ffffff'); g.addColorStop(.55, '#efe4ff'); g.addColorStop(1, '#b89aff'); ctx.shadowColor = 'rgba(150,100,255,.65)'; ctx.shadowBlur = 16; ctx.fillStyle = g; ctx.fillText(s, x, y); ctx.restore(); return;
     }
     return t0(s, x, y, size, color, align, weight, base);
   };

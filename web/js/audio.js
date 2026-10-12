@@ -410,6 +410,34 @@ const Snd = (() => {
       noiseV(t, .3, .12, { type: 'highpass', f0: 4000 });
     },
     rumble(o) { noiseV(now(), o.dur || 1.5, .3, { type: 'lowpass', f0: 160, f1: 50, a: .3 }); },
+    // explosao final dos chefes: estalo, rugido grave e chuva de destroços (size 1 = grande, menor = chefes comuns)
+    bossBoom(o) {
+      const t = now(), k = o.size ?? .8, L = .8 + k * .6;
+      voice('sine', 95 * (.8 + k * .3), 16, t, 1.6 + k * 1.3, Math.min(1, .55 + k * .35));
+      voice('sine', 52, 18, t + .05, 2.2 + k * 1.6, .45 + k * .3, { rev: .4 });
+      noiseV(t, .22, .5 + k * .3, { type: 'highpass', f0: 2500, f1: 7000 });
+      noiseV(t, L * 1.9, .45 + k * .3, { type: 'lowpass', f0: 5500, f1: 90, a: .005, rev: .45 });
+      noiseV(t + .04, L, .35 + k * .2, { type: 'bandpass', f0: 1000, f1: 160, q: 1.1 });
+      voice('sawtooth', 140, 32, t, L * 1.1, .12 + k * .1, { lp: 900, rev: .3 });
+      for (let i = 0; i < 6 + Math.round(k * 6); i++) noiseV(t + .3 + i * .15 + rnd(0, .08), .2, .08 + k * .06, { type: 'bandpass', f0: rnd(1200, 4200), f1: rnd(300, 900), q: 2, pan: rnd(-.7, .7) });
+      duck(.55 + k * .35, 2.2 + k * 1.8);
+    },
+    // a destruicao do Vazio: o maior som do jogo
+    voidBoom() {
+      const t = now();
+      voice('sine', 100, 12, t, 4.4, 1);
+      voice('sine', 58, 15, t + .03, 5.2, .9, { rev: .5 });
+      voice('sine', 34, 12, t + .1, 6, .7, { rev: .7 });
+      noiseV(t, .3, .9, { type: 'highpass', f0: 2000, f1: 9000 });
+      noiseV(t, 4.2, .8, { type: 'lowpass', f0: 7000, f1: 60, a: .004, rev: .6 });
+      noiseV(t + .05, 2.4, .6, { type: 'bandpass', f0: 1100, f1: 120, q: 1 });
+      voice('sawtooth', 150, 26, t, 2.8, .26, { lp: 1100, rev: .4 });
+      voice('square', 70, 22, t, 1.8, .13, { lp: 500 });
+      [0, .55, 1.3].forEach((d, i) => { noiseV(t + d, 1.4, .45 - i * .1, { type: 'lowpass', f0: 3600 - i * 700, f1: 70, a: .005, rev: .6 }); voice('sine', 80 - i * 14, 16, t + d, 2.4, .6 - i * .12, { rev: .5 }); });
+      for (let i = 0; i < 26; i++) noiseV(t + .35 + i * .12 + rnd(0, .08), .25, .1, { type: 'bandpass', f0: rnd(1200, 5000), f1: rnd(250, 900), q: 2.2, pan: rnd(-.8, .8) });
+      [52, 59, 64, 71].forEach((m, i) => voice('sawtooth', mtof(m), mtof(m) * .5, t + .5, 4.5, .045, { lp: 650, a: .6, rev: .9 }));
+      duck(.97, 6.5);
+    },
   };
 
   const GAP = { graze: .07, blip: .028, shoot: .04, hit: .035, bossHit: .06, xp: .03, enemyShoot: .06, explode: .02, coin: .03 };

@@ -95,7 +95,7 @@ class Boss {
         if (Math.random() < .5) Snd.play('explode', { size: 1.1, pan: Snd.panX(ex) });
       }
       if (this.dyingT > (this.dyLen || 3.2)) {
-        flashScreen(1); shake(24); if (this.finalFx) this.finalFx();
+        flashScreen(1); shake(24); Snd.play(this.name === 'O Vazio' ? 'voidBoom' : 'bossBoom', { size: { 'Coração do Outro Lado': 1, 'Eco do Olienzinho': .85, 'Reflexo do Olienzinho': .85 }[this.name] || .75 }); if (this.finalFx) this.finalFx();
         burst(this.x, this.y, [this.col, '#ffe9a8', '#ffffff', '#b98cff'], 120, 700, 8);
         shedDebris(this.x, this.y, 26, [this.dark || '#3a2060', this.col, '#ffe9a8'], 520, 16);
         for (let i = 0; i < 4; i++) shockwave(this.x, this.y, 400 + i * 220, i % 2 ? '#ffe9a8' : this.col);

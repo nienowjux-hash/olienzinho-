@@ -193,7 +193,7 @@ STORY.stages.push(
     victory: 'Uma luz que não deixa espaço para ninguém não é luz. É solidão!',
     after: [
       { music: 'sad' }, { who: 'H', scene: 'freed', mood: 'sad', text: 'Eu só queria que ninguém sofresse mais... Por isso apaguei tudo que doía.' },
-      { music: 'hope' }, { who: 'O', scene: 'lit', mood: 'happy', text: 'Sofrer faz parte. Mas dividir a luz faz doer menos.' },
+      { music: 'hope' }, { who: 'O', scene: 'city', mood: 'happy', text: 'Sofrer faz parte. Mas dividir a luz faz doer menos.' },
       { who: 'H', scene: 'freedKeep', mood: 'free', text: '...Entendi. Leve o que sobrou de mim. Abrirá o caminho para o oceano.' },
     ],
   },
@@ -234,7 +234,7 @@ STORY.stages.push(
     victory: 'Meu céu não é perfeito. Mas é meu, e eu cuido dele!',
     after: [
       { music: 'sad' }, { who: 'R', scene: 'voidBreak', mood: 'sad', text: 'Então... as duas faces podiam ser a mesma. Nunca tinha pensado assim.' },
-      { music: 'hope' }, { who: 'O', scene: 'lit', mood: 'happy', text: 'Luz e sombra: cada uma só faz sentido com a outra.' },
+      { music: 'hope' }, { who: 'O', scene: 'city', mood: 'happy', text: 'Luz e sombra: cada uma só faz sentido com a outra.' },
       { who: 'R', scene: 'freedKeep', mood: 'free', text: 'Leve a minha luz, Olienzinho. E lembre-se: eu estarei no outro lado, sempre te guardando.' },
     ],
   },

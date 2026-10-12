@@ -143,7 +143,7 @@ const h61 = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s 
       ctx.restore();
     }
     const r = cr.call(this);
-    if (QL() >= 1 && u < 7) { const n = (Save.data.cleared || []).filter(Boolean).length, a = clamp(u / .8, 0, 1) * clamp((7 - u) / .8, 0, 1); ctx.save(); ctx.globalAlpha = a; ctx.fillStyle = 'rgba(12,4,34,.7)'; ctx.beginPath(); ctx.roundRect(W / 2 - 230, 600, 460, 70, 16); ctx.fill(); txt('SUA JORNADA', W / 2, 608, 14, '#cdb8ff', 'center', 800); txt(n + ' de ' + STAGES.length + ' setores salvos', W / 2, 630, 24, '#ffe9a8', 'center', 900); ctx.restore(); }
+    if (QL() >= 1 && u < 7) { const n = Object.values(Save.data.cleared || {}).filter(Boolean).length, a = clamp(u / .8, 0, 1) * clamp((7 - u) / .8, 0, 1); ctx.save(); ctx.globalAlpha = a; ctx.fillStyle = 'rgba(12,4,34,.7)'; ctx.beginPath(); ctx.roundRect(W / 2 - 230, 20, 460, 70, 16); ctx.fill(); txt('SUA JORNADA', W / 2, 28, 14, '#cdb8ff', 'center', 800); txt(n + ' de ' + STAGES.length + ' setores salvos', W / 2, 50, 24, '#ffe9a8', 'center', 900); ctx.restore(); }
     return r;
   };
 }

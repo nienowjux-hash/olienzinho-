@@ -98,7 +98,7 @@ STORY.stages.push({
   victory: 'Medo grande é só amor que ainda não achou uma casa!',
   after: [
     { music: 'sad' }, { who: 'K', scene: 'freed', mood: 'sad', text: 'Eu só queria que alguém ficasse. Todos que eu juntei foram embora de novo.' },
-    { music: 'hope' }, { who: 'O', scene: 'lit', mood: 'happy', text: 'Eu fico. O Orbi fica. O céu inteiro fica.' },
+    { music: 'hope' }, { who: 'O', scene: 'dawn', mood: 'happy', text: 'Eu fico. O Orbi fica. O céu inteiro fica.' },
     { who: 'K', scene: 'freedKeep', mood: 'free', text: '...Então eu posso descansar. Leve o meu batimento: ele vai marcar o ritmo das suas estrelas.' },
   ],
 });

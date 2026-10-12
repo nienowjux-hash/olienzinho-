@@ -10,14 +10,16 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Lilita+One&display=swap" rel="stylesheet">
 <style>
-  html,body{margin:0;height:100%;background:#0b0422;overflow:hidden}
+  html,body{margin:0;height:100%;background:radial-gradient(ellipse at 50% 40%,#241050 0%,#0b0422 75%);overflow:hidden}
   body{display:grid;place-items:center}
-  canvas{display:block}
+  canvas{display:block;box-shadow:0 0 90px rgba(120,70,255,.28)}
   #splash{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 40%,#2a0f5a 0%,#0b0422 70%);transition:opacity .7s;font-family:Nunito,system-ui,sans-serif}
   #splash.off{opacity:0;pointer-events:none}
   #splash .lg{font-weight:900;font-size:min(9vw,84px);letter-spacing:.06em;color:#fff;text-shadow:0 0 28px #9a63ff,0 0 60px #6a3aff;animation:sp 1.6s ease-in-out infinite alternate}
   #splash .sb{margin-top:6px;font-weight:800;font-size:min(2.4vw,22px);letter-spacing:.3em;color:#ffb340}
   #splash .bar{margin-top:34px;width:min(46vw,360px);height:6px;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden}
+  #splash .tx{margin-top:14px;font-weight:700;font-size:min(2vw,16px);letter-spacing:.12em;color:#cdb8ff;min-height:1.4em}
+  #splash .bar i.det{animation:none;transition:width .25s}
   #splash .bar i{display:block;height:100%;width:40%;border-radius:3px;background:linear-gradient(90deg,#9a63ff,#ffe9a8);animation:ld 1.2s ease-in-out infinite}
   #splash .st{position:absolute;width:4px;height:4px;border-radius:50%;background:#fff;opacity:.6;animation:tw 2.4s ease-in-out infinite}
   @keyframes sp{from{transform:scale(1)}to{transform:scale(1.03)}}
@@ -26,16 +28,16 @@
 </style>
 </head>
 <body>
-<div id="splash"><div class="lg">OLIENZINHO</div><div class="sb">GUARDIÃO DAS ESTRELAS</div><div class="bar"><i></i></div></div>
-<script>(function(){var s=document.getElementById('splash');for(var i=0;i<30;i++){var d=document.createElement('div');d.className='st';d.style.left=(Math.random()*100)+'%';d.style.top=(Math.random()*100)+'%';d.style.animationDelay=(Math.random()*2.4)+'s';s.appendChild(d);}addEventListener('load',function(){setTimeout(function(){s.classList.add('off');setTimeout(function(){s.remove();},900);},650);});})();</script>
+<div id="splash"><div class="lg">OLIENZINHO</div><div class="sb">GUARDIÃO DAS ESTRELAS</div><div class="bar"><i></i></div><div class="tx" id="sptx">Acendendo as estrelas…</div></div>
+<script>(function(){var s=document.getElementById('splash');for(var i=0;i<30;i++){var d=document.createElement('div');d.className='st';d.style.left=(Math.random()*100)+'%';d.style.top=(Math.random()*100)+'%';d.style.animationDelay=(Math.random()*2.4)+'s';s.appendChild(d);}var MS=['Acendendo as estrelas…','Acordando os guardiões…','Afinando o Coração de Luz…','Quase lá…'],mi=0,tx=document.getElementById('sptx');var iv=setInterval(function(){if(tx&&!window.__det){tx.textContent=MS[++mi%MS.length];}},1100);window.__prog=function(u){try{fetch(u).then(function(r){var L=+r.headers.get('content-length')||0,rd=r.body&&r.body.getReader?r.body.getReader():null;if(!rd)return;var got=0,bar=s.querySelector('.bar i');(function pump(){rd.read().then(function(x){if(x.done){clearInterval(iv);if(tx)tx.textContent='Pronto!';return;}got+=x.value.length;if(L&&bar){window.__det=1;bar.className='det';bar.style.width=Math.min(98,Math.round(got/L*100))+'%';if(tx)tx.textContent='Baixando o céu… '+Math.min(99,Math.round(got/L*100))+'%';}pump();});})();}).catch(function(){});}catch(e){}};addEventListener('load',function(){clearInterval(iv);setTimeout(function(){s.classList.add('off');setTimeout(function(){s.remove();},900);},650);});})();</script>
 <canvas id="c"></canvas>
 <script>if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost'||location.hostname==='127.0.0.1')&&!/nosw/.test(location.search))addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));</script>
 <script>
 // no site publicado carrega UM arquivo (bundle.js, gerado por tools/build_bundle.py); local ou com ?dev carrega os arquivos separados
-var BUNDLE_V='b6eb182913';
-var NAMES = ['util','audio','art','world','stages','upgrades','story','weapons','entities','events','boss','portraits','game','ui','screens','extras','extras2','part2','polish','visual','visual2','visual3','visual4','visual5','visual6','visual7','visual8','visual9','visual10','visual11','visual12','part3','visual13','visual14','visual15','part3b','visual16','part4','visual17','cine','visual18','visual19','visual20','cine2','visual21','visual22','visual23','visual24','visual25','visual26','visual27','visual28','visual29','visual30','visual31','visual32','visual33','visual34','visual35','visual36','visual37','visual38','cine3','cine4','visual39','visual40','visual41','visual42','visual43','visual44','visual45','visual46','visual47','visual48','visual49','visual50','visual51','visual52','visual53','visual54','visual55','visual56','visual57','visual58','visual59','visual60','visual61','visual62','visual63','visual64','visual65','visual66','visual67','visual68','visual69','visual70','visual71','devbot','main'];
+var BUNDLE_V='c85ad9b910';
+var NAMES = ['util','audio','art','world','stages','upgrades','story','weapons','entities','events','boss','portraits','game','ui','screens','extras','extras2','part2','polish','visual','visual2','visual3','visual4','visual5','visual6','visual7','visual8','visual9','visual10','visual11','visual12','part3','visual13','visual14','visual15','part3b','visual16','part4','visual17','cine','visual18','visual19','visual20','cine2','visual21','visual22','visual23','visual24','visual25','visual26','visual27','visual28','visual29','visual30','visual31','visual32','visual33','visual34','visual35','visual36','visual37','visual38','cine3','cine4','visual39','visual40','visual41','visual42','visual43','visual44','visual45','visual46','visual47','visual48','visual49','visual50','visual51','visual52','visual53','visual54','visual55','visual56','visual57','visual58','visual59','visual60','visual61','visual62','visual63','visual64','visual65','visual66','visual67','visual68','visual69','visual70','visual71','visual72','devbot','main'];
 var DEV = /[?&]dev\b/.test(location.search) || location.hostname === '127.0.0.1' || location.hostname === 'localhost';
-if ((!DEV || /[?&]bundle\b/.test(location.search)) && BUNDLE_V && !/[?&]nobundle\b/.test(location.search)) document.write('<script src="js/bundle.js?v=' + BUNDLE_V + '"><\/script>');
+if ((!DEV || /[?&]bundle\b/.test(location.search)) && BUNDLE_V && !/[?&]nobundle\b/.test(location.search)) { if (window.__prog) window.__prog('js/bundle.js?v=' + BUNDLE_V); document.write('<script src="js/bundle.js?v=' + BUNDLE_V + '"><\/script>'); }
 else NAMES.forEach(n => document.write('<script src="js/' + n + '.js?t=' + Date.now() + '"><\/script>'));
 </script>
 </body>

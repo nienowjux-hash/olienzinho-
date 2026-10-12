@@ -99,7 +99,7 @@ Visual34.oficina = function () {
     if (UI.hit(fid, x, y, w, h)) { if (c.ok) { Snd.play('uiSelect'); G.state = c.st; } else Snd.play('uiDeny'); }
     UI.panel(x, y, w, h, { r: 24, fill: UI.focus(fid) ? 'rgba(60,34,140,.85)' : 'rgba(20,8,55,.78)', stroke: c.ok ? c.c : 'rgba(190,160,255,.25)' });
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(x + 80, y + 90, 70, c.c, c.ok ? .3 : .08); ctx.restore();
-    txt(c.n, x + 170, y + 30, 26, c.ok ? '#fff' : '#8a7fb0', 'left', 900); txt(c.d, x + 170, y + 76, 16, '#cdb8ff', 'left', 700); txt(c.ok ? 'ABRIR ▸' : '🔒 ' + c.lock, x + 170, y + 130, 17, c.ok ? c.c : '#ffb340', 'left', 800);
+    txt(c.n, x + 170, y + 30, c.n.length > 18 ? 21 : 26, c.ok ? '#fff' : '#8a7fb0', 'left', 900); txt(c.d, x + 170, y + 76, 16, '#cdb8ff', 'left', 700); txt(c.ok ? 'ABRIR ▸' : '🔒 ' + c.lock, x + 170, y + 130, 17, c.ok ? c.c : '#ffb340', 'left', 800);
     txt(c.n[0], x + 80, y + 62, 64, c.ok ? c.c : '#554a80', 'center', 900);
   });
 };

@@ -242,7 +242,7 @@ STORY.stages.push({
     { music: 'sad' },
     { who: 'X', scene: 'freed', mood: 'sad', text: 'Você continuou. Mesmo comigo na sua frente. Por quê?' },
     { music: 'hope' },
-    { who: 'O', scene: 'lit', mood: 'happy', text: 'Porque eu não preciso vencer o meu medo. Só preciso levá-lo junto, sem deixar que ele pilote.' },
+    { who: 'O', scene: 'sea', mood: 'happy', text: 'Porque eu não preciso vencer o meu medo. Só preciso levá-lo junto, sem deixar que ele pilote.' },
     { who: 'X', scene: 'freedKeep', mood: 'free', text: '...Então eu posso ficar? Não como sombra. Como lembrete.' },
     { who: 'X', scene: 'fragment', frag: '#c040ff', mood: 'free', text: 'Leve o que restou de mim. Quando você duvidar, ele vai brilhar mais forte.' },
     { music: 'mystery' },
@@ -274,7 +274,7 @@ STORY.stages.push({
   after: [
     { music: 'sad' },
     { who: 'V', scene: 'voidBreak', fx: 'voidMelt', mood: 'sad', text: 'Eu... não queria apagar ninguém. Só queria que alguém ficasse.' },
-    { who: 'O', scene: 'lit', mood: 'sad', text: 'Eu fico. A gente fica. Mas a luz precisa voltar para o céu.' },
+    { who: 'O', scene: 'sea', mood: 'sad', text: 'Eu fico. A gente fica. Mas a luz precisa voltar para o céu.' },
     { music: 'tension' },
     { who: 'B', scene: 'heart', mood: 'worry', text: 'Olienzinho... o Coração de Luz está incompleto. Eu sou a última peça. Eu preciso entrar nele.' },
     { who: 'O', scene: 'heart', mood: 'shock', text: 'Não! Tem que existir outro jeito! Você é o meu parceiro!' },

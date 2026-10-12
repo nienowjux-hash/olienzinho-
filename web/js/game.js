@@ -486,7 +486,7 @@ const Game = {
       ctx.globalAlpha = Math.max(0, k) * .4; ctx.strokeStyle = '#b98cff'; ctx.lineWidth = 50 * k + 4; ctx.beginPath(); ctx.arc(u.x, u.y, u.r * .94, 0, 7); ctx.stroke();
     }
     ctx.restore();
-    for (const o of G.pops) { ctx.globalAlpha = clamp(o.life, 0, 1); txt(o.text, o.x, o.y, o.size, o.c, 'center'); }
+    for (const o of G.pops) { if (typeof Visual39 !== 'undefined') Visual39.drawPop(o); else { ctx.globalAlpha = clamp(o.life, 0, 1); txt(o.text, o.x, o.y, o.size, o.c, 'center'); } }
     ctx.globalAlpha = 1;
     ctx.restore();
     Visual5.hud(); Visual6.hud(); Visual11.hud(); Visual3.furyDraw(); Visual4.cutinDraw(); Visual4.faceDraw(); Visual4.introDraw();

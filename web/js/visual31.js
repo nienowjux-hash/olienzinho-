@@ -92,7 +92,7 @@ Visual31.objUpdate = function (dt) {
   else if (O.t > O.dur || (O.k === 'defender' && O.hp <= 0)) { O.done = true; popup(W / 2, 230, 'META FALHOU', '#ff8a5f', 24); }
 };
 Visual31.objDraw = function () {
-  const O = G.obj; if (!O) return; const t = World.t;
+  const O = G.obj; if (!O || G.boss || G.bossPending) return; const t = World.t;
   if (!O.done) {
     ctx.save(); const k = Math.max(0, O.dur - O.t); UI.panel(W / 2 - 170, 132, 340, 30, { r: 12, fill: 'rgba(8,2,26,.75)', stroke: '#7fe0a0' }); txt({ resgate: 'RESGATE A NAVE', defender: 'PROTEJA O FAROL', orbes: 'ORBES ' + O.got + '/5' }[O.k] + '  •  ' + Math.ceil(k) + 's', W / 2, 138, 15, '#7fe0a0', 'center', 900); ctx.restore();
     if (O.k === 'resgate') { const s = O.ship; ctx.save(); ctx.translate(s.x, s.y); ctx.globalCompositeOperation = 'lighter'; drawGlow(0, 0, 60, '#7fe0a0', .5); ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = '#c8f4d8'; ctx.strokeStyle = '#2a8a5a'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(0, -30); ctx.lineTo(20, 18); ctx.lineTo(0, 8); ctx.lineTo(-20, 18); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#ff6a6a'; ctx.beginPath(); ctx.arc(0, -4, 5 + Math.sin(t * 8) * 1.5, 0, TAU); ctx.fill(); ctx.restore(); }

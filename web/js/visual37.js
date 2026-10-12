@@ -39,6 +39,7 @@ Screens.settings = function () {
     UI.wrap(['Sem brilho extra nem efeitos pesados: para PCs mais fracos.', 'Sem distorção de tela nem granulado.', 'Todos os efeitos visuais ligados.'][s.quality ?? 2], X, 250, Wd, 20, 15, '#cdb8ff');
     txt('RESOLUÇÃO INTERNA', X, 316, 22, '#ffb340', 'left', 900); [[1, '100%'], [.75, '75%'], [.5, '50%']].forEach(([v, l], i) => { const on = (s.res || 1) === v; if (UI.button('res' + i, X + i * 290, 354, 276, 46, (on ? '✓ ' : '') + l, { size: 17, color: on ? '#9a63ff' : undefined })) { s.res = v; Save.save(); resize(); } });
     txt('Resolução menor deixa o jogo mais leve em computadores fracos.', X, 416, 15, '#8a7fb0', 'left', 700);
+    if (Visual37.toggle('bloom', X, 450, 420, 78, 'Brilho extra (bloom)', !!s.bloom, 'Halo suave nas luzes. Só na qualidade Alta.')) { s.bloom = !s.bloom; Save.save(); }
   } else if (G.stab === 'acc') {
     tg('calm', 0, 'Menos tremor', 'calm', 'Reduz o tremor de tela e os clarões.'); tg('outl', 1, 'Contorno nos tiros', 'outline', 'Contorno branco para enxergar melhor.');
     tg('contr', 2, 'Alto contraste', 'contrast', 'Tiros inimigos mais destacados.'); tg('assist2', 3, 'Modo assistido', 'assist', 'Escudo contra tiros muito próximos.');

@@ -141,7 +141,7 @@ Screens.gallery = function () {
   Screens.story = function () {
     const S = G.story; if (!S) return st1.call(this);
     let pg = this.curPage(S);
-    while (pg && pg.only && pg.only !== Save.data.choice10) { S.i++; S.t = 0; S.lastShown = 0; S.doneAt = null; if (S.i >= S.pages.length) { Game.endStory(); return; } pg = this.curPage(S); }
+    while (pg && ((pg.only && pg.only !== Save.data.choice10) || (pg.req && !pg.req()))) { S.i++; S.t = 0; S.lastShown = 0; S.doneAt = null; if (S.i >= S.pages.length) { Game.endStory(); return; } pg = this.curPage(S); }
     if (pg && pg.choice) {
       ctx.globalAlpha = 1; ctx.fillStyle = 'rgba(8,2,26,.7)'; ctx.fillRect(0, 0, W, H); txt('O que o Olienzinho faz?', W / 2, 200, 40, '#fff', 'center', 900);
       pg.choice.forEach((c, i) => { if (UI.button('ch' + i, 270 + i * 380, 320, 360, 90, c.t, { size: 24, color: '#9a63ff' })) { Save.data.choice10 = c.k; Save.save(); Snd.play('uiSelect'); S.i++; S.t = 0; S.lastShown = 0; S.doneAt = null; if (S.i >= S.pages.length) Game.endStory(); } });

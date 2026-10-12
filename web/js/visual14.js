@@ -179,6 +179,9 @@ Screens.modes = function () {
     Save.data.cleared[9] ? { id: 'tour', name: 'TORNEIO FINAL', c: '#ff8a5f', l: 'Os chefes das fases 7 a 10 em sequência, em ordem aleatória.', foot: Save.data.tour && Save.data.tour.best ? 'Melhor: ' + Math.floor(Save.data.tour.best / 60) + ':' + String(Math.floor(Save.data.tour.best % 60)).padStart(2, '0') : 'Recompensa: ★ 150', go: () => Visual5.startRush([6, 7, 8].sort(() => Math.random() - .5).concat([9])) } : null,
     Save.data.cleared[9] ? { id: 'pil', name: 'PILOTOS', c: '#ffb340', l: 'Evolua cada guardião com estrelas.', foot: 'Colmeia, Pétreo, Vigia, Solaris', go: () => { G.state = 'pilots'; } } : null,
     { id: 'gal', name: 'GALERIA', c: '#c8a0ff', l: 'Reveja os vídeos da história.', foot: Object.keys(Save.data.vseen || {}).length + ' / 7 vistos', go: () => { G.state = 'gallery'; } },
+    { id: 'mut', name: 'MUTADORES', c: '#ff8a5f', l: 'Regras extras para jogar mais difícil e ganhar mais estrelas.', foot: Object.keys(Save.data.mut || {}).filter(k => Save.data.mut[k]).length + ' ativos', go: () => { G.state = 'mutators'; } },
+    { id: 'tal', name: 'TALENTOS', c: '#ffd36a', l: 'Melhorias permanentes de ataque, defesa e sorte.', foot: 'Gaste suas estrelas', go: () => { G.state = 'talents'; } },
+    { id: 'sta', name: 'ESTATÍSTICAS', c: '#9fe8ff', l: 'Tempo jogado, derrotas, arma favorita e mais.', foot: 'Seu histórico', go: () => { G.state = 'stats'; } },
     { id: 'tr', name: 'TREINO', c: '#7fe0a0', l: 'Arena livre: armas, skins e inimigos.', foot: 'sem pressão :)', go: () => Game.startTraining() },
   ].filter(Boolean);
   const MP = Math.ceil(cards0.length / 12); G.mpage = Math.min(G.mpage || 0, MP - 1); const cards = cards0.slice(G.mpage * 12, G.mpage * 12 + 12);

@@ -181,7 +181,7 @@ Screens.cine = function () {
 Cine.run = async function (id, onFrame) {
   const c = Cine.clips[id], n = Math.round(c.dur * Cine.fps); Cine.cur = c; World.setStage(c.pal()); World.t = 0; G.state = 'cine'; Trans.t = 9;
   for (let f = 0; f < n; f++) {
-    Cine.t = f / Cine.fps; World.t = Cine.t; World.update(1 / Cine.fps, 0); render();
+    Trans.t = 9; Cine.t = f / Cine.fps; World.t = Cine.t; World.update(1 / Cine.fps, 0); render();
     const url = cv.toDataURL('image/jpeg', .9); for (let tr = 0; tr < 8; tr++) { try { await fetch('http://127.0.0.1:8766', { method: 'POST', keepalive: false, body: JSON.stringify({ dir: id, name: String(f).padStart(4, '0'), ext: 'jpg', data: url }) }); break; } catch (e) { if (tr === 7) throw e; await new Promise(r => setTimeout(r, 300)); } } if (onFrame) onFrame(f, n);
   }
   Cine.cur = null; return n;

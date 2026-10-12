@@ -227,9 +227,9 @@ STORY.stages.push(
       { mission: { n: 9, title: 'Atravessar o Espelho', goal: 'Encontre qual dos dois reflexos é real e derrote o Reflexo do Vazio.', boss: 'Reflexo do Vazio' } },
     ],
     pre: [
-      { music: 'tension' }, { who: 'R', scene: 'void', text: 'Dois de mim. Dois de você. Escolha qual lado é o verdadeiro, pequeno foguete.' },
-      { who: 'O', scene: 'void', mood: 'determined', text: 'O verdadeiro é aquele que continua brilhando mesmo quando tem medo.' },
-      { who: 'R', scene: 'void', mood: 'angry', text: 'ENTÃO BRILHE... SE PUDER!' },
+      { music: 'tension' }, { who: 'R', scene: 'bMirror', text: 'Dois de mim. Dois de você. Escolha qual lado é o verdadeiro, pequeno foguete.' },
+      { who: 'O', scene: 'bMirror', mood: 'determined', text: 'O verdadeiro é aquele que continua brilhando mesmo quando tem medo.' },
+      { who: 'R', scene: 'bMirror', mood: 'angry', text: 'ENTÃO BRILHE... SE PUDER!' },
     ],
     victory: 'Meu céu não é perfeito. Mas é meu, e eu cuido dele!',
     after: [

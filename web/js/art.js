@@ -81,6 +81,7 @@ const Art = {
     ctx.translate(0, Math.sin(e.age * 3 + e.ph) * 2.5); ctx.scale(pop * sq, pop / sq);
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
     drawGlow(0, 0, r * 1.9, e.glow || '#ff8a1f', .3); ctx.restore(); ctx.globalAlpha = 1;
+    if (typeof Visual44 !== 'undefined' && Visual44.base.includes(e.type)) { Visual44.bodies[e.type](e, r, t, hit); ctx.restore(); return; }
     switch (e.type) {
       case 'drone': {
         ctx.rotate(Math.sin(t * 3 + e.ph) * .15);

@@ -62,6 +62,7 @@ SRC_TIP.teleporter = 'O Teleportador some e reaparece atirando em leque: saia da
     if (!['ghost', 'splitter', 'teleporter', 'turret', 'generator'].includes(e.type)) return ae.call(this, e);
     ctx.save(); ctx.translate(e.x, e.y); const sc = easeBack(e.age / .35); ctx.scale(sc, sc);
     ctx.globalCompositeOperation = 'lighter'; drawGlow(0, 0, r * 2.2, e.glow, .3); ctx.globalCompositeOperation = 'source-over';
+    if (typeof Visual44 !== 'undefined' && Visual44.bodies[e.type]) { Visual44.bodies[e.type](e, r, t, hit); ctx.restore(); return; }
     if (e.type === 'ghost') {
       ctx.globalAlpha = e.phased ? .28 + Math.sin(t * 20) * .1 : .92;
       const g = ctx.createLinearGradient(0, -r, 0, r * 1.4); g.addColorStop(0, hit ? '#fff' : '#e8f4ff'); g.addColorStop(1, 'rgba(120,170,230,.6)'); ctx.fillStyle = g;

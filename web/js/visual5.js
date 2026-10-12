@@ -124,6 +124,7 @@ ENEMY_DEF.crystal = { hp: 12, rad: 30, spd: 0, xp: 5, score: 80, coin: .8, glow:
     if (e.type !== 'crystal') return ae.call(this, e);
     const t = World.t, r = e.rad, hit = e.hit > 0;
     ctx.save(); ctx.translate(e.x, e.y); ctx.globalCompositeOperation = 'lighter'; drawGlow(0, 0, r * 2.4, '#c04aff', .5); ctx.globalCompositeOperation = 'source-over';
+    if (typeof Visual44 !== 'undefined' && Visual44.bodies.crystal) { Visual44.bodies.crystal(e, r, t, hit); ctx.restore(); return; }
     ctx.rotate(t * 1.3); ctx.fillStyle = hit ? '#ffffff' : '#e8d0ff'; ctx.strokeStyle = '#7a2ad6'; ctx.lineWidth = 3;
     ctx.beginPath(); ctx.moveTo(0, -r * 1.3); ctx.lineTo(r * .8, 0); ctx.lineTo(0, r * 1.3); ctx.lineTo(-r * .8, 0); ctx.closePath(); ctx.fill(); ctx.stroke();
     ctx.fillStyle = 'rgba(154,99,255,.7)'; ctx.beginPath(); ctx.moveTo(0, -r * 1.3); ctx.lineTo(r * .8, 0); ctx.lineTo(0, r * .2); ctx.closePath(); ctx.fill();

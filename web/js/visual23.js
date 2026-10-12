@@ -109,6 +109,7 @@ TRAIN_TYPES.push('sniper', 'swarmer', 'bomber');
     if (e.type !== 'sniper' && e.type !== 'swarmer' && e.type !== 'bomber') return ae.call(this, e);
     const t = World.t + e.ph, r = e.rad, hit = e.hit > 0; ctx.save(); ctx.translate(e.x, e.y); const sc = easeBack(e.age / .35); ctx.scale(sc, sc);
     ctx.globalCompositeOperation = 'lighter'; drawGlow(0, 0, r * 2.2, e.glow, .3); ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
+    if (typeof Visual44 !== 'undefined' && Visual44.bodies[e.type]) { Visual44.bodies[e.type](e, r, t, hit); ctx.restore(); return; }
     if (e.type === 'sniper') {
       if (e.aim !== undefined && e.cycle > .1 && e.cycle < 1.3) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = '#ff3a3a'; ctx.globalAlpha = e.lock ? .5 + .5 * Math.sin(World.t * 50) : .3; ctx.lineWidth = e.lock ? 3 : 1.5; ctx.setLineDash(e.lock ? [] : [10, 8]); ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(Math.cos(e.aim) * 1300, Math.sin(e.aim) * 1300); ctx.stroke(); ctx.restore(); }
       const a = e.aim ?? Math.PI / 2; ctx.fillStyle = hit ? '#fff' : '#3a2a40'; ctx.strokeStyle = '#ff3a3a'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(0, 0, r, 0, TAU); ctx.fill(); ctx.stroke();

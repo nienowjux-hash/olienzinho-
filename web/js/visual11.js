@@ -123,10 +123,13 @@ Visual11.chipDraw = function (id, cx, y) {
   }
 };
 Visual11.hud = function () {
-  if (G.state !== 'play') return; const s = Visual11.syn(); let x = 24;
-  const lines = Object.keys(TAGS).filter(k => s[k] > 0); if (G.ngp) txt('JOGO NOVO+', 24, 120, 12, '#ffcf6b', 'left', 900);
-  lines.forEach((k, i) => { txt(TAGS[k].name + ' ' + (s[k] > 1 ? 'II' : 'I'), 24 + i * 100, G.ngp ? 134 : 120, 12, TAGS[k].c, 'left', 900); });
+  if (G.state !== 'play') return; const s = Visual11.syn(); let x = 24; const y = 134;
+  const lines = Object.keys(TAGS).filter(k => s[k] > 0); ctx.save(); ctx.font = `900 12px ${FONT}`;
+  const put = (label, c) => { const w = ctx.measureText(label).width; txt(label, x, y, 12, c, 'left', 900); x += w + 14; };
+  if (G.ngp) put('JOGO NOVO+', '#ffcf6b');
+  lines.forEach(k => put(TAGS[k].name + ' ' + (s[k] > 1 ? 'II' : 'I'), TAGS[k].c)); ctx.restore();
 };
+
 
 // ===== Jogo Novo+ =====
 RELICS.push(

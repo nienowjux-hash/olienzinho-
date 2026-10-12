@@ -3744,15 +3744,17 @@ const Game = {
     const AR = !G.p2; // no cooperativo as setas sao do P2
     if (Input.down('a') || (AR && Input.down('arrowleft'))) ax -= 1; if (Input.down('d') || (AR && Input.down('arrowright'))) ax += 1;
     if (Input.down('w') || (AR && Input.down('arrowup'))) ay -= 1; if (Input.down('s') || (AR && Input.down('arrowdown'))) ay += 1;
-    if (Input.pressed('shift')) tryDash(ax, ay);
+    if (Input.pressed('shift')) tryDash(ax || (Input.gpAx || 0), ay || (Input.gpAy || 0));
     p.dashCd = Math.max(0, p.dashCd - dt); p.specCd = Math.max(0, p.specCd - dt);
     p.ghosts = p.ghosts.filter(g => (g.t -= dt) > 0);
-    const useMouse = !(ax || ay) && !G.p2 && performance.now() - Input.mouse.moved < 1800;
+    const gax = Input.gpAx || 0, gay = Input.gpAy || 0, gmag = Math.min(1, Math.hypot(gax, gay));
+    const useMouse = !(ax || ay || gmag) && !G.p2 && performance.now() - Input.mouse.moved < 1800;
     if (p.dashT > 0) {
       p.dashT -= dt; const [ddx, ddy] = p.dashDir; p.vx = ddx * 500; p.vy = ddy * 500;
       p.x = clamp(p.x + ddx * 1500 * dt, 50, W - 50); p.y = clamp(p.y + ddy * 1500 * dt, 90, H - 70);
       p.ghosts.push({ x: p.x, y: p.y, t: .28, vx: p.vx });
-    } else if (ax || ay) { const m = Math.hypot(ax, ay); p.vx += (ax / m * p.speed - p.vx) * Math.min(1, 10 * dt); p.vy += (ay / m * p.speed - p.vy) * Math.min(1, 10 * dt); }
+    } else if (gmag > 0 && !(ax || ay)) { p.vx += (gax * p.speed - p.vx) * Math.min(1, 10 * dt); p.vy += (gay * p.speed - p.vy) * Math.min(1, 10 * dt); }
+    else if (ax || ay) { const m = Math.hypot(ax, ay); p.vx += (ax / m * p.speed - p.vx) * Math.min(1, 10 * dt); p.vy += (ay / m * p.speed - p.vy) * Math.min(1, 10 * dt); }
     else if (useMouse) { const tx = Input.mouse.x, ty = Input.mouse.y; p.vx += (clamp((tx - p.x) * 9, -p.speed * 1.3, p.speed * 1.3) - p.vx) * Math.min(1, 12 * dt); p.vy += (clamp((ty - p.y) * 9, -p.speed * 1.3, p.speed * 1.3) - p.vy) * Math.min(1, 12 * dt); }
     else { p.vx *= 1 - Math.min(1, 6 * dt); p.vy *= 1 - Math.min(1, 6 * dt); }
     if (p.dashT <= 0) { p.x = clamp(p.x + p.vx * dt, 50, W - 50); p.y = clamp(p.y + p.vy * dt, 90, H - 70); }
@@ -6888,9 +6890,9 @@ Screens.relic = function () {
 };
 Visual5.hud = function () {
   if (G.state !== 'play') return; const p = G.player; if (!p) return;
-  if (G.relic) { const r = RELICS.find(q => q.id === G.relic); if (r) { ctx.save(); ctx.globalAlpha = .9; Visual2.upIcon(r.icon, 40, 112, 11, '#ffb340', false); ctx.restore(); txt(r.name, 58, 104, 13, '#ffcf6b', 'left', 800); } }
+  if (G.relic) { const r = RELICS.find(q => q.id === G.relic); if (r) { ctx.save(); ctx.globalAlpha = .9; Visual2.upIcon(r.icon, 40, 112, 11, '#ffb340', false); ctx.restore(); txt(r.name, 70, 104, 13, '#ffcf6b', 'left', 800); } }
   if (G.grazeAt !== undefined && World.t - G.grazeAt < 2) { ctx.globalAlpha = clamp(2 - (World.t - G.grazeAt), 0, 1); txt('RASPÃO x' + G.grazeN, W - 24, 144, 15, '#ffe9a8', 'right', 800); ctx.globalAlpha = 1; }
-  let i = 0; for (const k of Object.keys(p.buffs || {})) if (p.buffs[k] > 0) { const c = CAPS[k]; txt(c.name, 24, 140 + i * 22, 13, c.c, 'left', 800); ctx.fillStyle = 'rgba(255,255,255,.15)'; ctx.fillRect(24, 156 + i * 22, 110, 3); ctx.fillStyle = c.c; ctx.fillRect(24, 156 + i * 22, 110 * clamp(p.buffs[k] / c.dur, 0, 1), 3); i++; }
+  let i = 0; for (const k of Object.keys(p.buffs || {})) if (p.buffs[k] > 0) { const c = CAPS[k]; txt(c.name, 24, 160 + i * 28, 13, c.c, 'left', 800); ctx.fillStyle = 'rgba(255,255,255,.15)'; ctx.fillRect(24, 177 + i * 28, 110, 3); ctx.fillStyle = c.c; ctx.fillRect(24, 177 + i * 28, 110 * clamp(p.buffs[k] / c.dur, 0, 1), 3); i++; }
   if (G.rush) txt('CHEFE ' + (G.rushI + 1) + ' / ' + (Visual5.tourList ? Visual5.tourList.length : 6), W - 24, 164, 15, '#ff8a5f', 'right', 900);
 };
 
@@ -6986,7 +6988,7 @@ Visual6.pollPads = function () {
   const list = (navigator.getGamepads && navigator.getGamepads()) || [], act = [];
   for (const g of list) if (g && g.connected) act.push(g);
   if (act.length !== Visual6.connected) { Visual6.connected = act.length; Visual6.toast = 3; Snd.init(); }
-  Input.gpk = {}; Visual6.pad2 = { x: 0, y: 0, sp: false, dash: false };
+  Input.gpk = {}; Input.gpAx = 0; Input.gpAy = 0; Visual6.pad2 = { x: 0, y: 0, sp: false, dash: false };
   const coop = !!Save.data.coop, inPlay = G.state === 'play';
   act.slice(0, 2).forEach((g, i) => {
     const s = Visual6.ps[i], b = n => !!(g.buttons[n] && g.buttons[n].pressed), ax = g.axes[0] || 0, ay = g.axes[1] || 0;
@@ -6996,7 +6998,9 @@ Visual6.pollPads = function () {
     const edge = k => cur[k] && !s[k];
     const role = coop ? (i === 0 ? 'p2' : 'p1') : (i === 0 ? 'p1' : 'none');   // no coop: controle 1 joga; com coop: controle 1 = P2, controle 2 = P1
     if (role === 'p1') {
-      if (mx < 0) Input.gpk.a = true; if (mx > 0) Input.gpk.d = true; if (my < 0) Input.gpk.w = true; if (my > 0) Input.gpk.s = true;
+      { const dpx = (b(15) ? 1 : 0) - (b(14) ? 1 : 0), dpy = (b(13) ? 1 : 0) - (b(12) ? 1 : 0), gx = inPlay ? dpx : mx, gy = inPlay ? dpy : my;
+        if (gx < 0) Input.gpk.a = true; if (gx > 0) Input.gpk.d = true; if (gy < 0) Input.gpk.w = true; if (gy > 0) Input.gpk.s = true;
+        if (inPlay) { const mag = Math.hypot(ax, ay), dz = .16, kk = mag > dz ? Math.min(1, (mag - dz) / (1 - dz)) / mag : 0; Input.gpAx = ax * kk; Input.gpAy = ay * kk; } }
       if (inPlay) { const pm = Save.data.pad || {}, ev = (act, def) => { const k = pm[act]; return k ? edge(k) : def.some(edge); }; if (ev('pulse', ['a'])) Input.hit[' '] = true; if (ev('special', ['x', 'rt'])) Input.hit.q = true; if (ev('dash', ['lb', 'rb', 'y'])) Input.hit.shift = true; if (ev('parry', ['b'])) Input.hit.f = true; if (ev('sec', ['lt'])) Input.hit.r = true; }
     } else if (role === 'p2') { Visual6.pad2 = { x: mx, y: my, sp: edge('x') || edge('rt') || edge('a'), dash: edge('lb') || edge('rb') || edge('y') }; }
     if (role !== 'none') { // menus
@@ -7908,10 +7912,13 @@ Visual11.chipDraw = function (id, cx, y) {
   }
 };
 Visual11.hud = function () {
-  if (G.state !== 'play') return; const s = Visual11.syn(); let x = 24;
-  const lines = Object.keys(TAGS).filter(k => s[k] > 0); if (G.ngp) txt('JOGO NOVO+', 24, 120, 12, '#ffcf6b', 'left', 900);
-  lines.forEach((k, i) => { txt(TAGS[k].name + ' ' + (s[k] > 1 ? 'II' : 'I'), 24 + i * 100, G.ngp ? 134 : 120, 12, TAGS[k].c, 'left', 900); });
+  if (G.state !== 'play') return; const s = Visual11.syn(); let x = 24; const y = 134;
+  const lines = Object.keys(TAGS).filter(k => s[k] > 0); ctx.save(); ctx.font = `900 12px ${FONT}`;
+  const put = (label, c) => { const w = ctx.measureText(label).width; txt(label, x, y, 12, c, 'left', 900); x += w + 14; };
+  if (G.ngp) put('JOGO NOVO+', '#ffcf6b');
+  lines.forEach(k => put(TAGS[k].name + ' ' + (s[k] > 1 ? 'II' : 'I'), TAGS[k].c)); ctx.restore();
 };
+
 
 // ===== Jogo Novo+ =====
 RELICS.push(
@@ -10732,7 +10739,7 @@ Visual25.importSave = function () {
 const KEYACT = [['left', 'Esquerda', 'a'], ['right', 'Direita', 'd'], ['up', 'Cima', 'w'], ['down', 'Baixo', 's'], ['pulse', 'Pulso', ' '], ['dash', 'Esquiva', 'shift'], ['special', 'Especial', 'q'], ['sec', 'Secundária', 'r'], ['parry', 'Rebater', 'f']];
 Visual25.keyOf = k => { const a = KEYACT.find(x => x[2] === k); if (!a) return k; const m = (Save.data.keys || {})[a[0]]; return m || k; };
 {
-  Input.down = function (k) { return !!this.keys[Visual25.keyOf(k)]; };
+  Input.down = function (k) { return !!this.keys[Visual25.keyOf(k)] || !!(this.gpk && this.gpk[k]); };
   Input.pressed = function (k) { return !!this.hit[Visual25.keyOf(k)]; };
   addEventListener('keydown', e => {
     if (!G.rebind) return; e.preventDefault(); e.stopImmediatePropagation(); const k = e.key.toLowerCase(); if (k !== 'escape') { Save.data.keys = Save.data.keys || {}; Save.data.keys[G.rebind] = k; Save.save(); } G.rebind = null; Input.hit = {};
@@ -10745,7 +10752,7 @@ const CB = ['SEM FILTRO', 'FILTRO 1', 'FILTRO 2', 'FILTRO 3'];
   document.body.appendChild(svg);
   Visual25.applyCB = () => { const n = (Save.data.settings && Save.data.settings.cb) || 0; cv.style.filter = n ? 'url(#cb' + n + ') contrast(1.12) saturate(1.15)' : ''; };
   Visual25.applyCB();
-  const hp = hurtPlayer; hurtPlayer = function (d) { const l = G.player ? G.player.hp : 0; const r = hp(d); try { if (G.player && G.player.hp < l && Save.data.settings.rumble !== false) for (const gp of navigator.getGamepads ? navigator.getGamepads() : []) if (gp && gp.vibrationActuator) gp.vibrationActuator.playEffect('dual-rumble', { duration: 220, strongMagnitude: .9, weakMagnitude: .5 }); } catch (e) { } return r; };
+  // vibracao ao tomar dano: feita em Visual6.rumble (que respeita a opcao de vibracao)
 }
 Screens.access = function () {
   const s = Save.data.settings; txt('TECLAS E ACESSIBILIDADE', W / 2, 22, 40, '#fff', 'center');
@@ -14523,9 +14530,9 @@ const rc59 = u => { const r = RARITY[u && u.r]; return r && /^#[0-9a-f]{6}$/i.te
     hd.call(this); const F = Visual59.feed; if (!F.length || G.state !== 'play') return;
     for (let n = F.length - 1; n >= 0; n--) if ((F[n].t += 1 / 60) > 3.2) F.splice(n, 1);
     F.forEach((f, i) => {
-      const k = easeOut(clamp(f.t / .3, 0, 1)) * clamp((3.2 - f.t) / .4, 0, 1), y = 176 + i * 40;
-      ctx.save(); ctx.globalAlpha = k; ctx.translate(-(1 - k) * 40, 0); ctx.fillStyle = 'rgba(12,4,34,.72)'; ctx.strokeStyle = f.c; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(16, y, 250, 32, 12); ctx.fill(); ctx.stroke();
-      ctx.fillStyle = f.c; ctx.fillRect(16, y + 6, 5, 20); txt(f.rar, 30, y + 3, 10, f.c, 'left', 900); txt(f.name, 30, y + 14, 15, '#fff', 'left', 800); ctx.restore();
+      const k = easeOut(clamp(f.t / .3, 0, 1)) * clamp((3.2 - f.t) / .4, 0, 1), y = 196 + i * 40;
+      ctx.save(); ctx.globalAlpha = k; ctx.translate((1 - k) * 40, 0); ctx.fillStyle = 'rgba(12,4,34,.72)'; ctx.strokeStyle = f.c; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(W - 266, y, 250, 32, 12); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = f.c; ctx.fillRect(W - 260, y + 6, 5, 20); txt(f.rar, W - 246, y + 3, 10, f.c, 'left', 900); txt(f.name, W - 246, y + 14, 15, '#fff', 'left', 800); ctx.restore();
     });
   };
 }
@@ -15311,7 +15318,8 @@ Visual37.controls = function (X, Wd) {
   // vibracao e atalhos
   const rb = s.rumble === false;
   if (Visual37.toggle('rumble2', X, 500, 420, 78, 'Vibração do controle', !rb, 'Treme quando você leva dano.')) { s.rumble = rb ? true : false; Save.save(); }
-  if (UI.button('vtest', X + 440, 500, 200, 36, 'TESTAR VIBRAÇÃO', { size: 14, disabled: !P })) { try { Visual6.rumble(400, .8, .6); } catch (e) { } }
+  if (UI.button('vtest', X + 440, 500, 200, 36, 'TESTAR VIBRAÇÃO', { size: 14, disabled: !P })) { try { Visual67.rumble(500, .9, .7); } catch (e) { } }
+  { const ri = typeof Visual67 !== 'undefined' ? Visual67.rumbleInfo : null; if (P && ri) txt(ri.sup === false ? 'Este controle não aceita vibração no navegador.' : ri.last ? 'Vibração: ' + ri.last : (P.g.vibrationActuator || (P.g.hapticActuators && P.g.hapticActuators.length)) ? 'Vibração disponível. Aperte TESTAR.' : 'Vibração não informada pelo navegador.', X + 440, 586, 12, '#8a7fb0', 'left', 700); }
   if (UI.button('prst', X + 660, 500, 200, 36, 'BOTÕES PADRÃO', { size: 14 })) { Save.data.pad = {}; Save.save(); Visual66.wait = null; }
   if (UI.button('kbd', X + 440, 544, 420, 36, 'TECLAS DO TECLADO ▸', { size: 14 })) { Snd.play('uiSelect'); G.state = 'access'; }
 };
@@ -15384,6 +15392,27 @@ Visual67.hint = function (xL, xR, y) { if (!Visual67.pad()) return; const a = Vi
 {
   const pad = () => Visual67.pad();
   hookRender(rn => function () { rn(); if (pad() && G.state !== 'play') cv.style.cursor = 'none'; });
+}
+
+// ---------- vibracao: tenta os dois tipos de atuador e mostra o resultado na aba Controles ----------
+Visual67.rumbleInfo = { sup: null, last: '' };
+Visual67.rumble = function (ms, strong, weak) {
+  if (Save.data.settings && Save.data.settings.rumble === false) return;
+  const l = (navigator.getGamepads && navigator.getGamepads()) || [];
+  for (const g of l) { if (!g || !g.connected) continue;
+    try {
+      if (g.vibrationActuator && g.vibrationActuator.playEffect) { Visual67.rumbleInfo.sup = true; const pr = g.vibrationActuator.playEffect(g.vibrationActuator.type || 'dual-rumble', { startDelay: 0, duration: ms, weakMagnitude: weak, strongMagnitude: strong }); if (pr && pr.then) pr.then(r => { Visual67.rumbleInfo.last = String(r); }, e => { Visual67.rumbleInfo.last = 'erro: ' + (e && e.message || e); }); }
+      else if (g.hapticActuators && g.hapticActuators[0] && g.hapticActuators[0].pulse) { Visual67.rumbleInfo.sup = true; g.hapticActuators[0].pulse(Math.max(strong, weak), ms); Visual67.rumbleInfo.last = 'pulso'; }
+      else Visual67.rumbleInfo.sup = false;
+    } catch (e) { Visual67.rumbleInfo.last = 'erro: ' + (e && e.message || e); }
+  }
+};
+Visual6.rumble = Visual67.rumble;
+{
+  const td = tryDash; tryDash = function (x, y) { const c = G.player ? G.player.dashCd : 1; const r = td(x, y); if (G.player && c <= 0 && G.player.dashCd > 0) Visual67.rumble(90, .25, .5); return r; };
+  const op = Boss.prototype.onPhase; Boss.prototype.onPhase = function () { Visual67.rumble(420, .9, .7); return op.call(this); };
+  const bd = Game.bossDefeated; Game.bossDefeated = function () { Visual67.rumble(800, 1, .8); return bd.apply(this, arguments); };
+  const ke = killEnemy; killEnemy = function (e, by) { const was = e && !e.dead; const r = ke(e, by); if (was && e.dead && (e.mini || e.type === 'captain')) Visual67.rumble(200, .6, .4); return r; };
 }
 
 ;

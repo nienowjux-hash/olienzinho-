@@ -58,7 +58,7 @@ Visual25.importSave = function () {
 const KEYACT = [['left', 'Esquerda', 'a'], ['right', 'Direita', 'd'], ['up', 'Cima', 'w'], ['down', 'Baixo', 's'], ['pulse', 'Pulso', ' '], ['dash', 'Esquiva', 'shift'], ['special', 'Especial', 'q'], ['sec', 'Secundária', 'r'], ['parry', 'Rebater', 'f']];
 Visual25.keyOf = k => { const a = KEYACT.find(x => x[2] === k); if (!a) return k; const m = (Save.data.keys || {})[a[0]]; return m || k; };
 {
-  Input.down = function (k) { return !!this.keys[Visual25.keyOf(k)]; };
+  Input.down = function (k) { return !!this.keys[Visual25.keyOf(k)] || !!(this.gpk && this.gpk[k]); };
   Input.pressed = function (k) { return !!this.hit[Visual25.keyOf(k)]; };
   addEventListener('keydown', e => {
     if (!G.rebind) return; e.preventDefault(); e.stopImmediatePropagation(); const k = e.key.toLowerCase(); if (k !== 'escape') { Save.data.keys = Save.data.keys || {}; Save.data.keys[G.rebind] = k; Save.save(); } G.rebind = null; Input.hit = {};
@@ -71,7 +71,7 @@ const CB = ['SEM FILTRO', 'FILTRO 1', 'FILTRO 2', 'FILTRO 3'];
   document.body.appendChild(svg);
   Visual25.applyCB = () => { const n = (Save.data.settings && Save.data.settings.cb) || 0; cv.style.filter = n ? 'url(#cb' + n + ') contrast(1.12) saturate(1.15)' : ''; };
   Visual25.applyCB();
-  const hp = hurtPlayer; hurtPlayer = function (d) { const l = G.player ? G.player.hp : 0; const r = hp(d); try { if (G.player && G.player.hp < l && Save.data.settings.rumble !== false) for (const gp of navigator.getGamepads ? navigator.getGamepads() : []) if (gp && gp.vibrationActuator) gp.vibrationActuator.playEffect('dual-rumble', { duration: 220, strongMagnitude: .9, weakMagnitude: .5 }); } catch (e) { } return r; };
+  // vibracao ao tomar dano: feita em Visual6.rumble (que respeita a opcao de vibracao)
 }
 Screens.access = function () {
   const s = Save.data.settings; txt('TECLAS E ACESSIBILIDADE', W / 2, 22, 40, '#fff', 'center');

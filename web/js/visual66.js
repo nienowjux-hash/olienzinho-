@@ -68,7 +68,8 @@ Visual37.controls = function (X, Wd) {
   // vibracao e atalhos
   const rb = s.rumble === false;
   if (Visual37.toggle('rumble2', X, 500, 420, 78, 'Vibração do controle', !rb, 'Treme quando você leva dano.')) { s.rumble = rb ? true : false; Save.save(); }
-  if (UI.button('vtest', X + 440, 500, 200, 36, 'TESTAR VIBRAÇÃO', { size: 14, disabled: !P })) { try { Visual6.rumble(400, .8, .6); } catch (e) { } }
+  if (UI.button('vtest', X + 440, 500, 200, 36, 'TESTAR VIBRAÇÃO', { size: 14, disabled: !P })) { try { Visual67.rumble(500, .9, .7); } catch (e) { } }
+  { const ri = typeof Visual67 !== 'undefined' ? Visual67.rumbleInfo : null; if (P && ri) txt(ri.sup === false ? 'Este controle não aceita vibração no navegador.' : ri.last ? 'Vibração: ' + ri.last : (P.g.vibrationActuator || (P.g.hapticActuators && P.g.hapticActuators.length)) ? 'Vibração disponível. Aperte TESTAR.' : 'Vibração não informada pelo navegador.', X + 440, 586, 12, '#8a7fb0', 'left', 700); }
   if (UI.button('prst', X + 660, 500, 200, 36, 'BOTÕES PADRÃO', { size: 14 })) { Save.data.pad = {}; Save.save(); Visual66.wait = null; }
   if (UI.button('kbd', X + 440, 544, 420, 36, 'TECLAS DO TECLADO ▸', { size: 14 })) { Snd.play('uiSelect'); G.state = 'access'; }
 };

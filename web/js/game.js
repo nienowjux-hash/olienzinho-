@@ -390,15 +390,17 @@ const Game = {
     const AR = !G.p2; // no cooperativo as setas sao do P2
     if (Input.down('a') || (AR && Input.down('arrowleft'))) ax -= 1; if (Input.down('d') || (AR && Input.down('arrowright'))) ax += 1;
     if (Input.down('w') || (AR && Input.down('arrowup'))) ay -= 1; if (Input.down('s') || (AR && Input.down('arrowdown'))) ay += 1;
-    if (Input.pressed('shift')) tryDash(ax, ay);
+    if (Input.pressed('shift')) tryDash(ax || (Input.gpAx || 0), ay || (Input.gpAy || 0));
     p.dashCd = Math.max(0, p.dashCd - dt); p.specCd = Math.max(0, p.specCd - dt);
     p.ghosts = p.ghosts.filter(g => (g.t -= dt) > 0);
-    const useMouse = !(ax || ay) && !G.p2 && performance.now() - Input.mouse.moved < 1800;
+    const gax = Input.gpAx || 0, gay = Input.gpAy || 0, gmag = Math.min(1, Math.hypot(gax, gay));
+    const useMouse = !(ax || ay || gmag) && !G.p2 && performance.now() - Input.mouse.moved < 1800;
     if (p.dashT > 0) {
       p.dashT -= dt; const [ddx, ddy] = p.dashDir; p.vx = ddx * 500; p.vy = ddy * 500;
       p.x = clamp(p.x + ddx * 1500 * dt, 50, W - 50); p.y = clamp(p.y + ddy * 1500 * dt, 90, H - 70);
       p.ghosts.push({ x: p.x, y: p.y, t: .28, vx: p.vx });
-    } else if (ax || ay) { const m = Math.hypot(ax, ay); p.vx += (ax / m * p.speed - p.vx) * Math.min(1, 10 * dt); p.vy += (ay / m * p.speed - p.vy) * Math.min(1, 10 * dt); }
+    } else if (gmag > 0 && !(ax || ay)) { p.vx += (gax * p.speed - p.vx) * Math.min(1, 10 * dt); p.vy += (gay * p.speed - p.vy) * Math.min(1, 10 * dt); }
+    else if (ax || ay) { const m = Math.hypot(ax, ay); p.vx += (ax / m * p.speed - p.vx) * Math.min(1, 10 * dt); p.vy += (ay / m * p.speed - p.vy) * Math.min(1, 10 * dt); }
     else if (useMouse) { const tx = Input.mouse.x, ty = Input.mouse.y; p.vx += (clamp((tx - p.x) * 9, -p.speed * 1.3, p.speed * 1.3) - p.vx) * Math.min(1, 12 * dt); p.vy += (clamp((ty - p.y) * 9, -p.speed * 1.3, p.speed * 1.3) - p.vy) * Math.min(1, 12 * dt); }
     else { p.vx *= 1 - Math.min(1, 6 * dt); p.vy *= 1 - Math.min(1, 6 * dt); }
     if (p.dashT <= 0) { p.x = clamp(p.x + p.vx * dt, 50, W - 50); p.y = clamp(p.y + p.vy * dt, 90, H - 70); }

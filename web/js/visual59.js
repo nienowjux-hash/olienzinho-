@@ -21,9 +21,9 @@ const rc59 = u => { const r = RARITY[u && u.r]; return r && /^#[0-9a-f]{6}$/i.te
     hd.call(this); const F = Visual59.feed; if (!F.length || G.state !== 'play') return;
     for (let n = F.length - 1; n >= 0; n--) if ((F[n].t += 1 / 60) > 3.2) F.splice(n, 1);
     F.forEach((f, i) => {
-      const k = easeOut(clamp(f.t / .3, 0, 1)) * clamp((3.2 - f.t) / .4, 0, 1), y = 176 + i * 40;
-      ctx.save(); ctx.globalAlpha = k; ctx.translate(-(1 - k) * 40, 0); ctx.fillStyle = 'rgba(12,4,34,.72)'; ctx.strokeStyle = f.c; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(16, y, 250, 32, 12); ctx.fill(); ctx.stroke();
-      ctx.fillStyle = f.c; ctx.fillRect(16, y + 6, 5, 20); txt(f.rar, 30, y + 3, 10, f.c, 'left', 900); txt(f.name, 30, y + 14, 15, '#fff', 'left', 800); ctx.restore();
+      const k = easeOut(clamp(f.t / .3, 0, 1)) * clamp((3.2 - f.t) / .4, 0, 1), y = 196 + i * 40;
+      ctx.save(); ctx.globalAlpha = k; ctx.translate((1 - k) * 40, 0); ctx.fillStyle = 'rgba(12,4,34,.72)'; ctx.strokeStyle = f.c; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(W - 266, y, 250, 32, 12); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = f.c; ctx.fillRect(W - 260, y + 6, 5, 20); txt(f.rar, W - 246, y + 3, 10, f.c, 'left', 900); txt(f.name, W - 246, y + 14, 15, '#fff', 'left', 800); ctx.restore();
     });
   };
 }

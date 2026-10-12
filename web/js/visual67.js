@@ -65,3 +65,24 @@ Visual67.hint = function (xL, xR, y) { if (!Visual67.pad()) return; const a = Vi
   const pad = () => Visual67.pad();
   hookRender(rn => function () { rn(); if (pad() && G.state !== 'play') cv.style.cursor = 'none'; });
 }
+
+// ---------- vibracao: tenta os dois tipos de atuador e mostra o resultado na aba Controles ----------
+Visual67.rumbleInfo = { sup: null, last: '' };
+Visual67.rumble = function (ms, strong, weak) {
+  if (Save.data.settings && Save.data.settings.rumble === false) return;
+  const l = (navigator.getGamepads && navigator.getGamepads()) || [];
+  for (const g of l) { if (!g || !g.connected) continue;
+    try {
+      if (g.vibrationActuator && g.vibrationActuator.playEffect) { Visual67.rumbleInfo.sup = true; const pr = g.vibrationActuator.playEffect(g.vibrationActuator.type || 'dual-rumble', { startDelay: 0, duration: ms, weakMagnitude: weak, strongMagnitude: strong }); if (pr && pr.then) pr.then(r => { Visual67.rumbleInfo.last = String(r); }, e => { Visual67.rumbleInfo.last = 'erro: ' + (e && e.message || e); }); }
+      else if (g.hapticActuators && g.hapticActuators[0] && g.hapticActuators[0].pulse) { Visual67.rumbleInfo.sup = true; g.hapticActuators[0].pulse(Math.max(strong, weak), ms); Visual67.rumbleInfo.last = 'pulso'; }
+      else Visual67.rumbleInfo.sup = false;
+    } catch (e) { Visual67.rumbleInfo.last = 'erro: ' + (e && e.message || e); }
+  }
+};
+Visual6.rumble = Visual67.rumble;
+{
+  const td = tryDash; tryDash = function (x, y) { const c = G.player ? G.player.dashCd : 1; const r = td(x, y); if (G.player && c <= 0 && G.player.dashCd > 0) Visual67.rumble(90, .25, .5); return r; };
+  const op = Boss.prototype.onPhase; Boss.prototype.onPhase = function () { Visual67.rumble(420, .9, .7); return op.call(this); };
+  const bd = Game.bossDefeated; Game.bossDefeated = function () { Visual67.rumble(800, 1, .8); return bd.apply(this, arguments); };
+  const ke = killEnemy; killEnemy = function (e, by) { const was = e && !e.dead; const r = ke(e, by); if (was && e.dead && (e.mini || e.type === 'captain')) Visual67.rumble(200, .6, .4); return r; };
+}

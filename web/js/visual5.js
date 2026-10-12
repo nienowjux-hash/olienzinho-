@@ -186,9 +186,9 @@ Screens.relic = function () {
 };
 Visual5.hud = function () {
   if (G.state !== 'play') return; const p = G.player; if (!p) return;
-  if (G.relic) { const r = RELICS.find(q => q.id === G.relic); if (r) { ctx.save(); ctx.globalAlpha = .9; Visual2.upIcon(r.icon, 40, 112, 11, '#ffb340', false); ctx.restore(); txt(r.name, 58, 104, 13, '#ffcf6b', 'left', 800); } }
+  if (G.relic) { const r = RELICS.find(q => q.id === G.relic); if (r) { ctx.save(); ctx.globalAlpha = .9; Visual2.upIcon(r.icon, 40, 112, 11, '#ffb340', false); ctx.restore(); txt(r.name, 70, 104, 13, '#ffcf6b', 'left', 800); } }
   if (G.grazeAt !== undefined && World.t - G.grazeAt < 2) { ctx.globalAlpha = clamp(2 - (World.t - G.grazeAt), 0, 1); txt('RASPÃO x' + G.grazeN, W - 24, 144, 15, '#ffe9a8', 'right', 800); ctx.globalAlpha = 1; }
-  let i = 0; for (const k of Object.keys(p.buffs || {})) if (p.buffs[k] > 0) { const c = CAPS[k]; txt(c.name, 24, 140 + i * 22, 13, c.c, 'left', 800); ctx.fillStyle = 'rgba(255,255,255,.15)'; ctx.fillRect(24, 156 + i * 22, 110, 3); ctx.fillStyle = c.c; ctx.fillRect(24, 156 + i * 22, 110 * clamp(p.buffs[k] / c.dur, 0, 1), 3); i++; }
+  let i = 0; for (const k of Object.keys(p.buffs || {})) if (p.buffs[k] > 0) { const c = CAPS[k]; txt(c.name, 24, 160 + i * 28, 13, c.c, 'left', 800); ctx.fillStyle = 'rgba(255,255,255,.15)'; ctx.fillRect(24, 177 + i * 28, 110, 3); ctx.fillStyle = c.c; ctx.fillRect(24, 177 + i * 28, 110 * clamp(p.buffs[k] / c.dur, 0, 1), 3); i++; }
   if (G.rush) txt('CHEFE ' + (G.rushI + 1) + ' / ' + (Visual5.tourList ? Visual5.tourList.length : 6), W - 24, 164, 15, '#ff8a5f', 'right', 900);
 };
 

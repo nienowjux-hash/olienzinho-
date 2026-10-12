@@ -9,6 +9,7 @@ Game.goTitle();
 (function () {
   const q = new URLSearchParams(location.search);
   if (q.has('rich')) { Save.data.coins = 99999; Save.data.unlocked = STAGES.length; }
+  if (q.has('stars')) { const n = Math.max(0, Math.min(100000, parseInt(q.get('stars'), 10) || 0)); if (n) { Save.data.coins += n; Save.save(); } try { q.delete('stars'); history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q.toString() : '')); } catch (e) { } }
   if (q.has('stage')) {
     const i = clamp(parseInt(q.get('stage'), 10) || 0, 0, STAGES.length - 1);
     Save.data.unlocked = Math.max(Save.data.unlocked, i + 1);

@@ -568,8 +568,9 @@ const Screens = {
       txt('GUARDIÃO  DAS  ESTRELAS', X0 + 4, Y0 + 46, 22, '#ffb340', 'left', 800); ctx.globalAlpha = 1;
     }
     // menu em texto, com marcador dourado
-    const items = [['play', 'JOGAR', 296, 46, ''], ['endless', 'MODOS EXTRAS', 366, 30, ''], ['rank', 'RANKING', 410, 30, ''], ['mis', 'MISSÕES', 454, 30, Visual8.missionsEnsure().list.filter(m => m.done).length + '/3'], ['shop', 'LOJA', 498, 30, '★ ' + Save.data.coins], ['opt', 'OPÇÕES', 542, 30, '']];
+    const items = [['play', 'JOGAR', 306, 46, ''], ['endless', 'MODOS EXTRAS', 376, 30, ''], ['rank', 'RANKING', 422, 30, ''], ['mis', 'MISSÕES', 468, 30, Visual8.missionsEnsure().list.filter(m => m.done).length + '/3'], ['shop', 'LOJA', 514, 30, '★ ' + Save.data.coins], ['opt', 'OPÇÕES', 560, 30, '']];
     if (tt >= 3) {
+      if (!G.tfInit) { G.tfInit = true; UI.focusId = 'play'; }
       items.forEach(([id, label, y, size, sub], i) => {
         const f = UI.focus(id), e = easeBack((tt - 3 - i * .12) / .45), w = size > 40 ? 300 : 230;
         if (UI.hit(id, X0 - 30, y - 8, w + 60, size + 22, { sound: id === 'play' ? 'uiSelect' : 'uiSelect' })) {
@@ -587,9 +588,14 @@ const Screens = {
         if (sub) { ctx.save(); ctx.font = '900 ' + size + 'px ' + FONT; const lw = ctx.measureText(label).width; ctx.restore(); txt(sub, X0 + lw + 18, y + (size > 40 ? 6 : 8), 20, '#ffcf6b', 'left', 800); }
         ctx.restore();
       });
-      ctx.globalAlpha = .55; txt('↑ ↓  navegar     ENTER  escolher', X0 + 2, 604, 15, '#8f84c4', 'left', 700); ctx.globalAlpha = 1;
+      { // descricao do item em foco e dica de teclas
+        const DESC = { play: 'Escolha o setor no mapa e jogue. Você está no setor ' + Math.min(STAGES.length, Save.data.unlocked) + ' de ' + STAGES.length + '.', endless: 'Infinito, torneio, mutadores, talentos, galeria, estatísticas e mais.', rank: 'As melhores pontuações do Modo Infinito.', mis: 'Missões do dia que rendem estrelas.', shop: 'Gaste estrelas em melhorias permanentes.', opt: 'Som, dificuldade, gráficos, teclas, exportar o save.' };
+        const fid = (items.find(([id]) => UI.focus(id)) || items[0])[0]; G.tdesc = G.tdesc || { id: fid, a: 0 }; if (G.tdesc.id !== fid) { G.tdesc.id = fid; G.tdesc.a = 0; } G.tdesc.a = Math.min(1, G.tdesc.a + .08);
+        ctx.save(); ctx.globalAlpha = G.tdesc.a * .95; UI.panel(X0 - 10, 612, 560, 30, { r: 12, fill: 'rgba(14,6,40,.7)', stroke: 'rgba(255,179,64,.45)' }); txt(DESC[fid] || '', X0 + 6, 618, 15, '#e2d4ff', 'left', 700); ctx.restore();
+        ctx.globalAlpha = .6; txt('↑ ↓  navegar     ENTER  escolher', X0 + 2, 652, 14, '#8f84c4', 'left', 700); ctx.globalAlpha = 1;
+      }
     } else if (tt > 2.3 && !Snd.ready) { ctx.globalAlpha = .5 + .5 * Math.sin(t * 4); txt('PRESSIONE QUALQUER TECLA', X0 + 4, 330, 22, '#e2d4ff', 'left', 800); ctx.globalAlpha = 1; }
-    txt('olien.digital', X0 + 4, H - bh - 34, 15, '#8f84c4', 'left', 800);
+    txt('olien.digital', W - 24, 24, 15, '#8f84c4', 'right', 800);
     txt(Save.data.unlocked >= 10 ? 'Ato Final — O Último Céu' : Save.data.unlocked >= 7 ? 'Parte 3 — O Outro Lado' : Save.data.unlocked >= 5 ? 'Parte 2 — O Coração do Vazio' : 'Parte 1 — O Coração Partido', W - 44, H - bh - 34, 15, '#a89dd8', 'right', 800);
     // vinheta, barras de cinema e fade inicial
     ctx.fillStyle = '#03010b'; ctx.fillRect(0, 0, W, bh); ctx.fillRect(0, H - bh, W, bh);

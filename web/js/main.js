@@ -46,7 +46,7 @@ function render() {
   ctx.setTransform(K, 0, 0, K, 0, 0);
   ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
   const s = G.state;
-  if (s === 'play' || s === 'pause' || s === 'levelup' || s === 'clear' || s === 'over' || s === 'celebrate') Game.drawPlay(); else if (s === 'story') Screens.storyBackdrop(); else if (s === 'title') Screens.titleBackdrop(); else World.draw(0);
+  if (s === 'play' || s === 'pause' || s === 'levelup' || s === 'clear' || s === 'over' || s === 'celebrate' || s === 'photo') Game.drawPlay(); else if (s === 'story') Screens.storyBackdrop(); else if (s === 'title') Screens.titleBackdrop(); else World.draw(0);
   ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
   if (Screens[s]) Screens[s]();
   Visual6.menuOverlay(s); Ach.draw(); Visual6.toastDraw();

@@ -94,7 +94,7 @@ setTimeout(() => {
   const rd = render;
   render = function () {
     rd();
-    const s = Save.data.settings; if (!s || !s.bloom || QL() < 2 || !['play', 'pause', 'levelup'].includes(G.state)) return;
+    const s = Save.data.settings; if (!s || !s.ultra || QL() < 2 || !['play', 'pause', 'levelup'].includes(G.state)) return;
     sc.filter = 'blur(3px) brightness(.7) contrast(1.6)'; sc.drawImage(cv, 0, 0, 480, 270); sc.filter = 'none';
     ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = .2; ctx.imageSmoothingEnabled = true; ctx.drawImage(small, 0, 0, cv.width, cv.height); ctx.restore();
   };

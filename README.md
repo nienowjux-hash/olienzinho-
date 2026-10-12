@@ -37,6 +37,7 @@ Abra `web/index.html?selftest=1` (por um servidor local): o jogo roda o bot nas 
 - Novidades: Modo Expedição (rota roguelite com batalhas, elites, lojas, eventos e chefes), fusão de armas, companheiros dos guardiões, cooperativo com escolha de piloto e reviver, metas dentro das fases, inimigo Caçador, dificuldade AUTO adaptativa, semente compartilhável, perfis de save, cosméticos, modo foto com filtros e molduras.
 - Publicação grátis: o repositório publica a pasta `web/` no GitHub Pages (Settings → Pages → Source: GitHub Actions) e o jogo pode ser instalado como app (PWA).
 - Também: Torre Infinita, Hangar em abas, Opções e Conquistas redesenhadas, 10 vídeos de entrada dos chefes (tocam na primeira vez e ficam na Galeria), emblemas próprios para cada relíquia, remapeamento do controle e ranking do dia com código para comparar com amigos.
+- Gráficos: tentáculos e placas nos chefes, cenário único por fase, luz e sombra dinâmicas, camada WebGL de partículas, Modo Ultra, asas e novos cosméticos, modo foto livre (F10), vídeos entre as fases e do final verdadeiro.
 - RPG: upgrades ao subir de nível, loja permanente, progresso salvo no navegador.
 - 7 cutscenes em vídeo nos momentos-chave (prólogo, abertura do Ato II, o Vazio desperta, fim da Parte 2, abertura da Parte 3, abertura do Ato Final e final; versões 720p automáticas para PCs fracos), com opção para desligar em Opções (VÍDEOS). Os arquivos ficam em `web/video` e são gerados pelo `web/js/cine.js`.
 - História com cenas animadas, retratos dos personagens e música para cada emoção.

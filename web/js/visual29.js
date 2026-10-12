@@ -63,7 +63,7 @@ Visual29.auraFx = function (id, x, y, t) {
 // ---------- tela de cosmeticos ----------
 Screens.cosmetics = function () {
   const c = cs(), tab = G.ctab || 'trail', t = World.t; txt('COSMÉTICOS', W / 2, 18, 42, '#fff', 'center'); txt(Screens.stars(), W - 40, 30, 28, '#ffcf6b', 'right');
-  Object.keys(COSM).forEach((k, i) => { if (UI.button('ctab' + k, 90 + i * 350, 100, 330, 40, COSM[k].label, { size: 17, color: tab === k ? '#9a63ff' : undefined })) G.ctab = k; });
+  Object.keys(COSM).forEach((k, i) => { if (UI.button('ctab' + k, 90 + i * ((W - 180) / Object.keys(COSM).length), 100, (W - 180) / Object.keys(COSM).length - 14, 40, COSM[k].label, { size: 17, color: tab === k ? '#9a63ff' : undefined })) G.ctab = k; });
   // previa
   const px = 1010, py = 330; UI.panel(780, 160, 440, 370, { r: 24 }); txt('PRÉVIA', px, 172, 16, '#8a7fb0', 'center', 900);
   G.cprev = G.cprev || []; Visual29.trailFx(tab === 'trail' && G.cpv ? G.cpv : eqd('trail'), px, py, t, G.cprev, .7); for (const q of G.cprev) { q.life -= 1 / 60; q.x += q.vx / 60; q.y += q.vy / 60; } G.cprev = G.cprev.filter(q => q.life > 0).slice(-80);

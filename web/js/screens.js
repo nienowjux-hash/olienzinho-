@@ -656,7 +656,15 @@ const Screens = {
     if (unlocked && !eqs) { ctx.fillStyle = UI.focus('skEquip') ? '#9a63ff' : 'rgba(70,40,150,.9)'; ctx.beginPath(); ctx.roundRect(870, 486, 180, 30, 15); ctx.fill(); txt('EQUIPAR', 960, 501, 15, '#fff', 'center', 900, 'middle'); }
     if (UI.button('back', W / 2 - 160, 600, 320, 56, 'VOLTAR', { size: 24 }) || Input.pressed('escape')) { Snd.play('uiBack'); Game.goSelect(); }
     const wp = WEAPONS[ld.weapon];
-    txt('Arma equipada: ' + wp.name + '  •  Especial (Q): ' + wp.specName + ' — ' + wp.specDesc, W / 2, 556, 16, '#cdb8ff', 'center', 700);
+    { // painel de evolucao: o que muda em cada nivel da arma em foco (ou da equipada)
+      let fid = ld.weapon; for (const wid of WEAPON_ORDER.slice(wp0, wp0 + 4)) if (UI.focus('w_' + wid) || UI.focus('wu_' + wid)) fid = wid;
+      const fw = WEAPONS[fid], lv = Visual5.wl(fid), info = n => ({ d: 12 * (n - 1), c: Math.round((1 - Math.pow(.93, n - 1)) * 100), s: n >= 5 ? 2 : n >= 3 ? 1 : 0, k: n >= 5 ? 10 : 0 });
+      const fm = o => [o.d ? '+' + o.d + '% de dano' : '', o.c ? 'especial ' + o.c + '% mais rápido' : '', o.s ? '+' + o.s + (o.s > 1 ? ' tiros' : ' tiro') : '', o.k ? '+' + o.k + '% de crítico' : ''].filter(Boolean).join('  •  ') || 'sem bônus';
+      UI.panel(70, 528, 1140, 64, { r: 14, fill: 'rgba(14,6,40,.82)', stroke: fw.c });
+      txt(fw.name.toUpperCase() + '  —  nível ' + lv + ' de 5', 90, 534, 15, fw.c, 'left', 900); txt('Especial (Q): ' + fw.specName + ' — ' + fw.specDesc, 1190, 535, 13, '#cdb8ff', 'right', 700);
+      txt('Agora: ' + fm(info(lv)), 90, 556, 15, '#e2d4ff', 'left', 700);
+      txt(lv >= 5 ? 'Nível máximo alcançado' : 'Próximo nível (' + (lv + 1) + '): ' + fm(info(lv + 1)), 90, 574, 15, lv >= 5 ? '#7fe0a0' : '#ffd36a', 'left', 800);
+    }
   },
 
   lock(x, y, s) {

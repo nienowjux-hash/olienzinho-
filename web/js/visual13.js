@@ -151,7 +151,7 @@ Screens.hangarGuard = function (g) {
     else ha.call(this);
     const nm = ch === 'olien' ? 'OLIENZINHO' : ch === 'orbi' ? 'ORBI' : GUARDS[ch].name;
     if (UI.button('pilot', 70, 36, 220, 40, 'PILOTO: ' + nm + ' ▸', { size: 14 })) { let n = (idx + 1) % PILOTS.length, k = 0; while (!Visual13.pilotOk(PILOTS[n]) && k++ < 8) n = (n + 1) % PILOTS.length; ld.char = PILOTS[n]; Save.save(); Snd.play('uiSelect'); }
-    { const lk = []; if (!Save.data.cleared[5]) lk.push('Orbi: derrote o Vazio (fase 6)'); if (!Save.data.cleared[9]) lk.push('Guardiões: zere as 10 fases'); if (lk.length) txt('🔒 ' + lk.join('  •  '), 70, 82, 13, '#ffcf6b', 'left', 800); }
+    { const lk = []; if (!Save.data.cleared[5]) lk.push('Orbi: derrote o Vazio (fase 6)'); if (!Save.data.cleared[9]) lk.push('Guardiões: zere as 10 fases'); if (lk.length) txt('🔒 ' + lk.join('  •  '), 640, 664, 13, '#ffcf6b', 'center', 800); }
     const sc = ld.sec || 'none', ids = Object.keys(SECS);
     if (UI.button('sec', 770, 40, 170, 34, 'SEC: ' + SECS[sc].name.split(' ')[0], { size: 12, color: sc !== 'none' ? '#9a63ff' : undefined })) { ld.sec = ids[(ids.indexOf(sc) + 1) % ids.length]; Save.save(); Snd.play('uiSelect'); }
     UI.wrap(sc !== 'none' ? 'R: ' + SECS[sc].desc : 'Escolha uma arma secundária (tecla R)', 770, 80, 170, 15, 12, sc !== 'none' ? SECS[sc].c : '#8a7fb0');

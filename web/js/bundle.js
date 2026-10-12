@@ -537,7 +537,8 @@ const Snd = (() => {
     },
   };
 
-  const GAP = { graze: .07, blip: .028, shoot: .04, hit: .035, bossHit: .06, xp: .03, enemyShoot: .06, explode: .02, coin: .03 };
+  // intervalo minimo entre sons iguais: cada som cria varios nos de audio, e centenas por segundo geram lixo e travadinhas
+  const GAP = { graze: .1, blip: .028, shoot: .09, laser: .1, hit: .06, bossHit: .11, xp: .04, enemyShoot: .09, explode: .04, coin: .03, lightning: .1, mine: .08 };
   function play(name, o = {}) {
     if (!ac || vol.sfx <= 0) return;
     const f = SFX[name]; if (!f) return;

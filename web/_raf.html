@@ -1,0 +1,3 @@
+<!doctype html><meta charset=utf-8><body style="background:#000"><script>
+const sp=[];let last=performance.now(),t0=last;function f(t){const g=t-last;last=t;if(g>24)sp.push(Math.round(t-t0)+':'+Math.round(g));if(t-t0<8000)requestAnimationFrame(f);else document.title='done '+sp.join(' ');}requestAnimationFrame(f);
+</script>

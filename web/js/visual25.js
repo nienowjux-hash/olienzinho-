@@ -50,7 +50,7 @@ Visual25.importSave = function () {
     st.call(this);
     if (UI.button('sexp', 558, 632, 110, 40, 'EXPORTAR', { size: 13 })) Visual25.exportSave();
     if (UI.button('simp', 676, 632, 110, 40, 'IMPORTAR', { size: 13 })) Visual25.importSave();
-    if (UI.button('sacc', 790, 46, 130, 30, 'TECLAS ▸', { size: 13, color: '#9a63ff' })) { Snd.play('uiSelect'); G.state = 'access'; }
+    if (UI.button('sacc', 790, 46, 130, 30, 'TECLAS ▸', { size: 13 })) { Snd.play('uiSelect'); G.state = 'access'; }
   };
 }
 

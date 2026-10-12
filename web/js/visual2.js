@@ -210,11 +210,11 @@ Screens.settings = function () {
   }
   if (G.sfxTest) G.sfxTest--;
   txt('DIFICULDADE', 360, 272, 21, '#e2d4ff');
-  DIFF.forEach((d, i) => { if (UI.button('diff' + i, 360 + i * (560 / DIFF.length), 304, 560 / DIFF.length - 8, 40, d.name, { size: 14, color: (s.diff ?? 1) === i ? '#9a63ff' : undefined })) { s.diff = i; Save.save(); } });
+  DIFF.forEach((d, i) => { if (UI.button('diff' + i, 360 + i * (560 / DIFF.length), 304, 560 / DIFF.length - 8, 40, ((s.diff ?? 1) === i ? '✓ ' : '') + d.name, { size: 14, color: (s.diff ?? 1) === i ? '#9a63ff' : undefined })) { s.diff = i; Save.save(); } });
   UI.wrap(DIFF[s.diff ?? 1].desc, 360, 352, 560, 20, 14, '#cdb8ff');
   txt('GRÁFICOS', 360, 392, 21, '#e2d4ff');
   if (UI.button('res', 700, 386, 220, 32, 'RESOLUÇÃO: ' + Math.round((s.res || 1) * 100) + '%', { size: 13 })) { s.res = (s.res || 1) === 1 ? .75 : (s.res === .75 ? .5 : 1); Save.save(); resize(); }
-  ['BAIXO', 'MÉDIO', 'ALTO'].forEach((n, i) => { if (UI.button('ql' + i, 360 + i * 192, 424, 176, 40, n, { size: 17, color: (s.quality ?? 2) === i ? '#9a63ff' : undefined })) { s.quality = i; Save.save(); } });
+  ['BAIXO', 'MÉDIO', 'ALTO'].forEach((n, i) => { if (UI.button('ql' + i, 360 + i * 192, 424, 176, 40, ((s.quality ?? 2) === i ? '✓ ' : '') + n, { size: 17, color: (s.quality ?? 2) === i ? '#9a63ff' : undefined })) { s.quality = i; Save.save(); } });
   UI.wrap(['Sem brilho extra nem efeitos pesados: para PCs mais fracos.', 'Sem distorção de tela nem granulado.', 'Todos os efeitos visuais ligados.'][s.quality ?? 2], 360, 472, 560, 20, 14, '#cdb8ff');
   txt('ACESSIBILIDADE', 360, 504, 21, '#e2d4ff');
   if (UI.button('calm', 360, 536, 180, 38, s.calm ? 'MENOS TREMOR: SIM' : 'MENOS TREMOR: NÃO', { size: 12, color: s.calm ? '#9a63ff' : undefined })) { s.calm = !s.calm; Save.save(); }

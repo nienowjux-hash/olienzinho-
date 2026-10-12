@@ -107,7 +107,7 @@ Screens.custom = function () {
 {
   const st = Screens.settings;
   Screens.settings = function () {
-    st.call(this); if ((Save.data.settings.diff ?? 1) === DIFF.length - 1 && UI.button('custAdj', 780, 266, 140, 30, 'AJUSTAR ▸', { size: 14, color: '#9a63ff' })) { Snd.play('uiSelect'); G.state = 'custom'; }
+    st.call(this); if ((Save.data.settings.diff ?? 1) === DIFF.length - 1 && UI.button('custAdj', 780, 266, 140, 30, 'AJUSTAR ▸', { size: 14 })) { Snd.play('uiSelect'); G.state = 'custom'; }
   };
 }
 

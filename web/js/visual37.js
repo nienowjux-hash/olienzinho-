@@ -1,6 +1,6 @@
 'use strict';
 // ---------- 37: Opcoes em abas, Conquistas com icones e filtros, transicoes por tela e leve inclinacao da camera ----------
-const Visual37 = { tilt: 0, STABS: [['aud', 'ÁUDIO'], ['jog', 'JOGO'], ['vid', 'VÍDEO'], ['acc', 'ACESSIBILIDADE'], ['sav', 'SAVE']] };
+const Visual37 = { tilt: 0, STABS: [['aud', 'ÁUDIO'], ['jog', 'JOGO'], ['vid', 'VÍDEO'], ['acc', 'ACESSIBILIDADE'], ['ctl', 'CONTROLES'], ['sav', 'SAVE']] };
 
 // ---------- helpers ----------
 Visual37.toggle = function (id, x, y, w, h, label, on, desc) {
@@ -16,7 +16,7 @@ Visual37.toggle = function (id, x, y, w, h, label, on, desc) {
 Screens.settings = function () {
   const s = Save.data.settings; G.stab = G.stab || 'aud';
   txt('OPÇÕES', W / 2, 20, 42, '#fff', 'center');
-  const tw = 196; Visual37.STABS.forEach(([id, lab], i) => { if (UI.button('st' + id, W / 2 - (tw * 5 + 40) / 2 + i * (tw + 10), 78, tw, 40, lab, { size: 14, color: G.stab === id ? '#9a63ff' : undefined })) { G.stab = id; Snd.play('uiSelect'); } });
+  const nT = Visual37.STABS.length, tw = Math.floor((W - 160 - (nT - 1) * 10) / nT); Visual37.STABS.forEach(([id, lab], i) => { if (UI.button('st' + id, 80 + i * (tw + 10), 78, tw, 40, lab, { size: 14, color: G.stab === id ? '#9a63ff' : undefined })) { G.stab = id; Snd.play('uiSelect'); } });
   UI.panel(170, 134, 940, 470, { r: 26 });
   const X = 210, Wd = 860, tg = (id, i, label, key, desc, inv) => { const col = i % 2, row = Math.floor(i / 2), on = inv ? s[key] === false : !!s[key]; if (Visual37.toggle(id, X + col * 440, 176 + row * 92, 420, 78, label, inv ? !on : on, desc)) { s[key] = inv ? (s[key] === false ? true : false) : !s[key]; Save.save(); } };
   if (G.stab === 'aud') {
@@ -47,7 +47,10 @@ Screens.settings = function () {
     tg('contr', 2, 'Alto contraste', 'contrast', 'Tiros inimigos mais destacados.'); tg('assist2', 3, 'Modo assistido', 'assist', 'Escudo contra tiros muito próximos.');
     tg('soft', 4, 'Brilhos suaves', 'softGlow', 'Metade da intensidade dos brilhos.');
     if (UI.button('sacc', X, 470, 420, 52, 'TECLAS, LEGENDAS E CONTROLE ▸', { size: 17 })) { Snd.play('uiSelect'); G.state = 'access'; }
-    txt('Filtro de cor, vibração, tremor e legendas ficam lá.', X + 440, 488, 15, '#8a7fb0', 'left', 700);
+    if (Visual37.toggle('cbs', X + 440, 360, 420, 78, 'Formas nos tiros inimigos', !!s.cbs, 'Losangos em vez de círculos, sem depender só da cor.')) { s.cbs = !s.cbs; Save.save(); }
+    if (Visual37.toggle('gov', X + 440, 452, 420, 78, 'Qualidade automática', s.gov !== false, 'Baixa efeitos e resolução sozinha se o jogo pesar.')) { s.gov = s.gov === false ? true : false; if (s.gov === false && typeof Visual65 !== 'undefined') { Visual65.level = 0; Visual65.apply(); } Save.save(); }
+  } else if (G.stab === 'ctl') {
+    if (Visual37.controls) Visual37.controls(X, Wd);
   } else {
     UI.wrap('Seu progresso fica salvo neste navegador. Exporte para guardar uma cópia ou levar para outro lugar.', X, 150, Wd, 22, 17, '#cdb8ff');
     if (UI.button('sexp', X, 230, 410, 56, 'EXPORTAR SAVE', { size: 20 })) Visual25.exportSave(); if (UI.button('simp', X + 450, 230, 410, 56, 'IMPORTAR SAVE', { size: 20 })) Visual25.importSave();

@@ -92,10 +92,6 @@ const h63 = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s 
     return eb.call(this, b);
   };
   const up = Game.updatePlay; Game.updatePlay = function (dt) { n = 0; return up.call(this, dt); };
-  const st = Screens.settings;
-  Screens.settings = function () {
-    const r = st.call(this); if (G.stab === 'acc') { const s = Save.data.settings; if (UI.button('cbs', 210, 536, 420, 46, 'FORMAS NOS TIROS INIMIGOS: ' + (s.cbs ? 'SIM' : 'NÃO'), { size: 16, color: s.cbs ? '#9a63ff' : undefined })) { s.cbs = !s.cbs; Save.save(); } txt('Losangos em vez de círculos, para não depender só da cor.', 650, 550, 14, '#8a7fb0', 'left', 700); } return r;
-  };
 }
 
 // ---------- 7. portal ao comecar a fase e ao concluir ----------

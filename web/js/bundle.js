@@ -7125,7 +7125,7 @@ Visual6.menuOverlay = function (s) {
 Visual6.toastDraw = function () {
   if (Visual6.toast <= 0) return; Visual6.toast -= 1 / 60; const a = clamp(Visual6.toast, 0, 1);
   ctx.save(); ctx.globalAlpha = a; ctx.fillStyle = 'rgba(14,5,40,.9)'; ctx.strokeStyle = '#7fe0a0'; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(W / 2 - 170, 72, 340, 40, 20); ctx.fill(); ctx.stroke();
-  txt(Visual6.connected ? 'CONTROLE CONECTADO (' + Visual6.connected + ')' : 'CONTROLE DESCONECTADO', W / 2, 92, 15, '#7fe0a0', 'center', 900, 'middle'); ctx.restore();
+  txt(Visual6.connected ? 'CONTROLE CONECTADO' + (typeof Visual66 !== 'undefined' ? Visual66.label() : '') + ' (' + Visual6.connected + ')' : 'CONTROLE DESCONECTADO', W / 2, 92, 15, '#7fe0a0', 'center', 900, 'middle'); ctx.restore();
 };
 
 ;
@@ -11732,7 +11732,7 @@ addEventListener('load', () => {
 /* ==== visual37.js ==== */
 'use strict';
 // ---------- 37: Opcoes em abas, Conquistas com icones e filtros, transicoes por tela e leve inclinacao da camera ----------
-const Visual37 = { tilt: 0, STABS: [['aud', 'ÁUDIO'], ['jog', 'JOGO'], ['vid', 'VÍDEO'], ['acc', 'ACESSIBILIDADE'], ['sav', 'SAVE']] };
+const Visual37 = { tilt: 0, STABS: [['aud', 'ÁUDIO'], ['jog', 'JOGO'], ['vid', 'VÍDEO'], ['acc', 'ACESSIBILIDADE'], ['ctl', 'CONTROLES'], ['sav', 'SAVE']] };
 
 // ---------- helpers ----------
 Visual37.toggle = function (id, x, y, w, h, label, on, desc) {
@@ -11748,7 +11748,7 @@ Visual37.toggle = function (id, x, y, w, h, label, on, desc) {
 Screens.settings = function () {
   const s = Save.data.settings; G.stab = G.stab || 'aud';
   txt('OPÇÕES', W / 2, 20, 42, '#fff', 'center');
-  const tw = 196; Visual37.STABS.forEach(([id, lab], i) => { if (UI.button('st' + id, W / 2 - (tw * 5 + 40) / 2 + i * (tw + 10), 78, tw, 40, lab, { size: 14, color: G.stab === id ? '#9a63ff' : undefined })) { G.stab = id; Snd.play('uiSelect'); } });
+  const nT = Visual37.STABS.length, tw = Math.floor((W - 160 - (nT - 1) * 10) / nT); Visual37.STABS.forEach(([id, lab], i) => { if (UI.button('st' + id, 80 + i * (tw + 10), 78, tw, 40, lab, { size: 14, color: G.stab === id ? '#9a63ff' : undefined })) { G.stab = id; Snd.play('uiSelect'); } });
   UI.panel(170, 134, 940, 470, { r: 26 });
   const X = 210, Wd = 860, tg = (id, i, label, key, desc, inv) => { const col = i % 2, row = Math.floor(i / 2), on = inv ? s[key] === false : !!s[key]; if (Visual37.toggle(id, X + col * 440, 176 + row * 92, 420, 78, label, inv ? !on : on, desc)) { s[key] = inv ? (s[key] === false ? true : false) : !s[key]; Save.save(); } };
   if (G.stab === 'aud') {
@@ -11779,7 +11779,10 @@ Screens.settings = function () {
     tg('contr', 2, 'Alto contraste', 'contrast', 'Tiros inimigos mais destacados.'); tg('assist2', 3, 'Modo assistido', 'assist', 'Escudo contra tiros muito próximos.');
     tg('soft', 4, 'Brilhos suaves', 'softGlow', 'Metade da intensidade dos brilhos.');
     if (UI.button('sacc', X, 470, 420, 52, 'TECLAS, LEGENDAS E CONTROLE ▸', { size: 17 })) { Snd.play('uiSelect'); G.state = 'access'; }
-    txt('Filtro de cor, vibração, tremor e legendas ficam lá.', X + 440, 488, 15, '#8a7fb0', 'left', 700);
+    if (Visual37.toggle('cbs', X + 440, 360, 420, 78, 'Formas nos tiros inimigos', !!s.cbs, 'Losangos em vez de círculos, sem depender só da cor.')) { s.cbs = !s.cbs; Save.save(); }
+    if (Visual37.toggle('gov', X + 440, 452, 420, 78, 'Qualidade automática', s.gov !== false, 'Baixa efeitos e resolução sozinha se o jogo pesar.')) { s.gov = s.gov === false ? true : false; if (s.gov === false && typeof Visual65 !== 'undefined') { Visual65.level = 0; Visual65.apply(); } Save.save(); }
+  } else if (G.stab === 'ctl') {
+    if (Visual37.controls) Visual37.controls(X, Wd);
   } else {
     UI.wrap('Seu progresso fica salvo neste navegador. Exporte para guardar uma cópia ou levar para outro lugar.', X, 150, Wd, 22, 17, '#cdb8ff');
     if (UI.button('sexp', X, 230, 410, 56, 'EXPORTAR SAVE', { size: 20 })) Visual25.exportSave(); if (UI.button('simp', X + 450, 230, 410, 56, 'IMPORTAR SAVE', { size: 20 })) Visual25.importSave();
@@ -14858,10 +14861,6 @@ const h63 = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s 
     return eb.call(this, b);
   };
   const up = Game.updatePlay; Game.updatePlay = function (dt) { n = 0; return up.call(this, dt); };
-  const st = Screens.settings;
-  Screens.settings = function () {
-    const r = st.call(this); if (G.stab === 'acc') { const s = Save.data.settings; if (UI.button('cbs', 210, 536, 420, 46, 'FORMAS NOS TIROS INIMIGOS: ' + (s.cbs ? 'SIM' : 'NÃO'), { size: 16, color: s.cbs ? '#9a63ff' : undefined })) { s.cbs = !s.cbs; Save.save(); } txt('Losangos em vez de círculos, para não depender só da cor.', 650, 550, 14, '#8a7fb0', 'left', 700); } return r;
-  };
 }
 
 // ---------- 7. portal ao comecar a fase e ao concluir ----------
@@ -14980,13 +14979,83 @@ Visual65.apply = function () {
   const ss = Game.startStage; Game.startStage = function (i, o) { if (Visual65.level > 0) { Visual65.level--; Visual65.apply(); } Visual65.win.length = 0; Visual65.bad = 0; Visual65.cool = 480; return ss.call(this, i, o); };
 }
 
-// botao nas Opcoes (aba Acessibilidade): liga/desliga o governador
+
+;
+/* ==== visual66.js ==== */
+'use strict';
+// ---------- 66: aba CONTROLES nas Opcoes: controles detectados sozinhos, diagrama ao vivo, troca de botoes e vibracao ----------
+const Visual66 = { wait: null };
+Visual66.NAMES = {
+  xbox: ['A', 'B', 'X', 'Y', 'LB', 'RB', 'LT', 'RT'],
+  ps: ['✕', '○', '□', '△', 'L1', 'R1', 'L2', 'R2'],
+  ns: ['B', 'A', 'Y', 'X', 'L', 'R', 'ZL', 'ZR'],
+};
+Visual66.KEYS = ['a', 'b', 'x', 'y', 'lb', 'rb', 'lt', 'rt'];
+Visual66.TYPE = { xbox: 'Xbox', ps: 'PlayStation', ns: 'Nintendo', gen: 'Genérico' };
+Visual66.kind = id => /054c|playstation|dualshock|dualsense|wireless controller/i.test(id) ? 'ps' : /057e|nintendo|switch|pro controller|joy-?con/i.test(id) ? 'ns' : /xbox|045e|xinput|microsoft/i.test(id) ? 'xbox' : 'gen';
+Visual66.list = function () {
+  const out = [], l = (navigator.getGamepads && navigator.getGamepads()) || [];
+  for (const g of l) if (g && g.connected) { const k = Visual66.kind(g.id || ''); let nm = (g.id || 'Controle').replace(/\(.*?\)/g, '').replace(/\s+/g, ' ').trim(); if (nm.length > 34) nm = nm.slice(0, 34) + '…'; out.push({ g, kind: k, name: nm || 'Controle' }); }
+  return out;
+};
+Visual66.label = function () { const p = Visual66.list(); return p.length ? ' ' + Visual66.TYPE[p[0].kind] : ''; };
+Visual66.glyph = (kind, key) => (Visual66.NAMES[kind] || Visual66.NAMES.xbox)[Visual66.KEYS.indexOf(key)] || key.toUpperCase();
+addEventListener('gamepadconnected', () => { try { Visual6.toast = 3.2; Snd.init(); } catch (e) { } });
+addEventListener('gamepaddisconnected', () => { try { Visual6.toast = 3.2; } catch (e) { } });
+
+// enquanto espera um botao para trocar, o controle nao pode navegar pelos menus
 {
-  const st = Screens.settings;
-  Screens.settings = function () {
-    const r = st.call(this); if (G.stab === 'acc') { const s = Save.data.settings, on = s.gov !== false; if (UI.button('gov', 210, 590, 420, 40, 'QUALIDADE AUTOMÁTICA: ' + (on ? 'SIM' : 'NÃO'), { size: 15, color: on ? '#9a63ff' : undefined })) { s.gov = !on; if (!s.gov) { Visual65.level = 0; Visual65.apply(); } Save.save(); } txt('Baixa os efeitos e a resolução sozinha se o jogo ficar pesado.', 650, 600, 14, '#8a7fb0', 'left', 700); } return r;
-  };
+  const pp = Visual6.pollPads;
+  Visual6.pollPads = function () { const r = pp.apply(this, arguments); if (Visual66.wait) for (const k of ['enter', 'escape', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'p']) if (!Input.keys[k]) delete Input.hit[k]; return r; };
 }
+
+const PDEF = { pulse: ['Pulso', 'a'], dash: ['Esquiva', 'lb'], special: ['Especial', 'x'], parry: ['Rebater', 'b'], sec: ['Secundária', 'lt'] };
+Visual37.controls = function (X, Wd) {
+  const s = Save.data.settings, pads = Visual66.list(), t = World.t, pd = Save.data.pad = Save.data.pad || {};
+  txt('CONTROLES CONECTADOS', X, 154, 17, '#ffb340', 'left', 900);
+  if (!pads.length) {
+    const a = .6 + .4 * Math.sin(t * 4);
+    txt('Nenhum controle detectado.', X, 182, 20, '#fff', 'left', 800);
+    ctx.globalAlpha = a; txt('Conecte o controle e aperte qualquer botão nele. O navegador só avisa depois disso.', X, 210, 15, '#cdb8ff', 'left', 700); ctx.globalAlpha = 1;
+  } else pads.slice(0, 2).forEach((p, i) => { const y = 182 + i * 28; ctx.fillStyle = '#7fe0a0'; ctx.beginPath(); ctx.arc(X + 8, y + 12, 6, 0, TAU); ctx.fill(); txt(p.name + '  •  ' + Visual66.TYPE[p.kind], X + 24, y, 18, '#fff', 'left', 800); txt(i === 0 ? (Save.data.coop ? 'Jogador 2' : 'Jogador 1') : (Save.data.coop ? 'Jogador 1' : 'reserva'), X + Wd, y + 2, 15, '#7fe0a0', 'right', 800); });
+  const P = pads[0], kind = P ? P.kind : 'xbox', g = P ? P.g : null, bt = n => !!(g && g.buttons[n] && g.buttons[n].pressed);
+  // diagrama ao vivo
+  const cx = X + 170, cy = 340;
+  ctx.save(); ctx.translate(cx, cy);
+  ctx.fillStyle = 'rgba(30,14,80,.9)'; ctx.strokeStyle = P ? '#b98cff' : '#4a4070'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(-120, -30); ctx.quadraticCurveTo(-140, 30, -112, 78); ctx.quadraticCurveTo(-92, 100, -66, 70); ctx.lineTo(-40, 48); ctx.lineTo(40, 48); ctx.lineTo(66, 70); ctx.quadraticCurveTo(92, 100, 112, 78); ctx.quadraticCurveTo(140, 30, 120, -30); ctx.quadraticCurveTo(60, -62, 0, -52); ctx.quadraticCurveTo(-60, -62, -120, -30); ctx.fill(); ctx.stroke();
+  const dot = (x, y, r, on, c, lab) => { ctx.fillStyle = on ? c : 'rgba(80,60,140,.8)'; ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fill(); ctx.strokeStyle = on ? '#fff' : 'rgba(190,160,255,.5)'; ctx.lineWidth = 2; ctx.stroke(); if (on) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(x, y, r * 2.4, c, .6); ctx.restore(); } if (lab) txt(lab, x, y, 12, '#fff', 'center', 900, 'middle'); };
+  const N = Visual66.NAMES[kind] || Visual66.NAMES.xbox, face = [[1, 0, 0, '#7fe08a'], [2, 1, 0, '#ff5a6a'], [3, 0, 1, '#6aa8ff'], [4, 0, -1, '#ffd36a']];
+  dot(66, -6, 11, bt(0), '#7fe08a', N[0]); dot(90, -28, 11, bt(1), '#ff5a6a', N[1]); dot(42, -28, 11, bt(2), '#6aa8ff', N[2]); dot(66, -50, 11, bt(3), '#ffd36a', N[3]);
+  // direcional
+  dot(-66, -6, 9, bt(14), '#cdb8ff'); dot(-34, -6, 9, bt(15), '#cdb8ff'); dot(-50, -22, 9, bt(12), '#cdb8ff'); dot(-50, 10, 9, bt(13), '#cdb8ff');
+  // analogicos
+  const ax = i => (g && g.axes[i]) || 0; dot(-62 + ax(0) * 8, 34 + ax(1) * 8, 15, bt(10), '#7fe0ff'); dot(26 + ax(2) * 8, 34 + ax(3) * 8, 15, bt(11), '#7fe0ff');
+  // ombros e gatilhos
+  const sh = (x, y, w, on, lab) => { ctx.fillStyle = on ? '#b98cff' : 'rgba(80,60,140,.9)'; ctx.beginPath(); ctx.roundRect(x, y, w, 16, 6); ctx.fill(); ctx.strokeStyle = on ? '#fff' : 'rgba(190,160,255,.5)'; ctx.lineWidth = 2; ctx.stroke(); txt(lab, x + w / 2, y + 8, 11, '#fff', 'center', 900, 'middle'); };
+  sh(-118, -82, 70, bt(4), N[4]); sh(48, -82, 70, bt(5), N[5]); sh(-118, -104, 70, bt(6), N[6]); sh(48, -104, 70, bt(7), N[7]);
+  ctx.restore();
+  txt(P ? 'Aperte os botões: eles acendem aqui.' : 'O diagrama acende quando um controle for detectado.', cx, cy + 112, 14, '#8a7fb0', 'center', 700);
+  // trocar botoes
+  const MX = X + 400; txt('BOTÕES DO JOGO', MX, 250, 17, '#ffb340', 'left', 900);
+  const keys = Object.keys(PDEF);
+  keys.forEach((k, i) => {
+    const y = 278 + i * 46, cur = pd[k] || PDEF[k][1], waiting = Visual66.wait === k;
+    txt(PDEF[k][0], MX, y + 11, 18, '#fff', 'left', 800);
+    const lab = waiting ? 'APERTE UM BOTÃO…' : Visual66.glyph(kind, cur);
+    if (UI.button('pdb' + k, MX + 170, y, 190, 38, lab, { size: 15, color: waiting ? '#ffb340' : '#9a63ff' })) { Visual66.wait = waiting ? null : k; Snd.play('uiSelect'); G.padPrev = {}; }
+  });
+  if (Visual66.wait && g) {
+    const prev = G.padPrev || (G.padPrev = {}); let hit = -1; for (let n = 0; n < 8; n++) { const on = bt(n); if (on && !prev[n] && G.padPrevInit) hit = n; prev[n] = on; } G.padPrevInit = true;
+    if (hit >= 0) { pd[Visual66.wait] = Visual66.KEYS[hit]; Save.save(); Visual66.wait = null; Snd.play('upgrade'); G.padPrevInit = false; }
+    if (Input.pressed('escape')) { Visual66.wait = null; G.padPrevInit = false; }
+  } else if (!Visual66.wait) G.padPrevInit = false;
+  // vibracao e atalhos
+  const rb = s.rumble === false;
+  if (Visual37.toggle('rumble2', X, 500, 420, 78, 'Vibração do controle', !rb, 'Treme quando você leva dano.')) { s.rumble = rb ? true : false; Save.save(); }
+  if (UI.button('vtest', X + 440, 500, 200, 36, 'TESTAR VIBRAÇÃO', { size: 14, disabled: !P })) { try { Visual6.rumble(400, .8, .6); } catch (e) { } }
+  if (UI.button('prst', X + 660, 500, 200, 36, 'BOTÕES PADRÃO', { size: 14 })) { Save.data.pad = {}; Save.save(); Visual66.wait = null; }
+  if (UI.button('kbd', X + 440, 544, 420, 36, 'TECLAS DO TECLADO ▸', { size: 14 })) { Snd.play('uiSelect'); G.state = 'access'; }
+};
 
 ;
 /* ==== devbot.js ==== */

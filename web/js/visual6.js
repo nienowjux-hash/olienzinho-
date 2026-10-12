@@ -147,5 +147,5 @@ Visual6.menuOverlay = function (s) {
 Visual6.toastDraw = function () {
   if (Visual6.toast <= 0) return; Visual6.toast -= 1 / 60; const a = clamp(Visual6.toast, 0, 1);
   ctx.save(); ctx.globalAlpha = a; ctx.fillStyle = 'rgba(14,5,40,.9)'; ctx.strokeStyle = '#7fe0a0'; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(W / 2 - 170, 72, 340, 40, 20); ctx.fill(); ctx.stroke();
-  txt(Visual6.connected ? 'CONTROLE CONECTADO (' + Visual6.connected + ')' : 'CONTROLE DESCONECTADO', W / 2, 92, 15, '#7fe0a0', 'center', 900, 'middle'); ctx.restore();
+  txt(Visual6.connected ? 'CONTROLE CONECTADO' + (typeof Visual66 !== 'undefined' ? Visual66.label() : '') + ' (' + Visual6.connected + ')' : 'CONTROLE DESCONECTADO', W / 2, 92, 15, '#7fe0a0', 'center', 900, 'middle'); ctx.restore();
 };

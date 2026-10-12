@@ -26,10 +26,3 @@ Visual65.apply = function () {
   const ss = Game.startStage; Game.startStage = function (i, o) { if (Visual65.level > 0) { Visual65.level--; Visual65.apply(); } Visual65.win.length = 0; Visual65.bad = 0; Visual65.cool = 480; return ss.call(this, i, o); };
 }
 
-// botao nas Opcoes (aba Acessibilidade): liga/desliga o governador
-{
-  const st = Screens.settings;
-  Screens.settings = function () {
-    const r = st.call(this); if (G.stab === 'acc') { const s = Save.data.settings, on = s.gov !== false; if (UI.button('gov', 210, 590, 420, 40, 'QUALIDADE AUTOMÁTICA: ' + (on ? 'SIM' : 'NÃO'), { size: 15, color: on ? '#9a63ff' : undefined })) { s.gov = !on; if (!s.gov) { Visual65.level = 0; Visual65.apply(); } Save.save(); } txt('Baixa os efeitos e a resolução sozinha se o jogo ficar pesado.', 650, 600, 14, '#8a7fb0', 'left', 700); } return r;
-  };
-}

@@ -107,6 +107,6 @@ Visual15.veil = function () { if (!Save.data.settings.contrast) return; ctx.save
   const st = Screens.settings;
   Screens.settings = function () {
     st.call(this); const s = Save.data.settings;
-    if (UI.button('contr', 780, 542, 134, 40, s.contrast ? 'CONTRASTE: SIM' : 'CONTRASTE: NÃO', { size: 11, color: s.contrast ? '#9a63ff' : undefined })) { s.contrast = !s.contrast; Save.save(); }
+    if (UI.button('contr', 360, 580, 180, 38, s.contrast ? 'CONTRASTE: SIM' : 'CONTRASTE: NÃO', { size: 12, color: s.contrast ? '#9a63ff' : undefined })) { s.contrast = !s.contrast; Save.save(); }
   };
 }

@@ -210,21 +210,21 @@ Screens.settings = function () {
   }
   if (G.sfxTest) G.sfxTest--;
   txt('DIFICULDADE', 360, 272, 21, '#e2d4ff');
-  DIFF.forEach((d, i) => { if (UI.button('diff' + i, 360 + i * 192, 304, 176, 40, d.name, { size: 17, color: (s.diff ?? 1) === i ? '#9a63ff' : undefined })) { s.diff = i; Save.save(); } });
+  DIFF.forEach((d, i) => { if (UI.button('diff' + i, 360 + i * 142, 304, 132, 40, d.name, { size: 15, color: (s.diff ?? 1) === i ? '#9a63ff' : undefined })) { s.diff = i; Save.save(); } });
   UI.wrap(DIFF[s.diff ?? 1].desc, 360, 352, 560, 20, 14, '#cdb8ff');
   txt('GRÁFICOS', 360, 392, 21, '#e2d4ff');
   if (UI.button('res', 700, 386, 220, 32, 'RESOLUÇÃO: ' + Math.round((s.res || 1) * 100) + '%', { size: 13 })) { s.res = (s.res || 1) === 1 ? .75 : (s.res === .75 ? .5 : 1); Save.save(); resize(); }
   ['BAIXO', 'MÉDIO', 'ALTO'].forEach((n, i) => { if (UI.button('ql' + i, 360 + i * 192, 424, 176, 40, n, { size: 17, color: (s.quality ?? 2) === i ? '#9a63ff' : undefined })) { s.quality = i; Save.save(); } });
   UI.wrap(['Sem brilho extra nem efeitos pesados: para PCs mais fracos.', 'Sem distorção de tela nem granulado.', 'Todos os efeitos visuais ligados.'][s.quality ?? 2], 360, 472, 560, 20, 14, '#cdb8ff');
-  txt('ACESSIBILIDADE', 360, 510, 21, '#e2d4ff');
-  if (UI.button('calm', 360, 542, 134, 40, s.calm ? 'MENOS TREMOR: SIM' : 'MENOS TREMOR: NÃO', { size: 12, color: s.calm ? '#9a63ff' : undefined })) { s.calm = !s.calm; Save.save(); }
-  if (UI.button('outl', 500, 542, 134, 40, s.outline ? 'CONTORNO: SIM' : 'CONTORNO: NÃO', { size: 12, color: s.outline ? '#9a63ff' : undefined })) { s.outline = !s.outline; Save.save(); }
-  if (UI.button('assist', 640, 542, 134, 40, s.assist ? 'ASSISTIDO: SIM' : 'ASSISTIDO: NÃO', { size: 12, color: s.assist ? '#9a63ff' : undefined })) { s.assist = !s.assist; Save.save(); }
+  txt('ACESSIBILIDADE', 360, 504, 21, '#e2d4ff');
+  if (UI.button('calm', 360, 536, 180, 38, s.calm ? 'MENOS TREMOR: SIM' : 'MENOS TREMOR: NÃO', { size: 12, color: s.calm ? '#9a63ff' : undefined })) { s.calm = !s.calm; Save.save(); }
+  if (UI.button('outl', 550, 536, 180, 38, s.outline ? 'CONTORNO: SIM' : 'CONTORNO: NÃO', { size: 12, color: s.outline ? '#9a63ff' : undefined })) { s.outline = !s.outline; Save.save(); }
+  if (UI.button('assist', 740, 536, 180, 38, s.assist ? 'ASSISTIDO: SIM' : 'ASSISTIDO: NÃO', { size: 12, color: s.assist ? '#9a63ff' : undefined })) { s.assist = !s.assist; Save.save(); }
   const sure = G.confirmReset;
-  if (UI.button('reset', 360, 598, 270, 40, sure ? 'TEM CERTEZA? CLIQUE DE NOVO' : 'APAGAR PROGRESSO', { size: 14, color: '#c2185b' })) {
+  if (UI.button('reset', 360, 632, 270, 40, sure ? 'TEM CERTEZA? CLIQUE DE NOVO' : 'APAGAR PROGRESSO', { size: 14, color: '#c2185b' })) {
     if (sure) { Save.reset(); G.confirmReset = false; Snd.setVolumes(Save.data.settings.sfx, Save.data.settings.music); G.sel = 0; } else G.confirmReset = true;
   }
-  if (UI.button('back', 648, 598, 272, 40, 'VOLTAR', { size: 18 }) || Input.pressed('escape')) {
+  if (UI.button('back', 648, 632, 272, 40, 'VOLTAR', { size: 18 }) || Input.pressed('escape')) {
     G.confirmReset = false; Snd.play('uiBack');
     if (G.setBack === 'pause') G.state = 'pause'; else Game.goTitle();
   }

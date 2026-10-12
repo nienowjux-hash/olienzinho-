@@ -53,6 +53,6 @@ Visual18.page = function (S, pg) {
   const st = Screens.settings;
   Screens.settings = function () {
     st.call(this); const s = Save.data.settings;
-    if (UI.button('cine', 920, 542, 134, 40, s.cine === false ? 'VÍDEOS: NÃO' : 'VÍDEOS: SIM', { size: 11, color: s.cine === false ? undefined : '#9a63ff' })) { s.cine = s.cine === false ? true : false; Save.save(); }
+    if (UI.button('cine', 550, 580, 180, 38, s.cine === false ? 'VÍDEOS: NÃO' : 'VÍDEOS: SIM', { size: 12, color: s.cine === false ? undefined : '#9a63ff' })) { s.cine = s.cine === false ? true : false; Save.save(); }
   };
 }

@@ -314,11 +314,11 @@ addAI(Mirror, function (dt) {
   if (ph === 2 && this.tick('wardSum', dt, 16) && countOf('warden') < 1) { const x = rand(200, W - 200); spawnEnemy('warden', x, -50, { bx: x, sy: 190, noElite: true }); }
 });
 
-// ---------- chefes crescem junto com o jogador ----------
+// ---------- chefes crescem junto com o jogador (todos): quanto mais poder de fogo, mais vida, para a luta nao acabar rapido demais ----------
 {
   const bu = Game.updatePlay;
   Game.updatePlay = function (dt) {
-    const b = G.boss; if (b && !b._p3 && P3.on() && (b instanceof Herald || b instanceof Leviathan || b instanceof Mirror || (typeof Heart !== 'undefined' && b instanceof Heart))) { b._p3 = 1; const m = .9 * (1 + (P3.heat() - 1) * .3); b.maxHp = b.hp = Math.round(b.maxHp * m); }
+    const b = G.boss; if (b && !b._p3 && G.player) { b._p3 = 1; const m = clamp(Math.pow(P3.pw() / 12, .75), 1, 5); if (m > 1.02) { b.maxHp = b.hp = Math.round(b.maxHp * m); } }
     return bu.call(this, dt);
   };
 }

@@ -71,7 +71,7 @@ Visual36.update = function (dt) {
 {
   const gu = Game.update;
   Game.update = function (dt) { if (Visual36.slow > 0) { Visual36.slow -= dt; dt *= .35; } return gu.call(this, dt); };
-  const bd = Game.bossDefeated; Game.bossDefeated = function () { Visual36.slow = .5; G.zoom = Math.max(G.zoom || 0, .05); return bd.call(this); };
+  const bd = Game.bossDefeated; Game.bossDefeated = function () { if (G.stageIdx === 9) { Visual36.slow = .5; G.zoom = Math.max(G.zoom || 0, .05); } return bd.call(this); };
   const ov = Visual.overlay;
   Visual.overlay = function () {
     ov.call(this);

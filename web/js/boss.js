@@ -62,11 +62,11 @@ class Boss {
   die() {
     this.state = 'dying'; this.dyingT = 0;
     G.eb.forEach(b => { b.dead = true; }); G.hazards = [];
-    G.pendingLevels = 0; G.hitstop = .22; // o que faltava de XP nao vale mais
+    G.pendingLevels = 0; if (G.stageIdx === 9) G.hitstop = .22; // camera lenta e pausa so no chefe final; o que faltava de XP nao vale mais
     G.finisher = { t: 0 }; Snd.play('special'); // golpe final do Olienzinho
     G.enemies.forEach(e => { if (!e.dead) killEnemy(e, true); });
     Snd.play(this.dieSfx || 'bossDie'); Snd.musicStop();
-    Game.slowmo = 1;
+    if (G.stageIdx === 9) Game.slowmo = 1;
   }
   update(dt) {
     this.t += dt; this.flash = Math.max(0, this.flash - dt); this.orbCd = Math.max(0, this.orbCd - dt);

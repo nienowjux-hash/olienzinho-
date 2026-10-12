@@ -20,7 +20,7 @@ Visual52.shakeOff = function () {
 };
 {
   const ke = killEnemy;
-  killEnemy = function (e, by) { const crit = e && e._dc; const r = ke(e, by); if (crit && e.dead && QL() >= 1) G.hitstop = Math.max(G.hitstop || 0, .045); return r; };
+  killEnemy = function (e, by) { const crit = e && e._dc; const r = ke(e, by); return r; };
 }
 
 // ---------- fitas de luz continuas atras dos tiros ----------

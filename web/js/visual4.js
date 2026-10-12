@@ -14,7 +14,6 @@ Visual4.fxStep = function (dt) {
 Visual4.cutin = function (wid) {
   const w = WEAPONS[wid]; G.cutin = { t: 0, dur: 2.0, name: w.specName.toUpperCase(), col: w.c, who: wid === 'orbi' ? 'B' : 'O' };
   const p = G.player; if (p) { p.mood = 'determined'; p.moodT = 1.2; }
-  Game.slowmo = 1; G.timers.push({ t: .45, fn: () => { if (!G.boss || G.boss.state !== 'dying') Game.slowmo = 0; } });
 };
 Visual4.cutinDraw = function () {
   const c = G.cutin; if (!c) return; if (G.state === 'play') c.t += 1 / 60; if (c.t > c.dur) { G.cutin = null; return; }

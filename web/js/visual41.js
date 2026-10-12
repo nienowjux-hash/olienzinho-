@@ -59,9 +59,9 @@ Visual41.light = function (e) {
 // ---------- camera cinematografica ----------
 {
   const hp = hurtPlayer;
-  hurtPlayer = function (d) { const p = G.player, b = p ? p.hp : 0; const r = hp(d); if (p && p.hp < b && (b - p.hp >= 2 || p.hp <= 2)) { Visual36.slow = Math.max(Visual36.slow || 0, .22); G.zoomCx = p.x; G.zoomCy = p.y; G.zoom = Math.max(G.zoom || 0, .07); } return r; };
+  hurtPlayer = function (d) { const p = G.player, b = p ? p.hp : 0; const r = hp(d); if (p && p.hp < b && (b - p.hp >= 2 || p.hp <= 2)) { G.zoomCx = p.x; G.zoomCy = p.y; G.zoom = Math.max(G.zoom || 0, .07); } return r; };
   const ke = killEnemy;
-  killEnemy = function (e, by) { const big = e && (e.mini || e.elite || e.type === 'captain'); const r = ke(e, by); if (big && e.dead && QL() >= 1) { Visual36.slow = Math.max(Visual36.slow || 0, .3); G.zoomCx = e.x; G.zoomCy = e.y; G.zoom = Math.max(G.zoom || 0, .05); } return r; };
+  killEnemy = function (e, by) { const big = e && (e.mini || e.elite || e.type === 'captain'); const r = ke(e, by); if (big && e.dead && QL() >= 1) { G.zoomCx = e.x; G.zoomCy = e.y; G.zoom = Math.max(G.zoom || 0, .05); } return r; };
   const up = Game.updatePlay;
   Game.updatePlay = function (dt) {
     up.call(this, dt); const b = G.boss; for (const rg of G.rings) if (rg.max >= 250 && !rg._p) { rg._p = 1; Visual41.bgPulse = Math.min(1, (Visual41.bgPulse || 0) + .6); } Visual41.bgPulse = Math.max(0, (Visual41.bgPulse || 0) - dt * 1.4);

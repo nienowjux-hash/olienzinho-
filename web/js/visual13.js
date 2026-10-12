@@ -2,14 +2,14 @@
 // ---------- pilotos guardioes (Colmeia, Petreo, Vigia, Solaris) e arma secundaria ----------
 const Visual13 = { mines: [] };
 const GUARDS = {
-  C: { name: 'COLMEIA', c: '#ffb340', ok: () => !!Save.data.cleared[0], w: 'g_C', desc: 'Enxame de abelhas teleguiadas.', sp: 'Enxame', st: 'Mais veloz, mas frágil (-1 de vida).' },
-  P: { name: 'PÉTREO', c: '#c8a0b8', ok: () => !!Save.data.cleared[1], w: 'g_P', desc: 'Rochas lentas e pesadas que explodem.', sp: 'Terremoto', st: 'Mais resistente (+2 de vida), mais lento.' },
-  E: { name: 'VIGIA', c: '#ff7ac8', ok: () => !!Save.data.cleared[2], w: 'g_E', desc: 'Olhares que atravessam tudo.', sp: 'Olhar do Vigia', st: '+10% de crítico.' },
-  S: { name: 'SOLARIS', c: '#ff8a1f', ok: () => !!Save.data.cleared[3], w: 'g_S', desc: 'Bolas de fogo em leque largo.', sp: 'Explosão Solar', st: '+10% de dano.' },
+  C: { name: 'COLMEIA', c: '#ffb340', ok: () => !!Save.data.cleared[9], w: 'g_C', desc: 'Enxame de abelhas teleguiadas.', sp: 'Enxame', st: 'Mais veloz, mas frágil (-1 de vida).' },
+  P: { name: 'PÉTREO', c: '#c8a0b8', ok: () => !!Save.data.cleared[9], w: 'g_P', desc: 'Rochas lentas e pesadas que explodem.', sp: 'Terremoto', st: 'Mais resistente (+2 de vida), mais lento.' },
+  E: { name: 'VIGIA', c: '#ff7ac8', ok: () => !!Save.data.cleared[9], w: 'g_E', desc: 'Olhares que atravessam tudo.', sp: 'Olhar do Vigia', st: '+10% de crítico.' },
+  S: { name: 'SOLARIS', c: '#ff8a1f', ok: () => !!Save.data.cleared[9], w: 'g_S', desc: 'Bolas de fogo em leque largo.', sp: 'Explosão Solar', st: '+10% de dano.' },
 };
 const PILOTS = ['olien', 'orbi', 'C', 'P', 'E', 'S'];
-Visual13.pilotOk = id => id === 'olien' || (id === 'orbi' ? !!Save.data.cleared[3] : GUARDS[id] && GUARDS[id].ok());
-Visual13.pilotWeapon = id => id === 'orbi' && Save.data.cleared[3] ? 'orbi' : (GUARDS[id] && GUARDS[id].ok() ? GUARDS[id].w : null);
+Visual13.pilotOk = id => id === 'olien' || (id === 'orbi' ? !!Save.data.cleared[5] : GUARDS[id] && GUARDS[id].ok());
+Visual13.pilotWeapon = id => id === 'orbi' && Save.data.cleared[5] ? 'orbi' : (GUARDS[id] && GUARDS[id].ok() ? GUARDS[id].w : null);
 
 // ===== armas dos guardioes =====
 const bee = (p, k, n, ang, speed, mul, o) => mkBullet(p, p.x + k * 20, p.y - 20, ang, speed, mul, Object.assign({ kind: 'missile', orb: true, speed: 760, target: null, life: 2.2, pierce: 0, r: 8 }, o));
@@ -151,6 +151,7 @@ Screens.hangarGuard = function (g) {
     else ha.call(this);
     const nm = ch === 'olien' ? 'OLIENZINHO' : ch === 'orbi' ? 'ORBI' : GUARDS[ch].name;
     if (UI.button('pilot', 70, 36, 220, 40, 'PILOTO: ' + nm + ' ▸', { size: 14 })) { let n = (idx + 1) % PILOTS.length, k = 0; while (!Visual13.pilotOk(PILOTS[n]) && k++ < 8) n = (n + 1) % PILOTS.length; ld.char = PILOTS[n]; Save.save(); Snd.play('uiSelect'); }
+    { const lk = []; if (!Save.data.cleared[5]) lk.push('Orbi: derrote o Vazio (fase 6)'); if (!Save.data.cleared[9]) lk.push('Guardiões: zere as 10 fases'); if (lk.length) txt('🔒 ' + lk.join('  •  '), 70, 82, 13, '#ffcf6b', 'left', 800); }
     const sc = ld.sec || 'none', ids = Object.keys(SECS);
     if (UI.button('sec', 780, 36, 210, 40, 'SECUNDÁRIA: ' + SECS[sc].name.split(' ')[0], { size: 13, color: sc !== 'none' ? '#9a63ff' : undefined })) { ld.sec = ids[(ids.indexOf(sc) + 1) % ids.length]; Save.save(); Snd.play('uiSelect'); }
     if (sc !== 'none') txt('R: ' + SECS[sc].desc, 890, 82, 13, SECS[sc].c, 'center', 800); else txt('Escolha uma arma secundária (tecla R)', 890, 82, 13, '#8a7fb0', 'center', 700);

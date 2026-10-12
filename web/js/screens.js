@@ -608,7 +608,7 @@ const Screens = {
   },
 
   hangar() {
-    const t = World.t, ld = Save.data.loadout, own = Save.data.owned, orbiOK = !!Save.data.cleared[3], isO = ld.char === 'orbi' && orbiOK;
+    const t = World.t, ld = Save.data.loadout, own = Save.data.owned, orbiOK = !!Save.data.cleared[5], isO = ld.char === 'orbi' && orbiOK;
     if (isO) { this.hangarOrbi(); return; }
     txt('HANGAR', W / 2, 26, 42, '#fff', 'center'); txt(this.stars(), W - 40, 36, 30, '#ffcf6b', 'right');
     txt('ARMAS', 74, 92, 18, '#ffb340', 'left', 900);

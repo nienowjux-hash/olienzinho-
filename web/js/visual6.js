@@ -43,7 +43,7 @@ Visual6.target = function (x, y) {
   return Math.hypot(a.x - x, a.y - y) <= Math.hypot(b.x - x, b.y - y) ? a : b;
 };
 Visual6.initP2 = function () {
-  G.p2 = null; if (!Save.data.coop || G.sanct) return;
+  G.p2 = null; if (!Save.data.coop || G.sanct || !Save.data.cleared[5]) return;
   const p = newPlayer(); p.weapon = 'orbi'; p.x = W / 2 + 90; p.y = H - 130; p.isP2 = true; p.specCd = 6; p.buffs = {};
   recalcStats(p); p.hp = p.maxHp; G.p2 = p; G.player.x = W / 2 - 90;
 };
@@ -136,12 +136,12 @@ function aimAt(x, y) { const t = Visual6.target(x, y); return Math.atan2(t.y - y
 // ===== alternar jogadores (C) e aviso do controle =====
 Visual6.menuOverlay = function (s) {
   if (!['title', 'select', 'modes'].includes(s)) return;
-  if (Input.pressed('c')) { Save.data.coop = !Save.data.coop; Save.save(); Snd.play('uiSelect'); }
+  if (Input.pressed('c')) { if (Save.data.cleared[5] || Save.data.coop) { Save.data.coop = !Save.data.coop; Save.save(); Snd.play('uiSelect'); } else Snd.play('uiDeny'); }
   const w = 360, x = W / 2 - w / 2, y = H - 52, id = 'coopTog';
-  if (UI.hit(id, x, y, w, 36)) { Save.data.coop = !Save.data.coop; Save.save(); }
+  if (UI.hit(id, x, y, w, 36)) { if (Save.data.cleared[5] || Save.data.coop) { Save.data.coop = !Save.data.coop; Save.save(); } else Snd.play('uiDeny'); }
   const f = UI.focus(id), co = !!Save.data.coop;
   ctx.save(); ctx.fillStyle = f ? 'rgba(90,50,190,.9)' : 'rgba(20,8,55,.75)'; ctx.strokeStyle = co ? '#7fe0ff' : 'rgba(190,160,255,.35)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(x, y, w, 36, 18); ctx.fill(); ctx.stroke();
-  txt('[C]  ' + (co ? '2 JOGADORES  (Olienzinho + Orbi)' : '1 JOGADOR'), W / 2, y + 18, 15, co ? '#7fe0ff' : '#cdb8ff', 'center', 900, 'middle'); ctx.restore();
+  txt('[C]  ' + (co ? '2 JOGADORES  (Olienzinho + Orbi)' : Save.data.cleared[5] ? '1 JOGADOR' : '1 JOGADOR   🔒 2P: derrote o Vazio'), W / 2, y + 18, 15, co ? '#7fe0ff' : '#cdb8ff', 'center', 900, 'middle'); ctx.restore();
   if (Visual6.connected) txt('controle conectado: ' + Visual6.connected, 28, H - 40, 13, '#7fe0a0', 'left', 800);
 };
 Visual6.toastDraw = function () {

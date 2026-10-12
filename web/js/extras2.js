@@ -90,7 +90,7 @@ Game.addDaily = function () {
 
 Game.startTraining = function () {
   this.startStage(0, { skipStory: true }); G.training = true; Extras.tut = null; G.xpNeed = 1e9; G.state = 'play'; Events.banner = null; Snd.musicPlay('menu', 1);
-  if (Save.data.loadout.char === 'orbi' && Save.data.cleared[3]) G.player.weapon = 'orbi';
+  if (Save.data.loadout.char === 'orbi' && Save.data.cleared[5]) G.player.weapon = 'orbi';
   recalcStats(G.player); G.trainSkin = null; G.trainN = 0; spawnEnemy('dummy', W / 2, -50, { hp: 1e6, maxHp: 1e6 });
 };
 const TRAIN_TYPES = ['drone', 'zig', 'kami', 'shooter', 'shield', 'healer', 'mine', 'tank', 'bit'];
@@ -99,7 +99,7 @@ Extras.trainUpdate = function (dt) {
   p.hp = p.maxHp; p.specCd = Math.max(0, p.specCd - dt * 3); p.dashCd = Math.max(0, p.dashCd - dt * 2); p.pulseT = Math.max(0, p.pulseT - dt * 2);
   const setW = id => { p.weapon = id; p.fireT = 0; G.mega = null; G.well = null; recalcStats(p); Snd.play('uiSelect'); };
   WEAPON_ORDER.forEach((id, i) => { if (Input.pressed(String(i + 1))) setW(id); });
-  if (Input.pressed('0') && Save.data.cleared[3]) setW('orbi');
+  if (Input.pressed('0') && Save.data.cleared[5]) setW('orbi');
   if (Input.pressed('9')) { G.trainSkin = ((G.trainSkin ?? -1) + 1) % SKINS.length; Snd.play('uiSelect'); }
   if (Input.pressed('n')) { const ty = TRAIN_TYPES[G.trainN++ % TRAIN_TYPES.length], n = ty === 'tank' || ty === 'healer' ? 1 : 3; for (let i = 0; i < n; i++) spawnEnemy(ty, rand(150, W - 150), -30 - i * 50); }
   if (Input.pressed('b')) spawnEnemy('captain', rand(300, W - 300), -80);
@@ -108,7 +108,7 @@ Extras.trainUpdate = function (dt) {
 };
 Extras.trainDraw = function () {
   if (!G.training || G.state !== 'play') return;
-  const lines = ['1-7  armas', '9  skin', Save.data.cleared[3] ? '0  Orbi' : null, 'N  inimigos', 'B  minichefe', 'D  alvo', 'C  limpar', 'ESC  sair'].filter(Boolean);
+  const lines = ['1-7  armas', '9  skin', Save.data.cleared[5] ? '0  Orbi' : null, 'N  inimigos', 'B  minichefe', 'D  alvo', 'C  limpar', 'ESC  sair'].filter(Boolean);
   ctx.save(); ctx.globalAlpha = .85; ctx.fillStyle = 'rgba(14,5,40,.7)'; ctx.beginPath(); ctx.roundRect(W - 188, 100, 168, 44 + lines.length * 22, 14); ctx.fill();
   txt('MODO TREINO', W - 104, 108, 15, '#ffb340', 'center', 900);
   lines.forEach((l, i) => txt(l, W - 172, 138 + i * 22, 15, '#e2d4ff', 'left', 700)); ctx.restore();

@@ -37,9 +37,11 @@ Screens.settings = function () {
     txt('QUALIDADE GRÁFICA', X, 150, 22, '#ffb340', 'left', 900);
     ['BAIXO', 'MÉDIO', 'ALTO'].forEach((n, i) => { const q = s.quality ?? 2; if (UI.button('ql' + i, X + i * 290, 188, 276, 50, (q === i ? '✓ ' : '') + n, { size: 18, color: q === i ? '#9a63ff' : undefined })) { s.quality = i; Save.save(); } });
     UI.wrap(['Sem brilho extra nem efeitos pesados: para PCs mais fracos.', 'Sem distorção de tela nem granulado.', 'Todos os efeitos visuais ligados.'][s.quality ?? 2], X, 250, Wd, 20, 15, '#cdb8ff');
-    txt('RESOLUÇÃO INTERNA', X, 316, 22, '#ffb340', 'left', 900); [[2, '200% (4K)'], [1.5, '150%'], [1, '100%'], [.75, '75%'], [.5, '50%']].forEach(([v, l], i) => { const on = (s.res || 1) === v; if (UI.button('res' + i, X + i * 172, 354, 160, 46, (on ? '✓ ' : '') + l, { size: 17, color: on ? '#9a63ff' : undefined })) { s.res = v; Save.save(); resize(); } });
-    txt('Menor deixa mais leve em PCs fracos; 150% e 200% deixam mais nítido em telas grandes (pesa mais).', X, 416, 15, '#8a7fb0', 'left', 700);
-    if (Visual37.toggle('ultra', X, 450, 420, 78, 'Modo Ultra', !!s.ultra, 'Mais partículas, brilho e suavização. Só na qualidade Alta.')) { s.ultra = !s.ultra; Save.save(); }
+    txt('RESOLUÇÃO INTERNA', X, 280, 20, '#ffb340', 'left', 900); [[2, '200% (4K)'], [1.5, '150%'], [1, '100%'], [.75, '75%'], [.5, '50%']].forEach(([v, l], i) => { const on = (s.res || 1) === v; if (UI.button('res' + i, X + i * 172, 308, 160, 38, (on ? '✓ ' : '') + l, { size: 17, color: on ? '#9a63ff' : undefined })) { s.res = v; Save.save(); resize(); } });
+    txt('Menor deixa mais leve em PCs fracos; 150% e 200% deixam mais nítido em telas grandes (pesa mais).', X, 354, 14, '#8a7fb0', 'left', 700);
+    txt('EFEITOS NA TELA', X, 382, 20, '#ffb340', 'left', 900); [['INTENSO', 2], ['EQUILIBRADO', 1], ['LIMPO', 0]].forEach(([l, v], i) => { const on = (s.fx ?? 1) === v; if (UI.button('fx' + v, X + i * 290, 410, 276, 40, (on ? '✓ ' : '') + l, { size: 16, color: on ? '#9a63ff' : undefined })) { s.fx = v; Save.save(); } });
+    txt(['Poucos efeitos: o jogo fica bem limpo e fácil de ler.', 'Efeitos fortes só em elites e chefes (recomendado).', 'Todos os efeitos, em todos os inimigos.'][s.fx ?? 1], X, 456, 14, '#8a7fb0', 'left', 700);
+    if (Visual37.toggle('ultra', X, 490, 420, 78, 'Modo Ultra', !!s.ultra, 'Mais partículas e suavização (qualidade Alta).')) { s.ultra = !s.ultra; Save.save(); }
   } else if (G.stab === 'acc') {
     tg('calm', 0, 'Menos tremor', 'calm', 'Reduz o tremor de tela e os clarões.'); tg('outl', 1, 'Contorno nos tiros', 'outline', 'Contorno branco para enxergar melhor.');
     tg('contr', 2, 'Alto contraste', 'contrast', 'Tiros inimigos mais destacados.'); tg('assist2', 3, 'Modo assistido', 'assist', 'Escudo contra tiros muito próximos.');

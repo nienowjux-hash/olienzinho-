@@ -111,7 +111,7 @@ Visual52.shakeOff = function () {
 // ---------- brilhos suaves (acessibilidade) ----------
 {
   const dg = drawGlow;
-  drawGlow = function (x, y, r, color, a = 1) { return dg(x, y, r, color, Save.data.settings && Save.data.settings.softGlow ? a * .5 : a); };
+  drawGlow = function (x, y, r, color, a = 1) { return dg(x, y, r, color, (Save.data.settings && Save.data.settings.softGlow ? a * .5 : a) * (typeof Visual55 !== 'undefined' ? Visual55.glowK : 1)); };
 }
 
 // ---------- letreiros dos banners com letras caindo ----------

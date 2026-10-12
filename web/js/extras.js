@@ -197,8 +197,8 @@ Screens.achievements = function () {
     ctx.fillStyle = has ? '#fff2c0' : '#6a5aa0'; ctx.beginPath(); ctx.moveTo(x, y - 14); ctx.lineTo(x + 7, y); ctx.lineTo(x, y + 14); ctx.lineTo(x - 7, y); ctx.closePath(); ctx.fill(); ctx.restore();
   }
   txt('+2% de dano por fragmento', 640, 114, 14, '#8a7fb0', 'left', 700);
-  const cw = 388, ch = 50, gx = 58, gy = 146;
-  ACH.forEach((a, i) => {
+  const cw = 388, ch = 50, gx = 58, gy = 150, PP = 21, np = Math.ceil(ACH.length / PP); G.apage = Math.min(G.apage || 0, np - 1);
+  ACH.slice(G.apage * PP, G.apage * PP + PP).forEach((a, i) => {
     const col = i % 3, row = (i / 3) | 0, x = gx + col * (cw + 14), y = gy + row * (ch + 6), has = Save.data.ach[a.id];
     const ek = Screens.enterK(i * .6, .4); ctx.save(); ctx.translate(0, (1 - ek) * 30); ctx.globalAlpha = clamp(ek, 0, 1);
     UI.panel(x, y, cw, ch, { r: 16, fill: has ? 'rgba(60,34,140,.8)' : 'rgba(20,8,55,.65)', stroke: has ? '#ffb340' : 'rgba(190,160,255,.25)' });
@@ -207,7 +207,8 @@ Screens.achievements = function () {
     txt(a.name, x + 72, y + 5, 20, has ? '#fff' : '#a99fd6', 'left', 900); txt(a.desc, x + 72, y + 29, 14, has ? '#cdb8ff' : '#7a70a0', 'left', 700);
     ctx.restore();
   });
-  if (UI.button('back', W / 2 - 160, 660, 320, 48, 'VOLTAR', { size: 22 }) || Input.pressed('escape')) { Snd.play('uiBack'); Game.goSelect(); }
+  if (np > 1) { txt('PÁGINA ' + (G.apage + 1) + ' / ' + np + '   (← →)', W / 2, 588, 17, '#cdb8ff', 'center', 800); if (UI.button('apL', 360, 620, 90, 48, '◀', { size: 22 }) || Input.pressed('arrowleft')) { G.apage = (G.apage + np - 1) % np; Snd.play('uiSelect'); } if (UI.button('apR', 830, 620, 90, 48, '▶', { size: 22 }) || Input.pressed('arrowright')) { G.apage = (G.apage + 1) % np; Snd.play('uiSelect'); } }
+  if (UI.button('back', W / 2 - 160, 620, 320, 48, 'VOLTAR', { size: 22 }) || Input.pressed('escape')) { Snd.play('uiBack'); Game.goSelect(); }
 };
 
 Screens.chatOrbi = function () { // so abre a cena e volta

@@ -34,7 +34,7 @@ Visual34.armas = function () {
     ctx.restore();
   });
   // painel de evolucao da arma em foco
-  let fid = ld.weapon; for (const wid of ids) if (UI.focus('w_' + wid) || UI.focus('wu_' + wid)) fid = wid;
+  let fid = WEAPONS[ld.weapon] ? ld.weapon : 'violet'; for (const wid of ids) if (UI.focus('w_' + wid) || UI.focus('wu_' + wid)) fid = wid;
   const fw = WEAPONS[fid], lv = Visual5.wl(fid), info = k => ({ d: 12 * (k - 1), c: Math.round((1 - Math.pow(.93, k - 1)) * 100), s: k >= 5 ? 2 : k >= 3 ? 1 : 0, k: k >= 5 ? 10 : 0 });
   const fm = o => [o.d ? '+' + o.d + '% de dano' : '', o.c ? 'especial ' + o.c + '% mais rápido' : '', o.s ? '+' + o.s + (o.s > 1 ? ' tiros' : ' tiro') : '', o.k ? '+' + o.k + '% de crítico' : ''].filter(Boolean).join('  •  ') || 'sem bônus';
   UI.panel(70, 534, 1140, 78, { r: 14, fill: 'rgba(14,6,40,.82)', stroke: fw.c });
@@ -105,8 +105,11 @@ Visual34.oficina = function () {
 };
 
 Screens.hangar = function () {
+  const ld = hx(); if (!WEAPONS[ld.weapon] || !Save.data.owned.weapons[ld.weapon]) { ld.weapon = 'violet'; Save.save(); }
+  if (!['olien', 'orbi', 'C', 'P', 'E', 'S'].includes(ld.char || 'olien')) ld.char = 'olien';
   txt('HANGAR', W / 2, 20, 42, '#fff', 'center'); txt(Screens.stars(), W - 40, 30, 30, '#ffcf6b', 'right');
-  tabBar(); const tab = G.htab || 'arm';
-  if (tab === 'arm') Visual34.armas(); else if (tab === 'nav') Visual34.nave(); else if (tab === 'pil') Visual34.piloto(); else Visual34.oficina();
-  back(); Screens.thinFrame();
+  back();   // o botao de voltar vem primeiro: mesmo que algo falhe, o jogador consegue sair
+  try { tabBar(); const tab = G.htab || 'arm'; if (tab === 'arm') Visual34.armas(); else if (tab === 'nav') Visual34.nave(); else if (tab === 'pil') Visual34.piloto(); else Visual34.oficina(); }
+  catch (e) { Visual34.err = e; ctx.restore && 0; ctx.setTransform(K, 0, 0, K, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; txt('Algo deu errado nesta aba. Troque de aba ou volte.', W / 2, 300, 22, '#ffb3a0', 'center', 800); txt(String(e && e.message).slice(0, 110) + ' | ' + String((e && e.stack || '').split(String.fromCharCode(10))[1] || '').trim().slice(-90), W / 2, 340, 13, '#cdb8ff', 'center', 700); }
+  Screens.thinFrame();
 };

@@ -37,8 +37,8 @@ Screens.settings = function () {
     txt('QUALIDADE GRÁFICA', X, 150, 22, '#ffb340', 'left', 900);
     ['BAIXO', 'MÉDIO', 'ALTO'].forEach((n, i) => { const q = s.quality ?? 2; if (UI.button('ql' + i, X + i * 290, 188, 276, 50, (q === i ? '✓ ' : '') + n, { size: 18, color: q === i ? '#9a63ff' : undefined })) { s.quality = i; Save.save(); } });
     UI.wrap(['Sem brilho extra nem efeitos pesados: para PCs mais fracos.', 'Sem distorção de tela nem granulado.', 'Todos os efeitos visuais ligados.'][s.quality ?? 2], X, 250, Wd, 20, 15, '#cdb8ff');
-    txt('RESOLUÇÃO INTERNA', X, 316, 22, '#ffb340', 'left', 900); [[1, '100%'], [.75, '75%'], [.5, '50%']].forEach(([v, l], i) => { const on = (s.res || 1) === v; if (UI.button('res' + i, X + i * 290, 354, 276, 46, (on ? '✓ ' : '') + l, { size: 17, color: on ? '#9a63ff' : undefined })) { s.res = v; Save.save(); resize(); } });
-    txt('Resolução menor deixa o jogo mais leve em computadores fracos.', X, 416, 15, '#8a7fb0', 'left', 700);
+    txt('RESOLUÇÃO INTERNA', X, 316, 22, '#ffb340', 'left', 900); [[2, '200% (4K)'], [1.5, '150%'], [1, '100%'], [.75, '75%'], [.5, '50%']].forEach(([v, l], i) => { const on = (s.res || 1) === v; if (UI.button('res' + i, X + i * 172, 354, 160, 46, (on ? '✓ ' : '') + l, { size: 17, color: on ? '#9a63ff' : undefined })) { s.res = v; Save.save(); resize(); } });
+    txt('Menor deixa mais leve em PCs fracos; 150% e 200% deixam mais nítido em telas grandes (pesa mais).', X, 416, 15, '#8a7fb0', 'left', 700);
     if (Visual37.toggle('ultra', X, 450, 420, 78, 'Modo Ultra', !!s.ultra, 'Mais partículas, brilho e suavização. Só na qualidade Alta.')) { s.ultra = !s.ultra; Save.save(); }
   } else if (G.stab === 'acc') {
     tg('calm', 0, 'Menos tremor', 'calm', 'Reduz o tremor de tela e os clarões.'); tg('outl', 1, 'Contorno nos tiros', 'outline', 'Contorno branco para enxergar melhor.');

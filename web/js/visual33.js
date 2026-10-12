@@ -71,7 +71,7 @@ RELICS.push(
 {
   const bd = Game.bossDefeated;
   Game.bossDefeated = function () {
-    try { shake(26); if (G.stageIdx === 9) G.hitstop = Math.max(G.hitstop || 0, .3); flashScreen(.45); Snd.duck && Snd.duck(.6, 1.2); } catch (e) { }
+    try { shake(26); if (G.stageIdx === 9) { G.hitFinal = true; G.hitstop = Math.max(G.hitstop || 0, .3); } flashScreen(.45); Snd.duck && Snd.duck(.6, 1.2); } catch (e) { }
     return bd.call(this);
   };
 }

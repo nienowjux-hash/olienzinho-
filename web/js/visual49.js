@@ -17,8 +17,8 @@ VoidBoss.prototype.draw = function () {
   ctx.lineCap = 'round'; ctx.lineJoin = 'round';
   for (let i = 0; i < 8; i++) {
     const a = i / 8 * TAU + t * .12, pts = []; for (let k = 0; k <= 14; k++) { const ang = a + Math.sin(t * 1.3 + i + k * .35) * .3 * (k / 14) + k * .04 * (i % 2 ? 1 : -1), r = 100 + k * (20 + ph * 2); pts.push([Math.cos(ang) * r, Math.sin(ang) * r * .9]); }
-    for (let k = 0; k < 14; k++) { const w = Math.max(3, 24 - k * 1.5); ctx.strokeStyle = 'rgba(6,0,14,.95)'; ctx.lineWidth = w + 6; ctx.beginPath(); ctx.moveTo(pts[k][0], pts[k][1]); ctx.lineTo(pts[k + 1][0], pts[k + 1][1]); ctx.stroke(); }
-    for (let k = 0; k < 14; k++) { const w = Math.max(2, 24 - k * 1.5); ctx.strokeStyle = u49(0, 0, 0, 0, [[0, '#1a0a38'], [1, '#1a0a38']]); ctx.strokeStyle = k % 2 ? '#20104a' : '#2a1560'; ctx.lineWidth = w; ctx.beginPath(); ctx.moveTo(pts[k][0], pts[k][1]); ctx.lineTo(pts[k + 1][0], pts[k + 1][1]); ctx.stroke(); }
+    ctx.strokeStyle = 'rgba(6,0,14,.95)'; for (let k = 0; k < 14; k += 2) { const w = Math.max(3, 24 - (k + 1) * 1.5); ctx.lineWidth = w * 1.1 + 6; ctx.beginPath(); ctx.moveTo(pts[k][0], pts[k][1]); ctx.lineTo(pts[k + 1][0], pts[k + 1][1]); ctx.lineTo(pts[k + 2][0], pts[k + 2][1]); ctx.stroke(); }
+    for (let k = 0; k < 14; k += 2) { const w = Math.max(2, 24 - (k + 1) * 1.5); ctx.strokeStyle = (k >> 1) % 2 ? '#20104a' : '#2a1560'; ctx.lineWidth = w * 1.1; ctx.beginPath(); ctx.moveTo(pts[k][0], pts[k][1]); ctx.lineTo(pts[k + 1][0], pts[k + 1][1]); ctx.lineTo(pts[k + 2][0], pts[k + 2][1]); ctx.stroke(); }
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = hit ? '#ffffff' : 'rgba(192,74,255,.8)'; ctx.lineWidth = 2.4; ctx.beginPath(); pts.forEach(([x, y], k) => k ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.stroke(); for (let k = 2; k < 14; k += 3) { ctx.fillStyle = 'rgba(232,208,255,.7)'; ctx.beginPath(); ctx.arc(pts[k][0], pts[k][1], Math.max(1.6, 4 - k * .2), 0, TAU); ctx.fill(); } const e = pts[14]; drawGlow(e[0], e[1], 16, '#c04aff', .8); ctx.restore();
   }
   // coroa de espinhos girando

@@ -99,10 +99,10 @@ Visual36.update = function (dt) {
 }
 
 // ---------- iris ao entrar na fase ----------
-setTimeout(() => {
+addEventListener('load', () => {
   const rd = render;
   render = function () {
     rd();
     if (Trans.t < .55 && G.state === 'play' && QL() >= 1) { const k = clamp(Trans.t / .55, 0, 1), R = Math.hypot(W, H) * .5 * (k * k * (3 - 2 * k)); ctx.save(); ctx.setTransform(cv.width / W, 0, 0, cv.height / H, 0, 0); ctx.fillStyle = '#05010f'; ctx.beginPath(); ctx.rect(0, 0, W, H); ctx.arc(W / 2, H / 2, R, 0, TAU, true); ctx.fill('evenodd'); ctx.restore(); }
   };
-}, 0);
+});

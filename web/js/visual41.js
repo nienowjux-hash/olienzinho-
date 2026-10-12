@@ -74,7 +74,7 @@ Visual41.light = function (e) {
 }
 
 // ---------- Ultra: suavizacao alta nos sprites ----------
-setTimeout(() => { const rd = render; render = function () { try { ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = ULTRA() ? 'high' : 'medium'; } catch (e) { } rd(); }; }, 0);
+addEventListener('load', () => { const rd = render; render = function () { try { ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = ULTRA() ? 'high' : 'medium'; } catch (e) { } rd(); }; });
 
 // ---------- dica ilustrada no cartao de inicio de fase ----------
 Visual41.TIPS = [['ESP', 'Pulso apaga tiros inimigos próximos. Use quando o céu encher.'], ['SHIFT', 'A esquiva deixa você invencível por um instante.'], ['F', 'Rebater devolve o tiro ao inimigo, mas tem recarga.'], ['Q', 'O especial da arma recarrega mais rápido com combo alto.'], ['R', 'A arma secundária tem recarga própria. Escolha no Hangar.'], ['★', 'Fusões de armas somam o bônus das duas. Faça no Hangar → Oficina.'], ['♥', 'Com pouca vida, a nave solta fumaça. Fique atento aos corações.'], ['!', 'O Caçador aparece se você ficar parado. Mexa-se!']];

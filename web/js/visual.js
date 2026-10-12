@@ -30,7 +30,7 @@ const hsh = i => { const x = Math.sin(i * 127.1 + 311.7) * 43758.5453; return x 
     }
     ctx.save();
     if (chg > 0) { ctx.translate(e.x, e.y); ctx.scale(1 + chg * .08, 1 + chg * .08); ctx.translate(-e.x, -e.y); }
-    if (hue && e.type !== 'dummy' && QL() >= 2) ctx.filter = 'hue-rotate(' + hue + 'deg)';
+    if (hue && e.type !== 'dummy' && QL() >= 2 && (Visual.hueN = (Visual.hueN || 0) + 1) <= 3) ctx.filter = 'hue-rotate(' + hue + 'deg)'; // filtro e caro: so nos 3 primeiros do quadro
     base.call(this, e);
     ctx.restore();
   };

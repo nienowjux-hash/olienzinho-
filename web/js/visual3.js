@@ -81,7 +81,7 @@ Visual3.furyDraw = function () {
 Visual3.bossDraw = function (b) {
   let ph = b.phase || 0; const c = G.furyCut;
   if (c && c.boss === b) ph = Math.max(0, ph - 1 + c.prog);
-  if ((ph > 0 || G.secret) && QL() >= 2 && b.state !== 'dying') ctx.filter = (G.secret ? G.secret.filter + ' ' : '') + 'saturate(' + (1 + .32 * ph) + ') hue-rotate(' + (-13 * ph) + 'deg) brightness(' + (1 + .08 * ph) + ') contrast(' + (1 + .04 * ph) + ')';
+  // (filtro de cor por fase removido: ctx.filter e caro e travava a luta; a cor ja muda com a furia)
   const pk = 1 + (b.popK || 0) * Math.sin(clamp(b.popK / .32, 0, 1) * Math.PI * .5);
   if (pk !== 1) { ctx.translate(b.x, b.y); ctx.scale(pk, pk); ctx.translate(-b.x, -b.y); }
   b.draw();

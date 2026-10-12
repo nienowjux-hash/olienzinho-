@@ -135,14 +135,4 @@ const h62 = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s 
 // ---------- 10. modo foto: filtros novos ----------
 if (typeof PF !== 'undefined' && PF.length < 8) { PF.push(['CINEMA', 'contrast(1.18) saturate(.85) sepia(.18) brightness(.95)'], ['NEON', 'saturate(1.8) contrast(1.15) hue-rotate(-18deg)'], ['VINTAGE', 'sepia(.6) contrast(1.05) saturate(.9) brightness(1.05)']); }
 
-// ---------- 11. qualidade adaptativa: se o jogo estiver pesado, os efeitos baixam sozinhos ----------
-{
-  const lv = Visual55.lvl;
-  Visual55.lvl = () => { const b = lv(); return Visual62.slow > 0 ? Math.min(b, Math.max(0, 2 - Visual62.slow)) : b; };
-  const rn = render; let last = performance.now(), acc = 0, n = 0;
-  render = function () {
-    const now = performance.now(), d = now - last; last = now; rn();
-    if (G.state !== 'play' || d > 250) { acc = 0; n = 0; return; } acc += d; n++;
-    if (n >= 150) { const avg = acc / n; acc = 0; n = 0; if (avg > 24 && Visual62.slow < 2) Visual62.slow++; else if (avg < 14 && Visual62.slow > 0 && QL() >= 1) Visual62.slow--; }
-  };
-}
+// ---------- 11. qualidade adaptativa: agora no visual65 (governador unico) ----------

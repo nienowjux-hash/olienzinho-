@@ -1,6 +1,6 @@
 'use strict';
 // ---------- 42: camada WebGL de particulas luminosas (explosoes mais densas, faiscas e poeira de luz), barata para a placa de video ----------
-const VGL = { ok: false, n: 0, MAX: 2800, x: null, cv: null };
+const VGL = { ok: false, n: 0, MAX: 2800, IMM: 3200, m2: 0, x: null, cv: null, col: {} };
 VGL.init = function () {
   try {
     const c = document.createElement('canvas'); c.width = 960; c.height = 540; c.style.cssText = 'position:fixed;pointer-events:none;z-index:5;display:none';
@@ -10,7 +10,7 @@ VGL.init = function () {
     const mk = (t, src) => { const s = gl.createShader(t); gl.shaderSource(s, src); gl.compileShader(s); return s; };
     const pr = gl.createProgram(); gl.attachShader(pr, mk(gl.VERTEX_SHADER, vs)); gl.attachShader(pr, mk(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(pr); if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) return;
     gl.useProgram(pr); gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE);
-    VGL.cv = c; VGL.gl = gl; VGL.pr = pr; VGL.buf = gl.createBuffer(); VGL.data = new Float32Array(VGL.MAX * 7); VGL.pt = Array.from({ length: VGL.MAX }, () => ({ x: 0, y: 0, vx: 0, vy: 0, life: 0, max: 1, s: 8, r: 1, g: 1, b: 1, a: 1, d: 1 }));
+    VGL.cv = c; VGL.gl = gl; VGL.pr = pr; VGL.buf = gl.createBuffer(); VGL.data = new Float32Array((VGL.MAX + VGL.IMM) * 7); VGL.pt = Array.from({ length: VGL.MAX }, () => ({ x: 0, y: 0, vx: 0, vy: 0, life: 0, max: 1, s: 8, r: 1, g: 1, b: 1, a: 1, d: 1 }));
     VGL.loc = { p: gl.getAttribLocation(pr, 'p'), s: gl.getAttribLocation(pr, 's'), c: gl.getAttribLocation(pr, 'c'), r: gl.getUniformLocation(pr, 'r') };
     const rg = gl.getParameter(gl.ALIASED_POINT_SIZE_RANGE); VGL.maxS = rg ? rg[1] : 32; document.body.appendChild(c); VGL.ok = true; VGL.last = performance.now();
   } catch (e) { VGL.ok = false; }
@@ -19,10 +19,16 @@ VGL.rgb = c => { if (typeof c !== 'string' || c[0] !== '#' || c.length < 7) retu
 VGL.add = function (x, y, vx, vy, life, size, col, a, drag) {
   if (!VGL.ok || VGL.n >= VGL.MAX) return; const p = VGL.pt[VGL.n++], c = VGL.rgb(col); p.x = x; p.y = y; p.vx = vx; p.vy = vy; p.life = p.max = life; p.s = size; p.r = c[0]; p.g = c[1]; p.b = c[2]; p.a = a; p.d = drag;
 };
+// brilho imediato: as particulas do jogo (G.parts) entram aqui em vez de uma chamada drawImage cada (muito mais barato na GPU)
+VGL.glow = function (x, y, r, color, a) {
+  if (!VGL.ok || VGL.m2 >= VGL.IMM || G.state === 'photo') return false; const st = G.state; if (!(st === 'play' || st === 'pause' || st === 'levelup' || st === 'clear' || st === 'over' || st === 'celebrate')) return false;
+  let c = VGL.col[color]; if (!c) c = VGL.col[color] = VGL.rgb(color); const d = VGL.data, o = (VGL.MAX + VGL.m2) * 7, sc = 960 / W; d[o] = x * sc; d[o + 1] = y * sc; d[o + 2] = Math.min(VGL.maxS, r * 2 * sc); d[o + 3] = c[0]; d[o + 4] = c[1]; d[o + 5] = c[2]; d[o + 6] = a * GLOW * 1.25; VGL.m2++; return true;
+};
+const pglow = (x, y, r, c, a) => { if (!VGL.glow(x, y, r, c, a)) drawGlow(x, y, r, c, a); };
 VGL.mult = () => (Save.data.settings && Save.data.settings.ultra ? 2.4 : 1.3);
 VGL.frame = function () {
-  if (!VGL.ok) return; const now = performance.now(), dt = Math.min(.05, (now - VGL.last) / 1000); VGL.last = now; const st = G.state, on = ['play', 'pause', 'levelup', 'clear', 'over', 'celebrate', 'photo'].includes(st) && QL() >= 2;
-  const c = VGL.cv; if (!on) { c.style.display = 'none'; VGL.n = 0; return; }
+  if (!VGL.ok) return; const now = performance.now(), dt = Math.min(.05, (now - VGL.last) / 1000); VGL.last = now; const st = G.state, on = ['play', 'pause', 'levelup', 'clear', 'over', 'celebrate', 'photo'].includes(st) && (QL() >= 2 || VGL.m2 > 0), sim = QL() >= 2;
+  const c = VGL.cv; if (!on) { c.style.display = 'none'; VGL.n = 0; VGL.m2 = 0; return; }
   const r = cv.getBoundingClientRect(); c.style.display = 'block'; c.style.left = r.left + 'px'; c.style.top = r.top + 'px'; c.style.width = r.width + 'px'; c.style.height = r.height + 'px';
   const k = VGL.maxS ? 1 : 1, sc = 960 / W;
   // aneis novos viram aneis de particulas
@@ -30,12 +36,13 @@ VGL.frame = function () {
   // poeira de luz ambiente
   if (st === 'play' && Math.random() < dt * (Save.data.settings.ultra ? 22 : 9)) VGL.add(rand(0, W), rand(0, H), rand(-8, 8), rand(-14, -4), rand(3, 6), rand(6, 16), pick(['#c8a0ff', '#9fe8ff', '#ffe9a8']), .35, .1);
   const gl = VGL.gl, d = VGL.data; let m = 0;
-  for (let i = 0; i < VGL.n; i++) {
+  for (let i = 0; i < (sim ? VGL.n : 0); i++) {
     const p = VGL.pt[i]; p.life -= dt; if (p.life <= 0) { VGL.pt[i] = VGL.pt[VGL.n - 1]; VGL.pt[VGL.n - 1] = p; VGL.n--; i--; continue; }
     const f = Math.exp(-p.d * dt); p.vx *= f; p.vy *= f; if (st !== 'pause' && st !== 'levelup' && st !== 'photo') { p.x += p.vx * dt; p.y += p.vy * dt; }
     const t = p.life / p.max, o = m * 7; d[o] = p.x * sc; d[o + 1] = p.y * sc; d[o + 2] = Math.min(VGL.maxS, p.s * (.5 + t * .7) * sc * 1.6); d[o + 3] = p.r; d[o + 4] = p.g; d[o + 5] = p.b; d[o + 6] = p.a * Math.min(1, t * 1.6); m++;
   }
-  gl.viewport(0, 0, 960, 540); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT); if (!m) return;
+  gl.viewport(0, 0, 960, 540); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
+  if (VGL.m2) { d.copyWithin(m * 7, VGL.MAX * 7, (VGL.MAX + VGL.m2) * 7); m += VGL.m2; VGL.m2 = 0; } if (!m) return;
   gl.bindBuffer(gl.ARRAY_BUFFER, VGL.buf); gl.bufferData(gl.ARRAY_BUFFER, d.subarray(0, m * 7), gl.DYNAMIC_DRAW);
   const L = VGL.loc; gl.enableVertexAttribArray(L.p); gl.vertexAttribPointer(L.p, 2, gl.FLOAT, false, 28, 0); gl.enableVertexAttribArray(L.s); gl.vertexAttribPointer(L.s, 1, gl.FLOAT, false, 28, 8); gl.enableVertexAttribArray(L.c); gl.vertexAttribPointer(L.c, 4, gl.FLOAT, false, 28, 12); gl.uniform2f(L.r, 960, 540);
   gl.drawArrays(gl.POINTS, 0, m);
@@ -48,4 +55,4 @@ const hex = c => (typeof c === 'string' && c[0] === '#' && c.length === 7) ? c :
   const sd = shedDebris; shedDebris = function (x, y, n, cols, sp = 320, size = 11) { const r = sd(x, y, n, cols, sp, size); if (VGL.ok && QL() >= 2) for (let i = 0; i < n * VGL.mult() * 2; i++) { const a = rand(0, TAU), s = rand(.3, 1) * sp; VGL.add(x, y, Math.cos(a) * s, Math.sin(a) * s, rand(.5, 1.1), rand(8, 18), hex(cols[i % cols.length]), .4, 2); } return r; };
 }
 VGL.init();
-setTimeout(() => { const rd = render; render = function () { rd(); try { VGL.frame(); } catch (e) { VGL.ok = false; if (VGL.cv) VGL.cv.style.display = 'none'; } }; }, 0);
+addEventListener('load', () => { const rd = render; render = function () { rd(); try { VGL.frame(); } catch (e) { VGL.ok = false; if (VGL.cv) VGL.cv.style.display = 'none'; } }; });

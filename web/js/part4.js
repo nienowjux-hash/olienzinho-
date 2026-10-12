@@ -164,7 +164,7 @@ class SelfEcho extends Heart {
     const t = this.t, hit = this.flash > 0, w = this.wep;
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(this.x, this.y, 240, '#a070ff', .3); ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
     for (let i = 3; i >= 1; i--) { ctx.save(); ctx.globalAlpha = .12 * (4 - i); ctx.translate(0, 2 * this.y); ctx.scale(1, -1); try { Art.ship(this.x + Math.sin(t * 2 + i) * i * 8, this.y, { pal: skinOf(Save.data.loadout.skin).pal, guard: w && w.startsWith('g_') ? w : null, vx: 0, t, lookx: 0, looky: 1, blinkT: 0, inv: 0, scale: SHIP_S * 2.4, mood: 'angry' }); } catch (e) { } ctx.restore(); }
-    ctx.save(); ctx.translate(0, 2 * this.y); ctx.scale(1, -1); ctx.filter = hit ? 'brightness(3)' : 'hue-rotate(200deg) saturate(.7) brightness(.62) contrast(1.3)'; try { Art.ship(this.x, this.y, { pal: skinOf(Save.data.loadout.skin).pal, guard: w && w.startsWith('g_') ? w : null, vx: 0, t, lookx: Math.sin(t) * .5, looky: 1, blinkT: 0, inv: 0, scale: SHIP_S * 2.4, mood: 'angry' }); } catch (e) { } ctx.filter = 'none'; ctx.restore();
+    ctx.save(); ctx.translate(0, 2 * this.y); ctx.scale(1, -1); ctx.globalAlpha = hit ? 1 : .55; try { Art.ship(this.x, this.y, { pal: skinOf(Save.data.loadout.skin).pal, guard: w && w.startsWith('g_') ? w : null, vx: 0, t, lookx: Math.sin(t) * .5, looky: 1, blinkT: 0, inv: 0, scale: SHIP_S * 2.4, mood: 'angry' }); } catch (e) { } ctx.filter = 'none'; ctx.restore();
     ctx.restore();
   }
 }

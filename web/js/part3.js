@@ -48,10 +48,22 @@ Portraits.face_Y = function (mood, t, talk) {
   ctx.fillStyle = '#e8fbff'; ctx.beginPath(); ctx.ellipse(10, -8, 40, 34 * (talk ? 1 : 1), 0, 0, TAU); ctx.fill(); ctx.fillStyle = '#04203a'; ctx.beginPath(); ctx.ellipse(16 + Math.sin(t) * 5, -8, 15, 26, 0, 0, TAU); ctx.fill(); ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(20, -18, 6, 0, TAU); ctx.fill();
   ctx.strokeStyle = '#33e0c4'; ctx.lineWidth = 3; for (let i = 0; i < 6; i++) { ctx.beginPath(); ctx.arc(-60 + i * 8, 20 + Math.sin(t * 3 + i) * 3, 3, 0, TAU); ctx.stroke(); }
 };
-Portraits.face_R = function (mood, t, talk) {
-  ctx.save(); ctx.scale(-1, 1); this.face_V(mood, t, talk); ctx.restore();
-  ctx.fillStyle = 'rgba(240,230,255,.35)'; ctx.fillRect(-100, -100, 200, 200); ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2;
-  for (let i = 0; i < 3; i++) { const y = -80 + ((t * 36 + i * 60) % 170); ctx.globalAlpha = .4; ctx.beginPath(); ctx.moveTo(-90, y); ctx.lineTo(90, y + 10); ctx.stroke(); } ctx.restore();
+Portraits.face_R = function (mood, t, talk) { // esfera de vidro rachada com um olho e dois foguetes refletidos
+  const bob = Math.sin(t * 1.6) * 3; ctx.translate(0, bob);
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(0, 0, 120, '#c8a0ff', .5); ctx.restore(); ctx.globalAlpha = 1;
+  const g = ctx.createRadialGradient(-24, -30, 6, 0, 0, 78); g.addColorStop(0, '#ffffff'); g.addColorStop(.35, '#cdb8ff'); g.addColorStop(.8, '#6a3ad8'); g.addColorStop(1, '#2a1070');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, 74, 0, TAU); ctx.fill(); ctx.strokeStyle = '#f2e8ff'; ctx.lineWidth = 4; ctx.stroke();
+  // foguete refletido (um em pe, um de cabeca para baixo)
+  for (const s of [1, -1]) { ctx.save(); ctx.translate(s * 2, s * 24); ctx.scale(1, s); ctx.globalAlpha = .45; ctx.fillStyle = '#2a1060'; ctx.beginPath(); ctx.moveTo(0, -30); ctx.quadraticCurveTo(14, -6, 10, 20); ctx.lineTo(-10, 20); ctx.quadraticCurveTo(-14, -6, 0, -30); ctx.fill(); ctx.fillStyle = '#e8d8ff'; ctx.beginPath(); ctx.arc(0, -4, 5, 0, TAU); ctx.fill(); ctx.restore(); }
+  ctx.globalAlpha = 1;
+  // rachaduras
+  ctx.strokeStyle = 'rgba(255,255,255,.7)'; ctx.lineWidth = 2; ctx.lineCap = 'round'; for (const pts of [[[-60, -38], [-30, -14], [-12, -34], [14, -10]], [[60, 30], [34, 14], [40, -10], [16, -22]], [[-46, 42], [-22, 24], [-10, 40]]]) { ctx.beginPath(); pts.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.stroke(); }
+  // olho
+  const open = (talk ? 1 + Math.abs(Math.sin(t * 12)) * .15 : 1) * (mood === 'angry' ? .8 : 1), lx = Math.sin(t * .8) * 8;
+  ctx.fillStyle = '#12062e'; ctx.beginPath(); ctx.ellipse(0, -2, 52, 22 * open, 0, 0, TAU); ctx.fill(); ctx.strokeStyle = '#e8d0ff'; ctx.lineWidth = 3; ctx.stroke();
+  ctx.fillStyle = '#c04aff'; ctx.beginPath(); ctx.arc(lx, -2, 15, 0, TAU); ctx.fill(); ctx.fillStyle = '#12062e'; ctx.beginPath(); ctx.arc(lx, -2, 7, 0, TAU); ctx.fill(); ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(lx - 5, -8, 4, 0, TAU); ctx.fill();
+  // brilho de vidro que corre
+  ctx.save(); ctx.beginPath(); ctx.arc(0, 0, 74, 0, TAU); ctx.clip(); ctx.globalCompositeOperation = 'lighter'; const sw = ((t * .35) % 1.6 - .3) * 220 - 110; ctx.fillStyle = 'rgba(255,255,255,.22)'; ctx.beginPath(); ctx.moveTo(sw, -90); ctx.lineTo(sw + 22, -90); ctx.lineTo(sw - 34, 90); ctx.lineTo(sw - 56, 90); ctx.fill(); ctx.restore();
 };
 
 // ---------- chefes ----------

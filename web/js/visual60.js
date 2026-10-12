@@ -130,8 +130,8 @@ const ok60 = c => typeof c === 'string' && /^#[0-9a-f]{6}$/i.test(c);
 
 // ---------- 9. transicoes entre telas: cortina de luz com estrelas ----------
 {
-  const rn = render, skip = ['play', 'pause', 'levelup', 'photo', 'cine'];
-  render = function () {
+  const skip = ['play', 'pause', 'levelup', 'photo', 'cine'];
+  hookRender(rn => function () {
     rn();
     const s = G.state; if (Visual60.last === null) Visual60.last = s;
     if (s !== Visual60.last) { const a = Visual60.last; Visual60.last = s; if (!(skip.includes(a) && skip.includes(s)) && QL() >= 1 && s !== 'cine') Visual60.tr = { t: 0 }; }
@@ -140,7 +140,7 @@ const ok60 = c => typeof c === 'string' && /^#[0-9a-f]{6}$/i.test(c);
     ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 1 - u; ctx.lineCap = 'round';
     for (let i = 0; i < 16; i++) { const y = (i * 53 + 20) % H, x = -300 + (u * 1.3 + i * .02) * (W + 600), L = 160 + (i % 4) * 60; ctx.strokeStyle = i % 3 ? 'rgba(190,160,255,.7)' : 'rgba(255,233,168,.8)'; ctx.lineWidth = 2 + i % 3; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - L, y); ctx.stroke(); }
     ctx.restore();
-  };
+  });
 }
 
 // ---------- 10. chefe final: abertura em cinema e morte em cascata de luz ----------

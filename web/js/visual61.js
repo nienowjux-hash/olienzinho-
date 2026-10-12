@@ -152,6 +152,6 @@ const h61 = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s 
 {
   const hq = () => { try { ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high'; } catch (e) { } };
   hq(); addEventListener('resize', () => setTimeout(hq, 50));
-  const rn = render; let n = 0;
-  render = function () { if ((n++ & 127) === 0) hq(); return rn(); };
+  let n = 0;
+  hookRender(rn => function () { if ((n++ & 127) === 0) hq(); return rn(); });
 }

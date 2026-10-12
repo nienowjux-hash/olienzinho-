@@ -62,7 +62,9 @@ Visual7.capture = function () {
     ctx.save(); ctx.globalAlpha = a; ctx.translate(cx + (1 - a) * 90, cy); ctx.rotate(-.06);
     ctx.fillStyle = 'rgba(8,2,26,.82)'; ctx.strokeStyle = c; ctx.lineWidth = 4; ctx.shadowColor = c; ctx.shadowBlur = 30; ctx.beginPath(); ctx.roundRect(-200, -190, 400, 380, 26); ctx.fill(); ctx.stroke(); ctx.shadowBlur = 0;
     ctx.save(); ctx.beginPath(); ctx.roundRect(-196, -186, 392, 372, 22); ctx.clip(); const g = ctx.createRadialGradient(0, 0, 10, 0, 0, 260); g.addColorStop(0, c + '55'); g.addColorStop(1, 'rgba(8,2,26,0)'); ctx.fillStyle = g; ctx.fillRect(-200, -190, 400, 380);
-    ctx.scale(sc, sc); try { ghost.draw(); } catch (e) { } ctx.restore();
+    let sc2 = sc, ox = 0, oy = 0; if (ghost.seg && ghost.N && /Leviathan/.test(C.name)) { try { let sx = 0, sy = 0, a = 1e9, b = -1e9, c2 = 1e9, d = -1e9; for (let i = 0; i < ghost.N; i++) { const [x, y] = ghost.seg(i); sx += x; sy += y; a = Math.min(a, x); b = Math.max(b, x); c2 = Math.min(c2, y); d = Math.max(d, y); } ox = sx / ghost.N; oy = sy / ghost.N; sc2 = Math.min(sc, 330 / (Math.max(b - a, d - c2) + 170)); } catch (e) { } }
+    if (/Mirror/.test(C.name) && ghost.pos) { try { const [ax, ay] = ghost.pos(0), [bx2, by2] = ghost.pos(1); ox = (ax + bx2) / 2; oy = (ay + by2) / 2; sc2 = Math.min(sc, 330 / (Math.abs(ax - bx2) + 300)); } catch (e) { } }
+    ctx.scale(sc2, sc2); ctx.translate(-ox, -oy); try { ghost.draw(); } catch (e) { } ctx.restore();
     ctx.fillStyle = c; ctx.fillRect(-180, 140, 360, 3); txt('FICHA DO CHEFE', 0, 150, 14, c, 'center', 900); ctx.restore();
   };
 }

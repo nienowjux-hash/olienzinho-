@@ -142,8 +142,8 @@ const h63 = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s 
 {
   const touch = 'ontouchstart' in window;
   addEventListener('pointerdown', e => { const r = cv.getBoundingClientRect(); Visual63.rip.push({ x: (e.clientX - r.left) / r.width * W, y: (e.clientY - r.top) / r.height * H, t: 0, touch: e.pointerType === 'touch' }); if (Visual63.rip.length > 6) Visual63.rip.shift(); });
-  const rn = render;
-  render = function () {
+
+  hookRender(rn => function () {
     rn(); const s = G.state; if (QL() < 1 || s === 'cine' || s === 'photo') return; ctx.setTransform(K, 0, 0, K, 0, 0); ctx.save(); ctx.globalCompositeOperation = 'lighter';
     for (let i = Visual63.rip.length - 1; i >= 0; i--) { const q = Visual63.rip[i]; q.t += 1 / 60; if (q.t > .45) { Visual63.rip.splice(i, 1); continue; } if (s === 'play' && !q.touch) continue; ctx.globalAlpha = (1 - q.t / .45) * .8; ctx.strokeStyle = '#ffe9a8'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(q.x, q.y, 8 + q.t * 90, 0, TAU); ctx.stroke(); }
     if (!touch && s !== 'play') {
@@ -152,5 +152,5 @@ const h63 = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s 
       ctx.globalAlpha = 1; ctx.fillStyle = '#ffffff'; ctx.shadowColor = '#b98cff'; ctx.shadowBlur = 10; ctx.beginPath(); for (let i = 0; i < 8; i++) { const a = i / 8 * TAU - Math.PI / 2, r = i % 2 ? 4 : 11; ctx.lineTo(m.x + Math.cos(a) * r, m.y + Math.sin(a) * r); } ctx.closePath(); ctx.fill();
     }
     ctx.restore();
-  };
+  });
 }

@@ -27,10 +27,11 @@ class EchoBoss2 extends EchoBoss {
   drawShip() {
     const t = this.t; ctx.save(); ctx.translate(this.x, this.y);
     // chuva de codigo atras do chefe
-    ctx.globalCompositeOperation = 'lighter'; ctx.font = 'bold 16px monospace'; ctx.textAlign = 'center';
-    for (let i = 0; i < 9; i++) { const x = (i - 4) * 34, f = (t * 1.2 + hsh(i + 300)) % 1; for (let k = 0; k < 7; k++) { const yy = -130 + ((f * 260 + k * 34) % 260); ctx.globalAlpha = (1 - k / 7) * .42; ctx.fillStyle = k === 0 ? '#ffffff' : '#ff4ad0'; ctx.fillText(((i * 7 + k + Math.floor(t * 3)) % 2) ? '1' : '0', x, yy); } }
+    ctx.globalCompositeOperation = 'lighter';
+    if (!EchoBoss2.dg) { EchoBoss2.dg = {}; for (const c of ['#ffffff', '#ff4ad0']) for (const d of ['0', '1']) { const cc = document.createElement('canvas'); cc.width = 20; cc.height = 22; const g = cc.getContext('2d'); g.font = 'bold 16px monospace'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = c; g.fillText(d, 10, 12); EchoBoss2.dg[c + d] = cc; } }
+    for (let i = 0; i < 9; i++) { const x = (i - 4) * 34, f = (t * 1.2 + hsh(i + 300)) % 1; for (let k = 0; k < 7; k++) { const yy = -130 + ((f * 260 + k * 34) % 260); ctx.globalAlpha = (1 - k / 7) * .42; ctx.drawImage(EchoBoss2.dg[(k === 0 ? '#ffffff' : '#ff4ad0') + (((i * 7 + k + Math.floor(t * 3)) % 2) ? '1' : '0')], x - 10, yy - 12); } }
     ctx.restore();
-    for (const c of this.clones) { const ox = this.x, oy = this.y, a = clamp(Math.min(c.t / .6, (7.2 - c.t) / .6), 0, 1); this.x = c.x; this.y = c.y; ctx.save(); ctx.filter = 'opacity(' + Math.round(a * 45) + '%) hue-rotate(40deg)'; this.big(() => super.drawShip()); ctx.restore(); this.x = ox; this.y = oy; }
+    for (const c of this.clones) { const ox = this.x, oy = this.y, a = clamp(Math.min(c.t / .6, (7.2 - c.t) / .6), 0, 1); this.x = c.x; this.y = c.y; ctx.save(); ctx.globalAlpha = a * .45; this.big(() => super.drawShip()); ctx.restore(); this.x = ox; this.y = oy; }
     this.big(() => super.drawShip());
     ctx.save(); ctx.translate(this.x, this.y); ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = this.phase === 2 ? '#2ad4ff' : '#ff4ad0'; ctx.lineWidth = 3;
     for (let k = 0; k < 3; k++) { ctx.save(); ctx.rotate(t * (.6 + k * .3) * (k % 2 ? -1 : 1)); ctx.setLineDash([22, 12 + k * 6]); ctx.globalAlpha = .5; ctx.beginPath(); ctx.arc(0, 0, 118 + k * 24, 0, TAU); ctx.stroke(); ctx.restore(); }

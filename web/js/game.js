@@ -61,7 +61,7 @@ const Game = {
     World.setStage(G.stage.pal); Events.reset(G.stage);
     G.player = newPlayer();
     { const ld = Save.data.loadout; G.player.weapon = Save.data.owned.weapons[ld.weapon] ? ld.weapon : 'violet'; const pw = Visual13.pilotWeapon(ld.char); if (pw) G.player.weapon = pw; }
-    G.stats = { hits: 0, bossHit: 0, maxCombo: 0, minis: 0 }; G.timers = []; G.hitstop = 0; G.mega = null; G.miniDone = false; G.endless = false; G.daily = false; G.training = false; G.dmod = null; G.well = null; G.relic = null; G.abPop = []; G.abPrev = []; G.grazeN = 0; G.rush = false; G.sanct = false; G.practice = null; G.secret = null; G.adv = null; G.weekly = null; G.wrule = null; G.fragSpawned = false; G.encSpawned = false; Extras.reset(); Extras.tutStart();
+    G.stats = { hits: 0, bossHit: 0, maxCombo: 0, minis: 0 }; G.timers = []; G.hitstop = 0; G.hitFinal = false; G.mega = null; G.miniDone = false; G.endless = false; G.daily = false; G.training = false; G.dmod = null; G.well = null; G.relic = null; G.abPop = []; G.abPrev = []; G.grazeN = 0; G.rush = false; G.sanct = false; G.practice = null; G.secret = null; G.adv = null; G.weekly = null; G.wrule = null; G.fragSpawned = false; G.encSpawned = false; Extras.reset(); Extras.tutStart();
     recalcStats(G.player); G.player.hp = G.player.maxHp; Visual6.initP2(); Visual8.onStart();
     Events.banner = { t: 0, title: G.stage.name.toUpperCase(), sub: 'FASE ' + (idx + 1), c: G.stage.tint };
     G.finisher = null; G.cut = null; G.story = null;
@@ -324,7 +324,7 @@ const Game = {
   updatePlay(rdt) {
     if (Extras.tut && Extras.tut.wait) { Extras.tutWait(); return; }
     if (G.furyCut) { Visual3.furyUpdate(rdt); return; }
-    if (G.hitstop > 0) { G.hitstop -= rdt; return; }
+    if (G.hitstop > 0) { if (G.hitFinal) { G.hitstop -= rdt; return; } G.hitstop = 0; } // pausa de quadro so na morte do chefe final
     let dt = rdt;
     if (this.slowmo) dt *= .45;
     const p = G.player;
@@ -426,7 +426,7 @@ const Game = {
 
   // ---------- desenho ----------
   drawPlay() {
-    const p = G.player, cx = p ? p.x - W / 2 : 0;
+    Visual.hueN = 0; const p = G.player, cx = p ? p.x - W / 2 : 0;
     ctx.save();
     if (G.shake > 0) { const so = typeof Visual52 !== 'undefined' ? Visual52.shakeOff() : [rand(-1, 1) * G.shake * .55, rand(-1, 1) * G.shake * .55]; ctx.translate(so[0], so[1]); }
     if (typeof Visual37 !== 'undefined' && Math.abs(Visual37.tilt) > .0008) { ctx.translate(W / 2, H / 2); ctx.rotate(Visual37.tilt); ctx.scale(1.012, 1.012); ctx.translate(-W / 2, -H / 2); }
@@ -476,8 +476,8 @@ const Game = {
       const k = clamp(q.life / q.max, 0, 1);
       if (q.k === 'bolt') { ctx.globalAlpha = k; ctx.strokeStyle = q.c; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(q.x, q.y); const n = 5; for (let i = 1; i < n; i++) { const f = i / n; ctx.lineTo(q.x + (q.x2 - q.x) * f + rand(-12, 12), q.y + (q.y2 - q.y) * f + rand(-12, 12)); } ctx.lineTo(q.x2, q.y2); ctx.stroke(); }
       else if (q.k === 'spark') { ctx.globalAlpha = k; ctx.strokeStyle = q.c; ctx.lineWidth = q.r; ctx.beginPath(); ctx.moveTo(q.x, q.y); ctx.lineTo(q.x - q.vx * .04, q.y - q.vy * .04); ctx.stroke(); }
-      else if (q.k === 'flash') drawGlow(q.x, q.y, q.r * (1.3 - k * .3), q.c, k);
-      else drawGlow(q.x, q.y, q.r * 2.4, q.c, k);
+      else if (q.k === 'flash') pglow(q.x, q.y, q.r * (1.3 - k * .3), q.c, k);
+      else pglow(q.x, q.y, q.r * 2.4, q.c, k);
     }
     for (const r of G.rings) { ctx.globalAlpha = r.life * .8; ctx.strokeStyle = r.c; ctx.lineWidth = 4 * r.life + 1; ctx.beginPath(); ctx.arc(r.x, r.y, r.r, 0, 7); ctx.stroke(); }
     if (G.pulse) {

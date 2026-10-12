@@ -9,7 +9,7 @@ const pl46 = pts => { ctx.beginPath(); pts.forEach(([x, y], i) => i ? ctx.lineTo
 Herald.prototype.draw = function () {
   const t = this.t, ph = this.phase, hit = this.flash > 0, chg = this.chargeT > 0 ? 1 - this.chargeT / this.chargeMax : 0, p = G.player, lk = p ? clamp((p.x - this.x) / 300, -1, 1) : 0, lky = p ? clamp((p.y - this.y) / 400, -.3, 1) : .5;
   ctx.save(); ctx.translate(this.x, this.y);
-  ctx.globalCompositeOperation = 'lighter'; drawGlow(0, 0, 360, '#ffd36a', .3 + Math.sin(t * 3) * .05); drawGlow(0, 0, 150, '#ffffff', .25); ctx.globalCompositeOperation = 'source-over';
+  ctx.globalCompositeOperation = 'lighter'; drawGlow(0, 0, 360, '#ffd36a', .3 + Math.sin(t * 3) * .05); drawGlow(0, 0, 150, '#ffffff', .25); ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
   // aureola de segmentos (gira) e arcos
   for (let k = 0; k < 3; k++) { ctx.save(); ctx.rotate(t * (.4 + k * .15) * (k % 2 ? -1 : 1)); ctx.strokeStyle = k % 2 ? '#fff0c0' : '#ffd36a'; ctx.lineWidth = 4 + k; ctx.globalAlpha = .85; ctx.setLineDash([30, 16]); ctx.beginPath(); ctx.ellipse(0, 0, 150 + k * 26, 52 + k * 16, 0, 0, TAU); ctx.stroke(); ctx.restore(); }
   // asas em laminas (3 camadas por lado)
@@ -39,7 +39,7 @@ Leviathan.prototype.draw = function () {
   const t = this.t, hit = this.flash > 0, p = G.player;
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
   for (let i = this.N - 1; i >= 0; i--) { const [x, y] = this.seg(i), r = i === 0 ? 56 : 42 - i * 1.1; drawGlow(x, y, r * 2.3, '#33c4ff', .2); }
-  ctx.globalCompositeOperation = 'source-over'; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
   // nadadeiras dorsais e ventrais
   for (let i = this.N - 1; i >= 1; i--) {
     const [x, y] = this.seg(i), [px, py] = this.seg(i - 1), r = 42 - i * 1.1, a = Math.atan2(py - y, px - x), sw = Math.sin(t * 4 + i * .5) * .25;

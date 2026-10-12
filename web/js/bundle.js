@@ -16,7 +16,7 @@ let K = 1;
 const bloom = document.createElement('canvas'), bctx = bloom.getContext('2d');
 function resize() {
   let rs = 1; try { rs = Save.data.settings.res || 1; } catch (e) { }
-  const dpr = Math.min(window.devicePixelRatio || 1, 2) * rs;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2) * rs * (window.DYN || 1);
   let w = innerWidth, h = innerHeight;
   if (w / h > W / H) w = h * W / H; else h = w * H / W;
   cv.style.width = w + 'px'; cv.style.height = h + 'px';
@@ -89,6 +89,9 @@ const Save = (() => {
   function reset() { d = def(); save(); }
   return { get data() { return d; }, load, save, reset };
 })();
+
+// ganchos no render(): so valem depois que tudo carregou (main.js define render por ultimo)
+function hookRender(make) { addEventListener('load', () => { render = make(render); }); }
 
 ;
 /* ==== audio.js ==== */
@@ -2628,7 +2631,7 @@ class Boss {
   die() {
     this.state = 'dying'; this.dyingT = 0;
     G.eb.forEach(b => { b.dead = true; }); G.hazards = [];
-    G.pendingLevels = 0; if (G.stageIdx === 9) G.hitstop = .22; // camera lenta e pausa so no chefe final; o que faltava de XP nao vale mais
+    G.pendingLevels = 0; if (G.stageIdx === 9) { G.hitFinal = true; G.hitstop = .22; } // camera lenta e pausa so no chefe final; o que faltava de XP nao vale mais
     G.finisher = { t: 0 }; Snd.play('special'); // golpe final do Olienzinho
     G.enemies.forEach(e => { if (!e.dead) killEnemy(e, true); });
     Snd.play(this.dieSfx || 'bossDie'); Snd.musicStop();
@@ -3411,7 +3414,7 @@ const Game = {
     World.setStage(G.stage.pal); Events.reset(G.stage);
     G.player = newPlayer();
     { const ld = Save.data.loadout; G.player.weapon = Save.data.owned.weapons[ld.weapon] ? ld.weapon : 'violet'; const pw = Visual13.pilotWeapon(ld.char); if (pw) G.player.weapon = pw; }
-    G.stats = { hits: 0, bossHit: 0, maxCombo: 0, minis: 0 }; G.timers = []; G.hitstop = 0; G.mega = null; G.miniDone = false; G.endless = false; G.daily = false; G.training = false; G.dmod = null; G.well = null; G.relic = null; G.abPop = []; G.abPrev = []; G.grazeN = 0; G.rush = false; G.sanct = false; G.practice = null; G.secret = null; G.adv = null; G.weekly = null; G.wrule = null; G.fragSpawned = false; G.encSpawned = false; Extras.reset(); Extras.tutStart();
+    G.stats = { hits: 0, bossHit: 0, maxCombo: 0, minis: 0 }; G.timers = []; G.hitstop = 0; G.hitFinal = false; G.mega = null; G.miniDone = false; G.endless = false; G.daily = false; G.training = false; G.dmod = null; G.well = null; G.relic = null; G.abPop = []; G.abPrev = []; G.grazeN = 0; G.rush = false; G.sanct = false; G.practice = null; G.secret = null; G.adv = null; G.weekly = null; G.wrule = null; G.fragSpawned = false; G.encSpawned = false; Extras.reset(); Extras.tutStart();
     recalcStats(G.player); G.player.hp = G.player.maxHp; Visual6.initP2(); Visual8.onStart();
     Events.banner = { t: 0, title: G.stage.name.toUpperCase(), sub: 'FASE ' + (idx + 1), c: G.stage.tint };
     G.finisher = null; G.cut = null; G.story = null;
@@ -3674,7 +3677,7 @@ const Game = {
   updatePlay(rdt) {
     if (Extras.tut && Extras.tut.wait) { Extras.tutWait(); return; }
     if (G.furyCut) { Visual3.furyUpdate(rdt); return; }
-    if (G.hitstop > 0) { G.hitstop -= rdt; return; }
+    if (G.hitstop > 0) { if (G.hitFinal) { G.hitstop -= rdt; return; } G.hitstop = 0; } // pausa de quadro so na morte do chefe final
     let dt = rdt;
     if (this.slowmo) dt *= .45;
     const p = G.player;
@@ -3776,7 +3779,7 @@ const Game = {
 
   // ---------- desenho ----------
   drawPlay() {
-    const p = G.player, cx = p ? p.x - W / 2 : 0;
+    Visual.hueN = 0; const p = G.player, cx = p ? p.x - W / 2 : 0;
     ctx.save();
     if (G.shake > 0) { const so = typeof Visual52 !== 'undefined' ? Visual52.shakeOff() : [rand(-1, 1) * G.shake * .55, rand(-1, 1) * G.shake * .55]; ctx.translate(so[0], so[1]); }
     if (typeof Visual37 !== 'undefined' && Math.abs(Visual37.tilt) > .0008) { ctx.translate(W / 2, H / 2); ctx.rotate(Visual37.tilt); ctx.scale(1.012, 1.012); ctx.translate(-W / 2, -H / 2); }
@@ -3826,8 +3829,8 @@ const Game = {
       const k = clamp(q.life / q.max, 0, 1);
       if (q.k === 'bolt') { ctx.globalAlpha = k; ctx.strokeStyle = q.c; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(q.x, q.y); const n = 5; for (let i = 1; i < n; i++) { const f = i / n; ctx.lineTo(q.x + (q.x2 - q.x) * f + rand(-12, 12), q.y + (q.y2 - q.y) * f + rand(-12, 12)); } ctx.lineTo(q.x2, q.y2); ctx.stroke(); }
       else if (q.k === 'spark') { ctx.globalAlpha = k; ctx.strokeStyle = q.c; ctx.lineWidth = q.r; ctx.beginPath(); ctx.moveTo(q.x, q.y); ctx.lineTo(q.x - q.vx * .04, q.y - q.vy * .04); ctx.stroke(); }
-      else if (q.k === 'flash') drawGlow(q.x, q.y, q.r * (1.3 - k * .3), q.c, k);
-      else drawGlow(q.x, q.y, q.r * 2.4, q.c, k);
+      else if (q.k === 'flash') pglow(q.x, q.y, q.r * (1.3 - k * .3), q.c, k);
+      else pglow(q.x, q.y, q.r * 2.4, q.c, k);
     }
     for (const r of G.rings) { ctx.globalAlpha = r.life * .8; ctx.strokeStyle = r.c; ctx.lineWidth = 4 * r.life + 1; ctx.beginPath(); ctx.arc(r.x, r.y, r.r, 0, 7); ctx.stroke(); }
     if (G.pulse) {
@@ -6001,7 +6004,7 @@ const hsh = i => { const x = Math.sin(i * 127.1 + 311.7) * 43758.5453; return x 
     }
     ctx.save();
     if (chg > 0) { ctx.translate(e.x, e.y); ctx.scale(1 + chg * .08, 1 + chg * .08); ctx.translate(-e.x, -e.y); }
-    if (hue && e.type !== 'dummy' && QL() >= 2) ctx.filter = 'hue-rotate(' + hue + 'deg)';
+    if (hue && e.type !== 'dummy' && QL() >= 2 && (Visual.hueN = (Visual.hueN || 0) + 1) <= 3) ctx.filter = 'hue-rotate(' + hue + 'deg)'; // filtro e caro: so nos 3 primeiros do quadro
     base.call(this, e);
     ctx.restore();
   };
@@ -6477,7 +6480,7 @@ Visual3.furyDraw = function () {
 Visual3.bossDraw = function (b) {
   let ph = b.phase || 0; const c = G.furyCut;
   if (c && c.boss === b) ph = Math.max(0, ph - 1 + c.prog);
-  if ((ph > 0 || G.secret) && QL() >= 2 && b.state !== 'dying') ctx.filter = (G.secret ? G.secret.filter + ' ' : '') + 'saturate(' + (1 + .32 * ph) + ') hue-rotate(' + (-13 * ph) + 'deg) brightness(' + (1 + .08 * ph) + ') contrast(' + (1 + .04 * ph) + ')';
+  // (filtro de cor por fase removido: ctx.filter e caro e travava a luta; a cor ja muda com a furia)
   const pk = 1 + (b.popK || 0) * Math.sin(clamp(b.popK / .32, 0, 1) * Math.PI * .5);
   if (pk !== 1) { ctx.translate(b.x, b.y); ctx.scale(pk, pk); ctx.translate(-b.x, -b.y); }
   b.draw();
@@ -8140,10 +8143,22 @@ Portraits.face_Y = function (mood, t, talk) {
   ctx.fillStyle = '#e8fbff'; ctx.beginPath(); ctx.ellipse(10, -8, 40, 34 * (talk ? 1 : 1), 0, 0, TAU); ctx.fill(); ctx.fillStyle = '#04203a'; ctx.beginPath(); ctx.ellipse(16 + Math.sin(t) * 5, -8, 15, 26, 0, 0, TAU); ctx.fill(); ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(20, -18, 6, 0, TAU); ctx.fill();
   ctx.strokeStyle = '#33e0c4'; ctx.lineWidth = 3; for (let i = 0; i < 6; i++) { ctx.beginPath(); ctx.arc(-60 + i * 8, 20 + Math.sin(t * 3 + i) * 3, 3, 0, TAU); ctx.stroke(); }
 };
-Portraits.face_R = function (mood, t, talk) {
-  ctx.save(); ctx.scale(-1, 1); this.face_V(mood, t, talk); ctx.restore();
-  ctx.fillStyle = 'rgba(240,230,255,.35)'; ctx.fillRect(-100, -100, 200, 200); ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2;
-  for (let i = 0; i < 3; i++) { const y = -80 + ((t * 36 + i * 60) % 170); ctx.globalAlpha = .4; ctx.beginPath(); ctx.moveTo(-90, y); ctx.lineTo(90, y + 10); ctx.stroke(); } ctx.restore();
+Portraits.face_R = function (mood, t, talk) { // esfera de vidro rachada com um olho e dois foguetes refletidos
+  const bob = Math.sin(t * 1.6) * 3; ctx.translate(0, bob);
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(0, 0, 120, '#c8a0ff', .5); ctx.restore(); ctx.globalAlpha = 1;
+  const g = ctx.createRadialGradient(-24, -30, 6, 0, 0, 78); g.addColorStop(0, '#ffffff'); g.addColorStop(.35, '#cdb8ff'); g.addColorStop(.8, '#6a3ad8'); g.addColorStop(1, '#2a1070');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, 74, 0, TAU); ctx.fill(); ctx.strokeStyle = '#f2e8ff'; ctx.lineWidth = 4; ctx.stroke();
+  // foguete refletido (um em pe, um de cabeca para baixo)
+  for (const s of [1, -1]) { ctx.save(); ctx.translate(s * 2, s * 24); ctx.scale(1, s); ctx.globalAlpha = .45; ctx.fillStyle = '#2a1060'; ctx.beginPath(); ctx.moveTo(0, -30); ctx.quadraticCurveTo(14, -6, 10, 20); ctx.lineTo(-10, 20); ctx.quadraticCurveTo(-14, -6, 0, -30); ctx.fill(); ctx.fillStyle = '#e8d8ff'; ctx.beginPath(); ctx.arc(0, -4, 5, 0, TAU); ctx.fill(); ctx.restore(); }
+  ctx.globalAlpha = 1;
+  // rachaduras
+  ctx.strokeStyle = 'rgba(255,255,255,.7)'; ctx.lineWidth = 2; ctx.lineCap = 'round'; for (const pts of [[[-60, -38], [-30, -14], [-12, -34], [14, -10]], [[60, 30], [34, 14], [40, -10], [16, -22]], [[-46, 42], [-22, 24], [-10, 40]]]) { ctx.beginPath(); pts.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.stroke(); }
+  // olho
+  const open = (talk ? 1 + Math.abs(Math.sin(t * 12)) * .15 : 1) * (mood === 'angry' ? .8 : 1), lx = Math.sin(t * .8) * 8;
+  ctx.fillStyle = '#12062e'; ctx.beginPath(); ctx.ellipse(0, -2, 52, 22 * open, 0, 0, TAU); ctx.fill(); ctx.strokeStyle = '#e8d0ff'; ctx.lineWidth = 3; ctx.stroke();
+  ctx.fillStyle = '#c04aff'; ctx.beginPath(); ctx.arc(lx, -2, 15, 0, TAU); ctx.fill(); ctx.fillStyle = '#12062e'; ctx.beginPath(); ctx.arc(lx, -2, 7, 0, TAU); ctx.fill(); ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(lx - 5, -8, 4, 0, TAU); ctx.fill();
+  // brilho de vidro que corre
+  ctx.save(); ctx.beginPath(); ctx.arc(0, 0, 74, 0, TAU); ctx.clip(); ctx.globalCompositeOperation = 'lighter'; const sw = ((t * .35) % 1.6 - .3) * 220 - 110; ctx.fillStyle = 'rgba(255,255,255,.22)'; ctx.beginPath(); ctx.moveTo(sw, -90); ctx.lineTo(sw + 22, -90); ctx.lineTo(sw - 34, 90); ctx.lineTo(sw - 56, 90); ctx.fill(); ctx.restore();
 };
 
 // ---------- chefes ----------
@@ -9588,7 +9603,7 @@ class SelfEcho extends Heart {
     const t = this.t, hit = this.flash > 0, w = this.wep;
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(this.x, this.y, 240, '#a070ff', .3); ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
     for (let i = 3; i >= 1; i--) { ctx.save(); ctx.globalAlpha = .12 * (4 - i); ctx.translate(0, 2 * this.y); ctx.scale(1, -1); try { Art.ship(this.x + Math.sin(t * 2 + i) * i * 8, this.y, { pal: skinOf(Save.data.loadout.skin).pal, guard: w && w.startsWith('g_') ? w : null, vx: 0, t, lookx: 0, looky: 1, blinkT: 0, inv: 0, scale: SHIP_S * 2.4, mood: 'angry' }); } catch (e) { } ctx.restore(); }
-    ctx.save(); ctx.translate(0, 2 * this.y); ctx.scale(1, -1); ctx.filter = hit ? 'brightness(3)' : 'hue-rotate(200deg) saturate(.7) brightness(.62) contrast(1.3)'; try { Art.ship(this.x, this.y, { pal: skinOf(Save.data.loadout.skin).pal, guard: w && w.startsWith('g_') ? w : null, vx: 0, t, lookx: Math.sin(t) * .5, looky: 1, blinkT: 0, inv: 0, scale: SHIP_S * 2.4, mood: 'angry' }); } catch (e) { } ctx.filter = 'none'; ctx.restore();
+    ctx.save(); ctx.translate(0, 2 * this.y); ctx.scale(1, -1); ctx.globalAlpha = hit ? 1 : .55; try { Art.ship(this.x, this.y, { pal: skinOf(Save.data.loadout.skin).pal, guard: w && w.startsWith('g_') ? w : null, vx: 0, t, lookx: Math.sin(t) * .5, looky: 1, blinkT: 0, inv: 0, scale: SHIP_S * 2.4, mood: 'angry' }); } catch (e) { } ctx.filter = 'none'; ctx.restore();
     ctx.restore();
   }
 }
@@ -10341,10 +10356,11 @@ class EchoBoss2 extends EchoBoss {
   drawShip() {
     const t = this.t; ctx.save(); ctx.translate(this.x, this.y);
     // chuva de codigo atras do chefe
-    ctx.globalCompositeOperation = 'lighter'; ctx.font = 'bold 16px monospace'; ctx.textAlign = 'center';
-    for (let i = 0; i < 9; i++) { const x = (i - 4) * 34, f = (t * 1.2 + hsh(i + 300)) % 1; for (let k = 0; k < 7; k++) { const yy = -130 + ((f * 260 + k * 34) % 260); ctx.globalAlpha = (1 - k / 7) * .42; ctx.fillStyle = k === 0 ? '#ffffff' : '#ff4ad0'; ctx.fillText(((i * 7 + k + Math.floor(t * 3)) % 2) ? '1' : '0', x, yy); } }
+    ctx.globalCompositeOperation = 'lighter';
+    if (!EchoBoss2.dg) { EchoBoss2.dg = {}; for (const c of ['#ffffff', '#ff4ad0']) for (const d of ['0', '1']) { const cc = document.createElement('canvas'); cc.width = 20; cc.height = 22; const g = cc.getContext('2d'); g.font = 'bold 16px monospace'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = c; g.fillText(d, 10, 12); EchoBoss2.dg[c + d] = cc; } }
+    for (let i = 0; i < 9; i++) { const x = (i - 4) * 34, f = (t * 1.2 + hsh(i + 300)) % 1; for (let k = 0; k < 7; k++) { const yy = -130 + ((f * 260 + k * 34) % 260); ctx.globalAlpha = (1 - k / 7) * .42; ctx.drawImage(EchoBoss2.dg[(k === 0 ? '#ffffff' : '#ff4ad0') + (((i * 7 + k + Math.floor(t * 3)) % 2) ? '1' : '0')], x - 10, yy - 12); } }
     ctx.restore();
-    for (const c of this.clones) { const ox = this.x, oy = this.y, a = clamp(Math.min(c.t / .6, (7.2 - c.t) / .6), 0, 1); this.x = c.x; this.y = c.y; ctx.save(); ctx.filter = 'opacity(' + Math.round(a * 45) + '%) hue-rotate(40deg)'; this.big(() => super.drawShip()); ctx.restore(); this.x = ox; this.y = oy; }
+    for (const c of this.clones) { const ox = this.x, oy = this.y, a = clamp(Math.min(c.t / .6, (7.2 - c.t) / .6), 0, 1); this.x = c.x; this.y = c.y; ctx.save(); ctx.globalAlpha = a * .45; this.big(() => super.drawShip()); ctx.restore(); this.x = ox; this.y = oy; }
     this.big(() => super.drawShip());
     ctx.save(); ctx.translate(this.x, this.y); ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = this.phase === 2 ? '#2ad4ff' : '#ff4ad0'; ctx.lineWidth = 3;
     for (let k = 0; k < 3; k++) { ctx.save(); ctx.rotate(t * (.6 + k * .3) * (k % 2 ? -1 : 1)); ctx.setLineDash([22, 12 + k * 6]); ctx.globalAlpha = .5; ctx.beginPath(); ctx.arc(0, 0, 118 + k * 24, 0, TAU); ctx.stroke(); ctx.restore(); }
@@ -11041,7 +11057,9 @@ Visual7.capture = function () {
     ctx.save(); ctx.globalAlpha = a; ctx.translate(cx + (1 - a) * 90, cy); ctx.rotate(-.06);
     ctx.fillStyle = 'rgba(8,2,26,.82)'; ctx.strokeStyle = c; ctx.lineWidth = 4; ctx.shadowColor = c; ctx.shadowBlur = 30; ctx.beginPath(); ctx.roundRect(-200, -190, 400, 380, 26); ctx.fill(); ctx.stroke(); ctx.shadowBlur = 0;
     ctx.save(); ctx.beginPath(); ctx.roundRect(-196, -186, 392, 372, 22); ctx.clip(); const g = ctx.createRadialGradient(0, 0, 10, 0, 0, 260); g.addColorStop(0, c + '55'); g.addColorStop(1, 'rgba(8,2,26,0)'); ctx.fillStyle = g; ctx.fillRect(-200, -190, 400, 380);
-    ctx.scale(sc, sc); try { ghost.draw(); } catch (e) { } ctx.restore();
+    let sc2 = sc, ox = 0, oy = 0; if (ghost.seg && ghost.N && /Leviathan/.test(C.name)) { try { let sx = 0, sy = 0, a = 1e9, b = -1e9, c2 = 1e9, d = -1e9; for (let i = 0; i < ghost.N; i++) { const [x, y] = ghost.seg(i); sx += x; sy += y; a = Math.min(a, x); b = Math.max(b, x); c2 = Math.min(c2, y); d = Math.max(d, y); } ox = sx / ghost.N; oy = sy / ghost.N; sc2 = Math.min(sc, 330 / (Math.max(b - a, d - c2) + 170)); } catch (e) { } }
+    if (/Mirror/.test(C.name) && ghost.pos) { try { const [ax, ay] = ghost.pos(0), [bx2, by2] = ghost.pos(1); ox = (ax + bx2) / 2; oy = (ay + by2) / 2; sc2 = Math.min(sc, 330 / (Math.abs(ax - bx2) + 300)); } catch (e) { } }
+    ctx.scale(sc2, sc2); ctx.translate(-ox, -oy); try { ghost.draw(); } catch (e) { } ctx.restore();
     ctx.fillStyle = c; ctx.fillRect(-180, 140, 360, 3); txt('FICHA DO CHEFE', 0, 150, 14, c, 'center', 900); ctx.restore();
   };
 }
@@ -11441,7 +11459,7 @@ RELICS.push(
 {
   const bd = Game.bossDefeated;
   Game.bossDefeated = function () {
-    try { shake(26); if (G.stageIdx === 9) G.hitstop = Math.max(G.hitstop || 0, .3); flashScreen(.45); Snd.duck && Snd.duck(.6, 1.2); } catch (e) { }
+    try { shake(26); if (G.stageIdx === 9) { G.hitFinal = true; G.hitstop = Math.max(G.hitstop || 0, .3); } flashScreen(.45); Snd.duck && Snd.duck(.6, 1.2); } catch (e) { }
     return bd.call(this);
   };
 }
@@ -11701,13 +11719,13 @@ Visual36.update = function (dt) {
 }
 
 // ---------- iris ao entrar na fase ----------
-setTimeout(() => {
+addEventListener('load', () => {
   const rd = render;
   render = function () {
     rd();
     if (Trans.t < .55 && G.state === 'play' && QL() >= 1) { const k = clamp(Trans.t / .55, 0, 1), R = Math.hypot(W, H) * .5 * (k * k * (3 - 2 * k)); ctx.save(); ctx.setTransform(cv.width / W, 0, 0, cv.height / H, 0, 0); ctx.fillStyle = '#05010f'; ctx.beginPath(); ctx.rect(0, 0, W, H); ctx.arc(W / 2, H / 2, R, 0, TAU, true); ctx.fill('evenodd'); ctx.restore(); }
   };
-}, 0);
+});
 
 ;
 /* ==== visual37.js ==== */
@@ -12244,7 +12262,7 @@ Visual41.light = function (e) {
 }
 
 // ---------- Ultra: suavizacao alta nos sprites ----------
-setTimeout(() => { const rd = render; render = function () { try { ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = ULTRA() ? 'high' : 'medium'; } catch (e) { } rd(); }; }, 0);
+addEventListener('load', () => { const rd = render; render = function () { try { ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = ULTRA() ? 'high' : 'medium'; } catch (e) { } rd(); }; });
 
 // ---------- dica ilustrada no cartao de inicio de fase ----------
 Visual41.TIPS = [['ESP', 'Pulso apaga tiros inimigos próximos. Use quando o céu encher.'], ['SHIFT', 'A esquiva deixa você invencível por um instante.'], ['F', 'Rebater devolve o tiro ao inimigo, mas tem recarga.'], ['Q', 'O especial da arma recarrega mais rápido com combo alto.'], ['R', 'A arma secundária tem recarga própria. Escolha no Hangar.'], ['★', 'Fusões de armas somam o bônus das duas. Faça no Hangar → Oficina.'], ['♥', 'Com pouca vida, a nave solta fumaça. Fique atento aos corações.'], ['!', 'O Caçador aparece se você ficar parado. Mexa-se!']];
@@ -12281,7 +12299,7 @@ Visual41.TIPS = [['ESP', 'Pulso apaga tiros inimigos próximos. Use quando o cé
 /* ==== visual42.js ==== */
 'use strict';
 // ---------- 42: camada WebGL de particulas luminosas (explosoes mais densas, faiscas e poeira de luz), barata para a placa de video ----------
-const VGL = { ok: false, n: 0, MAX: 2800, x: null, cv: null };
+const VGL = { ok: false, n: 0, MAX: 2800, IMM: 3200, m2: 0, x: null, cv: null, col: {} };
 VGL.init = function () {
   try {
     const c = document.createElement('canvas'); c.width = 960; c.height = 540; c.style.cssText = 'position:fixed;pointer-events:none;z-index:5;display:none';
@@ -12291,7 +12309,7 @@ VGL.init = function () {
     const mk = (t, src) => { const s = gl.createShader(t); gl.shaderSource(s, src); gl.compileShader(s); return s; };
     const pr = gl.createProgram(); gl.attachShader(pr, mk(gl.VERTEX_SHADER, vs)); gl.attachShader(pr, mk(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(pr); if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) return;
     gl.useProgram(pr); gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE);
-    VGL.cv = c; VGL.gl = gl; VGL.pr = pr; VGL.buf = gl.createBuffer(); VGL.data = new Float32Array(VGL.MAX * 7); VGL.pt = Array.from({ length: VGL.MAX }, () => ({ x: 0, y: 0, vx: 0, vy: 0, life: 0, max: 1, s: 8, r: 1, g: 1, b: 1, a: 1, d: 1 }));
+    VGL.cv = c; VGL.gl = gl; VGL.pr = pr; VGL.buf = gl.createBuffer(); VGL.data = new Float32Array((VGL.MAX + VGL.IMM) * 7); VGL.pt = Array.from({ length: VGL.MAX }, () => ({ x: 0, y: 0, vx: 0, vy: 0, life: 0, max: 1, s: 8, r: 1, g: 1, b: 1, a: 1, d: 1 }));
     VGL.loc = { p: gl.getAttribLocation(pr, 'p'), s: gl.getAttribLocation(pr, 's'), c: gl.getAttribLocation(pr, 'c'), r: gl.getUniformLocation(pr, 'r') };
     const rg = gl.getParameter(gl.ALIASED_POINT_SIZE_RANGE); VGL.maxS = rg ? rg[1] : 32; document.body.appendChild(c); VGL.ok = true; VGL.last = performance.now();
   } catch (e) { VGL.ok = false; }
@@ -12300,10 +12318,16 @@ VGL.rgb = c => { if (typeof c !== 'string' || c[0] !== '#' || c.length < 7) retu
 VGL.add = function (x, y, vx, vy, life, size, col, a, drag) {
   if (!VGL.ok || VGL.n >= VGL.MAX) return; const p = VGL.pt[VGL.n++], c = VGL.rgb(col); p.x = x; p.y = y; p.vx = vx; p.vy = vy; p.life = p.max = life; p.s = size; p.r = c[0]; p.g = c[1]; p.b = c[2]; p.a = a; p.d = drag;
 };
+// brilho imediato: as particulas do jogo (G.parts) entram aqui em vez de uma chamada drawImage cada (muito mais barato na GPU)
+VGL.glow = function (x, y, r, color, a) {
+  if (!VGL.ok || VGL.m2 >= VGL.IMM || G.state === 'photo') return false; const st = G.state; if (!(st === 'play' || st === 'pause' || st === 'levelup' || st === 'clear' || st === 'over' || st === 'celebrate')) return false;
+  let c = VGL.col[color]; if (!c) c = VGL.col[color] = VGL.rgb(color); const d = VGL.data, o = (VGL.MAX + VGL.m2) * 7, sc = 960 / W; d[o] = x * sc; d[o + 1] = y * sc; d[o + 2] = Math.min(VGL.maxS, r * 2 * sc); d[o + 3] = c[0]; d[o + 4] = c[1]; d[o + 5] = c[2]; d[o + 6] = a * GLOW * 1.25; VGL.m2++; return true;
+};
+const pglow = (x, y, r, c, a) => { if (!VGL.glow(x, y, r, c, a)) drawGlow(x, y, r, c, a); };
 VGL.mult = () => (Save.data.settings && Save.data.settings.ultra ? 2.4 : 1.3);
 VGL.frame = function () {
-  if (!VGL.ok) return; const now = performance.now(), dt = Math.min(.05, (now - VGL.last) / 1000); VGL.last = now; const st = G.state, on = ['play', 'pause', 'levelup', 'clear', 'over', 'celebrate', 'photo'].includes(st) && QL() >= 2;
-  const c = VGL.cv; if (!on) { c.style.display = 'none'; VGL.n = 0; return; }
+  if (!VGL.ok) return; const now = performance.now(), dt = Math.min(.05, (now - VGL.last) / 1000); VGL.last = now; const st = G.state, on = ['play', 'pause', 'levelup', 'clear', 'over', 'celebrate', 'photo'].includes(st) && (QL() >= 2 || VGL.m2 > 0), sim = QL() >= 2;
+  const c = VGL.cv; if (!on) { c.style.display = 'none'; VGL.n = 0; VGL.m2 = 0; return; }
   const r = cv.getBoundingClientRect(); c.style.display = 'block'; c.style.left = r.left + 'px'; c.style.top = r.top + 'px'; c.style.width = r.width + 'px'; c.style.height = r.height + 'px';
   const k = VGL.maxS ? 1 : 1, sc = 960 / W;
   // aneis novos viram aneis de particulas
@@ -12311,12 +12335,13 @@ VGL.frame = function () {
   // poeira de luz ambiente
   if (st === 'play' && Math.random() < dt * (Save.data.settings.ultra ? 22 : 9)) VGL.add(rand(0, W), rand(0, H), rand(-8, 8), rand(-14, -4), rand(3, 6), rand(6, 16), pick(['#c8a0ff', '#9fe8ff', '#ffe9a8']), .35, .1);
   const gl = VGL.gl, d = VGL.data; let m = 0;
-  for (let i = 0; i < VGL.n; i++) {
+  for (let i = 0; i < (sim ? VGL.n : 0); i++) {
     const p = VGL.pt[i]; p.life -= dt; if (p.life <= 0) { VGL.pt[i] = VGL.pt[VGL.n - 1]; VGL.pt[VGL.n - 1] = p; VGL.n--; i--; continue; }
     const f = Math.exp(-p.d * dt); p.vx *= f; p.vy *= f; if (st !== 'pause' && st !== 'levelup' && st !== 'photo') { p.x += p.vx * dt; p.y += p.vy * dt; }
     const t = p.life / p.max, o = m * 7; d[o] = p.x * sc; d[o + 1] = p.y * sc; d[o + 2] = Math.min(VGL.maxS, p.s * (.5 + t * .7) * sc * 1.6); d[o + 3] = p.r; d[o + 4] = p.g; d[o + 5] = p.b; d[o + 6] = p.a * Math.min(1, t * 1.6); m++;
   }
-  gl.viewport(0, 0, 960, 540); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT); if (!m) return;
+  gl.viewport(0, 0, 960, 540); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
+  if (VGL.m2) { d.copyWithin(m * 7, VGL.MAX * 7, (VGL.MAX + VGL.m2) * 7); m += VGL.m2; VGL.m2 = 0; } if (!m) return;
   gl.bindBuffer(gl.ARRAY_BUFFER, VGL.buf); gl.bufferData(gl.ARRAY_BUFFER, d.subarray(0, m * 7), gl.DYNAMIC_DRAW);
   const L = VGL.loc; gl.enableVertexAttribArray(L.p); gl.vertexAttribPointer(L.p, 2, gl.FLOAT, false, 28, 0); gl.enableVertexAttribArray(L.s); gl.vertexAttribPointer(L.s, 1, gl.FLOAT, false, 28, 8); gl.enableVertexAttribArray(L.c); gl.vertexAttribPointer(L.c, 4, gl.FLOAT, false, 28, 12); gl.uniform2f(L.r, 960, 540);
   gl.drawArrays(gl.POINTS, 0, m);
@@ -12329,7 +12354,7 @@ const hex = c => (typeof c === 'string' && c[0] === '#' && c.length === 7) ? c :
   const sd = shedDebris; shedDebris = function (x, y, n, cols, sp = 320, size = 11) { const r = sd(x, y, n, cols, sp, size); if (VGL.ok && QL() >= 2) for (let i = 0; i < n * VGL.mult() * 2; i++) { const a = rand(0, TAU), s = rand(.3, 1) * sp; VGL.add(x, y, Math.cos(a) * s, Math.sin(a) * s, rand(.5, 1.1), rand(8, 18), hex(cols[i % cols.length]), .4, 2); } return r; };
 }
 VGL.init();
-setTimeout(() => { const rd = render; render = function () { rd(); try { VGL.frame(); } catch (e) { VGL.ok = false; if (VGL.cv) VGL.cv.style.display = 'none'; } }; }, 0);
+addEventListener('load', () => { const rd = render; render = function () { rd(); try { VGL.frame(); } catch (e) { VGL.ok = false; if (VGL.cv) VGL.cv.style.display = 'none'; } }; });
 
 ;
 /* ==== visual43.js ==== */
@@ -12784,7 +12809,7 @@ const pl46 = pts => { ctx.beginPath(); pts.forEach(([x, y], i) => i ? ctx.lineTo
 Herald.prototype.draw = function () {
   const t = this.t, ph = this.phase, hit = this.flash > 0, chg = this.chargeT > 0 ? 1 - this.chargeT / this.chargeMax : 0, p = G.player, lk = p ? clamp((p.x - this.x) / 300, -1, 1) : 0, lky = p ? clamp((p.y - this.y) / 400, -.3, 1) : .5;
   ctx.save(); ctx.translate(this.x, this.y);
-  ctx.globalCompositeOperation = 'lighter'; drawGlow(0, 0, 360, '#ffd36a', .3 + Math.sin(t * 3) * .05); drawGlow(0, 0, 150, '#ffffff', .25); ctx.globalCompositeOperation = 'source-over';
+  ctx.globalCompositeOperation = 'lighter'; drawGlow(0, 0, 360, '#ffd36a', .3 + Math.sin(t * 3) * .05); drawGlow(0, 0, 150, '#ffffff', .25); ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
   // aureola de segmentos (gira) e arcos
   for (let k = 0; k < 3; k++) { ctx.save(); ctx.rotate(t * (.4 + k * .15) * (k % 2 ? -1 : 1)); ctx.strokeStyle = k % 2 ? '#fff0c0' : '#ffd36a'; ctx.lineWidth = 4 + k; ctx.globalAlpha = .85; ctx.setLineDash([30, 16]); ctx.beginPath(); ctx.ellipse(0, 0, 150 + k * 26, 52 + k * 16, 0, 0, TAU); ctx.stroke(); ctx.restore(); }
   // asas em laminas (3 camadas por lado)
@@ -12814,7 +12839,7 @@ Leviathan.prototype.draw = function () {
   const t = this.t, hit = this.flash > 0, p = G.player;
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
   for (let i = this.N - 1; i >= 0; i--) { const [x, y] = this.seg(i), r = i === 0 ? 56 : 42 - i * 1.1; drawGlow(x, y, r * 2.3, '#33c4ff', .2); }
-  ctx.globalCompositeOperation = 'source-over'; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
   // nadadeiras dorsais e ventrais
   for (let i = this.N - 1; i >= 1; i--) {
     const [x, y] = this.seg(i), [px, py] = this.seg(i - 1), r = 42 - i * 1.1, a = Math.atan2(py - y, px - x), sw = Math.sin(t * 4 + i * .5) * .25;
@@ -13208,8 +13233,8 @@ VoidBoss.prototype.draw = function () {
   ctx.lineCap = 'round'; ctx.lineJoin = 'round';
   for (let i = 0; i < 8; i++) {
     const a = i / 8 * TAU + t * .12, pts = []; for (let k = 0; k <= 14; k++) { const ang = a + Math.sin(t * 1.3 + i + k * .35) * .3 * (k / 14) + k * .04 * (i % 2 ? 1 : -1), r = 100 + k * (20 + ph * 2); pts.push([Math.cos(ang) * r, Math.sin(ang) * r * .9]); }
-    for (let k = 0; k < 14; k++) { const w = Math.max(3, 24 - k * 1.5); ctx.strokeStyle = 'rgba(6,0,14,.95)'; ctx.lineWidth = w + 6; ctx.beginPath(); ctx.moveTo(pts[k][0], pts[k][1]); ctx.lineTo(pts[k + 1][0], pts[k + 1][1]); ctx.stroke(); }
-    for (let k = 0; k < 14; k++) { const w = Math.max(2, 24 - k * 1.5); ctx.strokeStyle = u49(0, 0, 0, 0, [[0, '#1a0a38'], [1, '#1a0a38']]); ctx.strokeStyle = k % 2 ? '#20104a' : '#2a1560'; ctx.lineWidth = w; ctx.beginPath(); ctx.moveTo(pts[k][0], pts[k][1]); ctx.lineTo(pts[k + 1][0], pts[k + 1][1]); ctx.stroke(); }
+    ctx.strokeStyle = 'rgba(6,0,14,.95)'; for (let k = 0; k < 14; k += 2) { const w = Math.max(3, 24 - (k + 1) * 1.5); ctx.lineWidth = w * 1.1 + 6; ctx.beginPath(); ctx.moveTo(pts[k][0], pts[k][1]); ctx.lineTo(pts[k + 1][0], pts[k + 1][1]); ctx.lineTo(pts[k + 2][0], pts[k + 2][1]); ctx.stroke(); }
+    for (let k = 0; k < 14; k += 2) { const w = Math.max(2, 24 - (k + 1) * 1.5); ctx.strokeStyle = (k >> 1) % 2 ? '#20104a' : '#2a1560'; ctx.lineWidth = w * 1.1; ctx.beginPath(); ctx.moveTo(pts[k][0], pts[k][1]); ctx.lineTo(pts[k + 1][0], pts[k + 1][1]); ctx.lineTo(pts[k + 2][0], pts[k + 2][1]); ctx.stroke(); }
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = hit ? '#ffffff' : 'rgba(192,74,255,.8)'; ctx.lineWidth = 2.4; ctx.beginPath(); pts.forEach(([x, y], k) => k ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.stroke(); for (let k = 2; k < 14; k += 3) { ctx.fillStyle = 'rgba(232,208,255,.7)'; ctx.beginPath(); ctx.arc(pts[k][0], pts[k][1], Math.max(1.6, 4 - k * .2), 0, TAU); ctx.fill(); } const e = pts[14]; drawGlow(e[0], e[1], 16, '#c04aff', .8); ctx.restore();
   }
   // coroa de espinhos girando
@@ -14399,8 +14424,8 @@ const ok60 = c => typeof c === 'string' && /^#[0-9a-f]{6}$/i.test(c);
 
 // ---------- 9. transicoes entre telas: cortina de luz com estrelas ----------
 {
-  const rn = render, skip = ['play', 'pause', 'levelup', 'photo', 'cine'];
-  render = function () {
+  const skip = ['play', 'pause', 'levelup', 'photo', 'cine'];
+  hookRender(rn => function () {
     rn();
     const s = G.state; if (Visual60.last === null) Visual60.last = s;
     if (s !== Visual60.last) { const a = Visual60.last; Visual60.last = s; if (!(skip.includes(a) && skip.includes(s)) && QL() >= 1 && s !== 'cine') Visual60.tr = { t: 0 }; }
@@ -14409,7 +14434,7 @@ const ok60 = c => typeof c === 'string' && /^#[0-9a-f]{6}$/i.test(c);
     ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 1 - u; ctx.lineCap = 'round';
     for (let i = 0; i < 16; i++) { const y = (i * 53 + 20) % H, x = -300 + (u * 1.3 + i * .02) * (W + 600), L = 160 + (i % 4) * 60; ctx.strokeStyle = i % 3 ? 'rgba(190,160,255,.7)' : 'rgba(255,233,168,.8)'; ctx.lineWidth = 2 + i % 3; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - L, y); ctx.stroke(); }
     ctx.restore();
-  };
+  });
 }
 
 // ---------- 10. chefe final: abertura em cinema e morte em cascata de luz ----------
@@ -14586,8 +14611,8 @@ const h61 = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s 
 {
   const hq = () => { try { ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high'; } catch (e) { } };
   hq(); addEventListener('resize', () => setTimeout(hq, 50));
-  const rn = render; let n = 0;
-  render = function () { if ((n++ & 127) === 0) hq(); return rn(); };
+  let n = 0;
+  hookRender(rn => function () { if ((n++ & 127) === 0) hq(); return rn(); });
 }
 
 ;
@@ -14729,17 +14754,7 @@ const h62 = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s 
 // ---------- 10. modo foto: filtros novos ----------
 if (typeof PF !== 'undefined' && PF.length < 8) { PF.push(['CINEMA', 'contrast(1.18) saturate(.85) sepia(.18) brightness(.95)'], ['NEON', 'saturate(1.8) contrast(1.15) hue-rotate(-18deg)'], ['VINTAGE', 'sepia(.6) contrast(1.05) saturate(.9) brightness(1.05)']); }
 
-// ---------- 11. qualidade adaptativa: se o jogo estiver pesado, os efeitos baixam sozinhos ----------
-{
-  const lv = Visual55.lvl;
-  Visual55.lvl = () => { const b = lv(); return Visual62.slow > 0 ? Math.min(b, Math.max(0, 2 - Visual62.slow)) : b; };
-  const rn = render; let last = performance.now(), acc = 0, n = 0;
-  render = function () {
-    const now = performance.now(), d = now - last; last = now; rn();
-    if (G.state !== 'play' || d > 250) { acc = 0; n = 0; return; } acc += d; n++;
-    if (n >= 150) { const avg = acc / n; acc = 0; n = 0; if (avg > 24 && Visual62.slow < 2) Visual62.slow++; else if (avg < 14 && Visual62.slow > 0 && QL() >= 1) Visual62.slow--; }
-  };
-}
+// ---------- 11. qualidade adaptativa: agora no visual65 (governador unico) ----------
 
 ;
 /* ==== visual63.js ==== */
@@ -14887,8 +14902,8 @@ const h63 = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s 
 {
   const touch = 'ontouchstart' in window;
   addEventListener('pointerdown', e => { const r = cv.getBoundingClientRect(); Visual63.rip.push({ x: (e.clientX - r.left) / r.width * W, y: (e.clientY - r.top) / r.height * H, t: 0, touch: e.pointerType === 'touch' }); if (Visual63.rip.length > 6) Visual63.rip.shift(); });
-  const rn = render;
-  render = function () {
+
+  hookRender(rn => function () {
     rn(); const s = G.state; if (QL() < 1 || s === 'cine' || s === 'photo') return; ctx.setTransform(K, 0, 0, K, 0, 0); ctx.save(); ctx.globalCompositeOperation = 'lighter';
     for (let i = Visual63.rip.length - 1; i >= 0; i--) { const q = Visual63.rip[i]; q.t += 1 / 60; if (q.t > .45) { Visual63.rip.splice(i, 1); continue; } if (s === 'play' && !q.touch) continue; ctx.globalAlpha = (1 - q.t / .45) * .8; ctx.strokeStyle = '#ffe9a8'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(q.x, q.y, 8 + q.t * 90, 0, TAU); ctx.stroke(); }
     if (!touch && s !== 'play') {
@@ -14897,7 +14912,66 @@ const h63 = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s 
       ctx.globalAlpha = 1; ctx.fillStyle = '#ffffff'; ctx.shadowColor = '#b98cff'; ctx.shadowBlur = 10; ctx.beginPath(); for (let i = 0; i < 8; i++) { const a = i / 8 * TAU - Math.PI / 2, r = i % 2 ? 4 : 11; ctx.lineTo(m.x + Math.cos(a) * r, m.y + Math.sin(a) * r); } ctx.closePath(); ctx.fill();
     }
     ctx.restore();
+  });
+}
+
+;
+/* ==== visual64.js ==== */
+'use strict';
+// ---------- 64: orcamento de brilhos grandes (o que mais pesa na GPU) e corte de brilhos invisiveis ----------
+// Os brilhos grandes (nevoa, luz de chefe, planetas) cobrem muita tela com blend aditivo. Cada um custa preenchimento de pixels,
+// entao a soma deles por quadro e limitada: se passar do orcamento, todos encolhem na mesma proporcao.
+const Visual64 = { tot: 0, f: 1, B: W * H * 0.9, big: 0, fg: 0 };
+{
+  const dg = drawGlow;
+  drawGlow = function (x, y, r, color, a = 1) {
+    if (a * GLOW < .02 || r < 1) return;
+    if (Visual64.fg > 0 && r < 90 && VGL.glow(x, y, r, color, a)) return;
+    if (r >= 90) { Visual64.tot += Math.PI * r * r; r *= Visual64.f; if (x + r < 0 || x - r > W || y + r < 0 || y - r > H) return; }
+    return dg(x, y, r, color, a);
   };
+
+  hookRender(rn => function () {
+    rn(); const t = Visual64.tot; Visual64.tot = 0;
+    const want = t > Visual64.B ? clamp(Math.sqrt(Visual64.B / t), .4, 1) : 1;
+    Visual64.f += (want - Visual64.f) * .15;
+  });
+}
+
+// marca as funcoes de desenho cujos brilhos pequenos podem ir para a camada WebGL
+{
+  const fgWrap = (obj, name) => { const f = obj && obj[name]; if (typeof f !== 'function') return; obj[name] = function (...a) { Visual64.fg++; try { return f.apply(this, a); } finally { Visual64.fg--; } }; };
+  fgWrap(Art, 'pbullet'); fgWrap(Art, 'ebullet'); fgWrap(Visual13, 'draw'); fgWrap(Visual6, 'drawP2');
+}
+
+;
+/* ==== visual65.js ==== */
+'use strict';
+// ---------- 65: governador de desempenho ----------
+// Mede o tempo real entre quadros durante a partida. Se o jogo cair abaixo de ~50 quadros por segundo, desce degraus de qualidade
+// (efeitos -> brilhos grandes limitados -> resolucao interna menor) ate voltar a ficar fluido. Nada sobe no meio da fase (evita ficar oscilando);
+// ao comecar a proxima fase o governador tenta um degrau a menos.
+const Visual65 = { level: 0, win: [], last: 0, cool: 480, log: [], bad: 0 };
+Visual65.MAX = 4;
+Visual65.apply = function () {
+  const L = Visual65.level, B = Visual64;
+  B.B = L >= 2 ? W * H * 1.1 : 1e12;
+  const want = L >= 4 ? .62 : L >= 3 ? .8 : 1;
+  if ((window.DYN || 1) !== want) { window.DYN = want; try { resize(); } catch (e) { } }
+};
+{
+  const lv = Visual55.lvl;
+  Visual55.lvl = () => { const b = lv(), L = Visual65.level; return L >= 2 ? 0 : L >= 1 ? Math.min(b, 1) : b; };
+  hookRender(rn => function () {
+    const now = performance.now(), d = now - Visual65.last; Visual65.last = now; rn();
+    if (G.state !== 'play' || d > 120 || d <= 0) { Visual65.win.length = 0; return; }
+    if (Visual65.cool > 0) { Visual65.cool--; return; }
+    const W_ = Visual65.win; W_.push(d); if (W_.length < 70) return;
+    const avg = W_.reduce((a, b) => a + b, 0) / W_.length; W_.length = 0;
+    const lim = [19.5, 19.5, 22, 26][Math.min(3, Visual65.level)];
+    if (avg > lim && Visual65.level < Visual65.MAX) { if (++Visual65.bad >= 2) { Visual65.bad = 0; Visual65.level++; Visual65.cool = 150; Visual65.log.push([Math.round(avg), Visual65.level]); Visual65.apply(); } } else Visual65.bad = 0;
+  });
+  const ss = Game.startStage; Game.startStage = function (i, o) { if (Visual65.level > 0) { Visual65.level--; Visual65.apply(); } Visual65.win.length = 0; Visual65.bad = 0; Visual65.cool = 480; return ss.call(this, i, o); };
 }
 
 ;

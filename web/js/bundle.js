@@ -4867,7 +4867,7 @@ const Screens = {
       if (i % 2 === 0) { ctx.strokeStyle = 'rgba(226,212,255,.7)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(0, 0, R * 1.55, R * .4, -.35, 0, TAU); ctx.stroke(); }
       if (lk) this.lock(0, 0, 1.1); else txt(String(i + 1), 0, 0, 36, '#fff', 'center', 900, 'middle');
       ctx.restore();
-      if (sel) Art.ship(x, y - R - 40, { vx: 0, t, scale: .5, blinkT: 0, lookx: 0, looky: .5 });
+      if (sel) Art.ship(x, i === 0 ? y + R + 76 : y - R - 40, { vx: 0, t, scale: .5, blinkT: 0, lookx: 0, looky: .5 });
       if (Save.data.cleared[i]) txt('CBAS'[Save.data.grades[i] || 0], x, y + R + 10, 22, '#ffcf6b', 'center', 900);
     });
     // menu em texto

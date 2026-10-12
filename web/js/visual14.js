@@ -183,6 +183,7 @@ Screens.modes = function () {
     { id: 'tal', name: 'TALENTOS', c: '#ffd36a', l: 'Melhorias permanentes de ataque, defesa e sorte.', foot: 'Gaste suas estrelas', go: () => { G.state = 'talents'; } },
     { id: 'sta', name: 'ESTATÍSTICAS', c: '#9fe8ff', l: 'Tempo jogado, derrotas, arma favorita e mais.', foot: 'Seu histórico', go: () => { G.state = 'stats'; } },
     { id: 'cos', name: 'COSMÉTICOS', c: '#ff7ac8', l: 'Rastros, auras, títulos e molduras para personalizar o seu jogo.', foot: Object.keys((Save.data.cosm || { own: {} }).own).length + ' conquistados', go: () => { G.state = 'cosmetics'; } },
+    { id: 'exp', name: 'EXPEDIÇÃO', c: '#ff8a5f', l: 'Uma rota roguelite: batalhas, lojas, eventos e chefes. Se morrer, acabou.', foot: 'Melhor: ' + ((Save.data.exp||{}).best||0) + ' / 8 etapas', go: () => Visual32.start() },
     { id: 'fus', name: 'FUSÃO DE ARMAS', c: '#ffd36a', l: 'Una duas armas numa só e atire as duas ao mesmo tempo.', foot: ((Save.data.fusions||[]).length) + ' / 6 fusões', go: () => { G.state = 'fusion'; } },
     { id: 'tr', name: 'TREINO', c: '#7fe0a0', l: 'Arena livre: armas, skins e inimigos.', foot: 'sem pressão :)', go: () => Game.startTraining() },
   ].filter(Boolean);

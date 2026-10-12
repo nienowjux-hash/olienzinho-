@@ -107,7 +107,7 @@ setTimeout(Visual19.warm, 1500);
   const ue = updateEnemy;
   updateEnemy = function (e, dt) {
     const st = G.stage ? G.stage.id : 0;
-    if (e.type === 'captain' && st < 6 && e.mode === 'hover' && !e.dead) {
+    if (e.type === 'captain' && st < 6 && e.mode === 'hover' && !e.dead && !window.NOCAP) {
       const p = G.player, hurt = e.hp < e.maxHp * .5 ? .75 : 1; e.mt = e.mt || {}; const nOf = ty => G.enemies.filter(q => !q.dead && q.type === ty).length;
       const tk = (k, every) => { e.mt[k] = (e.mt[k] ?? every * .7) - dt; if (e.mt[k] <= 0) { e.mt[k] = every * hurt; return true; } return false; };
       if (st === 0) { if (tk('drones', 4.5) && nOf('drone') < 5) for (const s of [-1, 1]) spawnEnemy('drone', clamp(e.x + s * 90, 50, W - 50), e.y + 30, { bx: e.x + s * 90, noElite: true }); if (tk('fan', 2.3)) fanAimed(e.x, e.y + 20, 5, .8, 230); }

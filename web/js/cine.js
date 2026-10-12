@@ -141,6 +141,38 @@ Cine.clips.v_end = {
   },
 };
 
+// 6. abertura do Ato II: o cemiterio das estrelas
+Cine.clips.v_act2 = {
+  dur: 13, pal: () => STAGES[4].pal, f(t) {
+    const cx = W / 2;
+    for (let i = 0; i < 40; i++) { const x = hsq(i) * W, y = 80 + hsq(i + 30) * (H - 160), a = clamp((t - .4 - hsq(i + 5) * 4) / 1, 0, 1), k = (hsq(i + 9) < .35) ? 1 : 0; ctx.save(); ctx.translate(x, y + Math.sin(t * .6 + i) * 6); ctx.rotate(.3 + i); ctx.globalAlpha = a * (k ? .5 + .3 * Math.sin(t * 3 + i) : .35); ctx.strokeStyle = k ? '#e8d0ff' : '#5a4a80'; ctx.lineWidth = 2; ctx.beginPath(); for (let q = 0; q < 8; q++) { const aa = q * Math.PI / 4, r = q % 2 ? 4 : 13; ctx.lineTo(Math.cos(aa) * r, Math.sin(aa) * r); } ctx.closePath(); ctx.stroke(); ctx.restore(); }
+    const e = clamp((t - 6) / 4, 0, 1); if (e > 0) { ctx.save(); ctx.globalAlpha = e * .8; ctx.fillStyle = '#07030f'; ctx.beginPath(); ctx.arc(cx + 260, 250, 120, 0, TAU); ctx.fill(); ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = '#b98cff'; ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(cx + 260, 250, 122, 0, TAU); ctx.stroke(); drawGlow(cx + 260, 250, 260, '#6a3ad8', .25 * e); ctx.restore(); }
+    for (let k = 0; k < 3; k++) { const tt = t - 3 - k * 2.4; if (tt > 0 && tt < 4) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = Math.sin(tt / 4 * Math.PI) * .45; const x = 200 + k * 380; ctx.strokeStyle = '#7fe0ff'; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(x, 360 + Math.sin(tt) * 20, 54, 26, 0, 0, TAU); ctx.stroke(); drawGlow(x, 360, 80, '#33c4ff', .3); ctx.restore(); } }
+    const f = eio((t - 1) / 11); ctx.save(); Art.ship(lerp(180, W - 260, f), 520 - Math.sin(f * Math.PI) * 60 + Math.sin(t * 2) * 6, { pal: SKIN_DEFAULT, t, scale: 1.7, vx: 160, lookx: .5, looky: -.3, blinkT: 0, inv: 0, mood: t > 6 ? 'worry' : 'happy' }); Art.orbi(lerp(80, W - 360, f), 560 - Math.sin(f * Math.PI) * 60 + Math.sin(t * 2.2) * 6, { vx: 160, t, scale: 1.4, lookx: .5, looky: -.3, blinkT: 0, inv: 0, sx: 1, sy: 1 }); ctx.restore();
+    Cine.cap('Com os quatro guardiões de volta, o céu respirou fundo.', t, .4, 4.2);
+    Cine.cap('Mas o Vazio não esperou.', t, 4.6, 7.6);
+    Cine.cap('A única rota até o seu coração passava pelo cemitério das estrelas.', t, 8, 12);
+    Cine.fade(clamp((t - 12.3) / .7, 0, 1)); Cine.fade(1 - clamp(t / .7, 0, 1));
+  },
+};
+
+// 7. o Vazio desperta antes da luta final da Parte 1
+Cine.clips.v_void = {
+  dur: 13, pal: () => STAGES[5].pal, f(t) {
+    const cx = W / 2, cy = H * .42; const z = 1 + t * .01; ctx.save(); ctx.translate(cx, cy); ctx.scale(z, z); ctx.translate(-cx, -cy);
+    ctx.globalAlpha = clamp(t / 1.5, 0, 1); Screens.sceneVoid(t); ctx.globalAlpha = 1;
+    for (let i = 0; i < 36; i++) { const x = hsq(i) * W, y = 60 + hsq(i + 20) * (H - 120), tt = t - 3 - i * .1, on = tt < 0 ? 1 : clamp(1 - tt / .8, 0, 1); if (on > .02) Cine.star(x, y, 5 + hsq(i + 4) * 8, t + i, '#e2d4ff', on * .8); }
+    ctx.restore();
+    const k = clamp((t - 5) / 6, 0, 1); if (k > 0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(cx, H * .68, 90 + Math.sin(t * 4) * 8, '#ffe9a8', .8); ctx.restore(); }
+    ctx.save(); Art.ship(cx, H * .6 + Math.sin(t * 2) * 5, { pal: SKIN_DEFAULT, t, scale: 1.5, vx: 0, lookx: 0, looky: -1, blinkT: 0, inv: 0, mood: t > 6 ? 'determined' : 'worry' }); ctx.restore();
+    ctx.save(); const g = ctx.createRadialGradient(cx, H / 2, 280, cx, H / 2, 900); g.addColorStop(0, 'rgba(4,0,16,0)'); g.addColorStop(1, 'rgba(4,0,16,' + (.35 + k * .5) + ')'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); ctx.restore();
+    Cine.cap('O Vazio chegou ao Coração de Luz.', t, .6, 4);
+    Cine.cap('Cada estrela que ele tocava se apagava.', t, 4.4, 8);
+    Cine.cap('Só restava um pequeno foguete.', t, 8.4, 11.8);
+    Cine.fade(clamp((t - 12.3) / .7, 0, 1)); Cine.fade(1 - clamp(t / .6, 0, 1));
+  },
+};
+
 // ---------- gravacao quadro a quadro (so para gerar os arquivos) ----------
 Screens.cine = function () {
   const c = Cine.cur; if (!c) return; ctx.save(); c.f(Cine.t); ctx.restore();

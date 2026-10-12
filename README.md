@@ -29,7 +29,7 @@ Abra o arquivo `web/index.html` no navegador (Chrome ou Edge). Não precisa inst
 - 10 fases (Partes 1, 2, 3 e o Ato Final "O Último Céu", com o Coração do Outro Lado em três atos e o Epílogo contra o seu próprio reflexo; Parte 3: Cidade de Luz, Oceano de Estrelas e Espelho do Céu, com inimigos, tiros e ataques de chefe próprios) e com bioma, música e eventos próprios, cada uma com minichefe e um chefe de 3 fases de fúria, até o Vazio.
 - Armas, pilotos guardiões (Colmeia, Pétreo, Vigia, Solaris), armas secundárias, chefes secretos, aventuras, arena semanal, prática de chefes, recordes por fase, dificuldade Pesadelo, 6 skins, esquiva, especiais, Orbi jogável, Modo Infinito, Desafio do Dia, Modo Treino, conquistas e fragmentos escondidos.
 - RPG: upgrades ao subir de nível, loja permanente, progresso salvo no navegador.
-- 5 cutscenes em vídeo nos momentos-chave (prólogo, fim da Parte 2, abertura da Parte 3, abertura do Ato Final e final), com opção para desligar em Opções (VÍDEOS). Os arquivos ficam em `web/video` e são gerados pelo `web/js/cine.js`.
+- 7 cutscenes em vídeo nos momentos-chave (prólogo, abertura do Ato II, o Vazio desperta, fim da Parte 2, abertura da Parte 3, abertura do Ato Final e final; versões 720p automáticas para PCs fracos), com opção para desligar em Opções (VÍDEOS). Os arquivos ficam em `web/video` e são gerados pelo `web/js/cine.js`.
 - História com cenas animadas, retratos dos personagens e música para cada emoção.
 - Áudio 100% sintetizado por código (Web Audio), sem arquivos de som.
 

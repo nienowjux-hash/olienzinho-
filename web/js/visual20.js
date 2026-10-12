@@ -112,11 +112,11 @@ Screens.custom = function () {
 }
 
 // ---------- galeria de cenas ----------
-Visual20.CLIPS = [['v_prologue', 'O Céu Antes do Vazio', 'Prólogo'], ['v_finale1', 'A Luz Volta a Bater', 'Fim da Parte 2'], ['v_door', 'A Porta de Luz', 'Abertura da Parte 3'], ['v_rift', 'A Fenda', 'Abertura do Ato Final'], ['v_end', 'O Último Céu', 'Final']];
+Visual20.CLIPS = [['v_prologue', 'O Céu Antes do Vazio', 'Prólogo'], ['v_finale1', 'A Luz Volta a Bater', 'Fim da Parte 2'], ['v_door', 'A Porta de Luz', 'Abertura da Parte 3'], ['v_rift', 'A Fenda', 'Abertura do Ato Final'], ['v_end', 'O Último Céu', 'Final'], ['v_act2', 'O Cemitério das Estrelas', 'Abertura do Ato II'], ['v_void', 'O Vazio Desperta', 'Antes do Vazio']];
 Screens.gallery = function () {
   txt('GALERIA DE CENAS', W / 2, 26, 44, '#fff', 'center'); txt('Reveja os vídeos que você já assistiu.', W / 2, 88, 18, '#ffb340', 'center', 800); const seen = Save.data.vseen || {};
   Visual20.CLIPS.forEach(([id, name, where], i) => {
-    const x = 120 + (i % 3) * 360, y = 140 + Math.floor(i / 3) * 210, w = 340, h = 190, ok = !!seen[id], fid = 'gv' + i;
+    const x = 50 + (i % 4) * 300, y = 130 + Math.floor(i / 4) * 210, w = 280, h = 190, ok = !!seen[id], fid = 'gv' + i;
     if (UI.hit(fid, x, y, w, h, { disabled: !ok })) { Game.startStory([{ music: 'hope' }, { video: id }], () => { G.state = 'gallery'; Snd.musicPlay('menu', 0); }, { music: null }); return; }
     const f = UI.focus(fid); ctx.save(); ctx.globalAlpha = ok ? 1 : .55; UI.panel(x, y, w, h, { r: 18, fill: f && ok ? 'rgba(50,28,120,.85)' : 'rgba(20,8,55,.75)', stroke: f && ok ? '#ffb340' : 'rgba(190,160,255,.3)' });
     ctx.fillStyle = ok ? 'rgba(255,233,168,.9)' : 'rgba(120,100,170,.6)'; ctx.beginPath(); ctx.moveTo(x + w / 2 - 14, y + 44); ctx.lineTo(x + w / 2 + 20, y + 70); ctx.lineTo(x + w / 2 - 14, y + 96); ctx.closePath(); ctx.fill();

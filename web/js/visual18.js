@@ -1,9 +1,9 @@
 'use strict';
 // ---------- cutscenes em video dentro do jogo (arquivos em /video, gerados a partir da propria arte do jogo) ----------
-const Visual18 = { vids: {}, ids: ['v_prologue', 'v_finale1', 'v_door', 'v_rift', 'v_end'] };
+const Visual18 = { vids: {}, ids: ['v_prologue', 'v_finale1', 'v_door', 'v_rift', 'v_end', 'v_act2', 'v_void'] };
 Visual18.get = function (id) {
   let v = Visual18.vids[id];
-  if (!v) { v = document.createElement('video'); v.preload = 'auto'; v.muted = true; v.playsInline = true; v.onerror = () => { v.bad = true; }; v.src = 'video/' + id + '.mp4'; Visual18.vids[id] = v; }
+  if (!v) { v = document.createElement('video'); v.preload = 'auto'; v.muted = true; v.playsInline = true; v.onerror = () => { v.bad = true; }; v.src = 'video/' + id + ((QL() === 0 || (Save.data.settings.res || 1) < 1) ? '_720' : '') + '.mp4'; Visual18.vids[id] = v; }
   return v;
 };
 setTimeout(() => { try { for (const id of Visual18.ids) Visual18.get(id); } catch (e) { } }, 6000);
@@ -45,6 +45,8 @@ Visual18.page = function (S, pg) {
   STORY.finale.splice(1, 0, { video: 'v_finale1' });
   STORY.stages[6].intro.splice(1, 0, { video: 'v_door' });
   STORY.stages[9].intro.splice(1, 0, { video: 'v_rift', cues: [[8.4, 'tension']] });
+  STORY.stages[4].intro.splice(1, 0, { video: 'v_act2' });
+  STORY.stages[5].intro.splice(1, 0, { video: 'v_void' });
   const F = STORY.finale4, fi = F.findIndex(p => p.title === 'FIM'); if (fi > 0) F.splice(fi, 1, { video: 'v_end' });
 }
 

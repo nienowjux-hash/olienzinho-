@@ -436,7 +436,7 @@ const Screens = {
         ctx.restore();
         txt(ch.name, 272, y0 + 36, 22, ch.c, 'left', 900);
         ctx.fillStyle = ch.c; ctx.fillRect(272, y0 + 66, 54, 3);
-        const f = this.fit(text, 830, H - 64 - 36 - (y0 + 82), [30, 27, 24, 21]);
+        const f = this.fit(text, 780, H - 64 - 36 - (y0 + 82), [30, 27, 24, 21]);
         ctx.save(); ctx.globalAlpha = wh; if (jit) ctx.translate(rand(-jit, jit), rand(-jit, jit));
         this.typed(f.lines, shown, 272, y0 + 82, f.lh, f.size, '#ffffff', 'left', 700); ctx.restore();
         if (!talking) { ctx.globalAlpha = .5 + .5 * Math.sin(t * 6); txt('▼', 1150, y1 - 30, 20, ch.c, 'center'); ctx.globalAlpha = 1; }

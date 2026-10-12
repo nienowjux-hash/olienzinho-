@@ -102,7 +102,7 @@ Screens.custom = function () {
   if (hp !== c.hp || bul !== c.bul || php !== c.php) { c.hp = hp; c.bul = bul; c.php = php; Visual20.applyCust(); Save.save(); }
   const d = DIFF[DIFF.length - 1]; txt('Pontos ×' + d.score.toFixed(2) + '   •   Estrelas ×' + d.coin.toFixed(2), W / 2, 500, 20, '#ffcf6b', 'center', 800);
   if (UI.button('cuReset', 360, 536, 270, 44, 'PADRÃO', { size: 18 })) { Object.assign(c, { hp: 1, bul: 1, php: 0 }); Visual20.applyCust(); Save.save(); }
-  if (UI.button('back', 648, 536, 272, 44, 'VOLTAR', { size: 20 }) || Input.pressed('escape')) { Snd.play('uiBack'); G.state = 'settings'; }
+  if (UI.button('back', 648, 536, 272, 44, 'VOLTAR', { size: 20 }) || Input.pressed('escape')) { Snd.play('uiBack'); G.state = G.customBack || 'settings'; G.customBack = null; }
 };
 {
   const st = Screens.settings;

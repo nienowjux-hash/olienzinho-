@@ -149,9 +149,7 @@ RELICS.push(
   const dl = Game.startStage; Game.startStage = function (idx, opts) { dl.call(this, idx, opts); G.ngp = !!Save.data.ngpOn; };
   const mo = Visual6.menuOverlay;
   Visual6.menuOverlay = function (s) {
-    mo.call(this, s); if (!['title', 'select', 'modes'].includes(s) || !Save.data.won) return;
-    if (Input.pressed('n')) { Save.data.ngpOn = !Save.data.ngpOn; Save.save(); Snd.play('uiSelect'); }
-    const on = !!Save.data.ngpOn; txt('[N]  JOGO NOVO+: ' + (on ? 'LIGADO' : 'DESLIGADO'), W - 28, H - 40, 14, on ? '#ffcf6b' : '#8f84c4', 'right', 900);
+    mo.call(this, s);
   };
   const en = Game.enter;
   Game.enter = function (idx, opts) {

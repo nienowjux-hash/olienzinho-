@@ -574,7 +574,7 @@ const Screens = {
       items.forEach(([id, label, y, size, sub], i) => {
         const f = UI.focus(id), e = easeBack((tt - 3 - i * .12) / .45), w = size > 40 ? 300 : 230;
         if (UI.hit(id, X0 - 30, y - 8, w + 60, size + 22, { sound: id === 'play' ? 'uiSelect' : 'uiSelect' })) {
-          if (id === 'play') Game.goSelect(); else if (id === 'endless') G.state = 'modes'; else if (id === 'rank') G.state = 'rank'; else if (id === 'mis') G.state = 'missions'; else if (id === 'shop') { G.shopBack = 'title'; G.state = 'shop'; } else { G.setBack = 'title'; G.state = 'settings'; }
+          if (id === 'play') G.state = 'playsetup'; else if (id === 'endless') G.state = 'modes'; else if (id === 'rank') G.state = 'rank'; else if (id === 'mis') G.state = 'missions'; else if (id === 'shop') { G.shopBack = 'title'; G.state = 'shop'; } else { G.setBack = 'title'; G.state = 'settings'; }
         }
         G.mf = G.mf || {}; G.mf[id] = lerp(G.mf[id] || 0, f ? 1 : 0, .18);
         const k = G.mf[id];

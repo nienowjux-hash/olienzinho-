@@ -36,7 +36,7 @@ Screens.pilots = function () {
       else if (UI.button('gu' + g + u.id, x + 50, yy + 86, w - 100, 34, '★ ' + cost, { size: 17, color: can ? '#9a63ff' : undefined })) { if (can) { Save.data.coins -= cost; const o = stk('gup', {}); (o[g] = o[g] || {})[u.id] = l + 1; Save.save(); Snd.play('buy'); shockwave(x + w / 2, yy + 70, 110, G0.c); } else Snd.play('uiDeny'); }
     });
   });
-  if (UI.button('back', W / 2 - 160, 604, 320, 50, 'VOLTAR', { size: 22 }) || Input.pressed('escape')) { Snd.play('uiBack'); G.state = 'modes'; }
+  if (UI.button('back', W / 2 - 160, 604, 320, 50, 'VOLTAR', { size: 22 }) || Input.pressed('escape')) { Snd.play('uiBack'); G.state = 'hangar'; }
   Screens.thinFrame();
 };
 

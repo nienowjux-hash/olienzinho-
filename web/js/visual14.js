@@ -177,14 +177,10 @@ Screens.modes = function () {
     { id: 'orb', name: 'ORBI', c: '#7fe0ff', l: 'Melhore as habilidades do Orbi com estrelas.', foot: 'Nível ' + ['shot', 'grav', 'shield'].reduce((n, k) => n + Visual16.orbiLv(k), 0) + ' / 13', go: () => { G.state = 'orbi'; } },
     { id: 'rec', name: 'RECORDES', c: '#ffd36a', l: 'Sua melhor pontuação em cada fase e o piloto usado.', foot: Object.keys(Save.data.rec || {}).length + ' / ' + STAGES.length + ' fases', go: () => { G.state = 'records'; } },
     Save.data.cleared[9] ? { id: 'tour', name: 'TORNEIO FINAL', c: '#ff8a5f', l: 'Os chefes das fases 7 a 10 em sequência, em ordem aleatória.', foot: Save.data.tour && Save.data.tour.best ? 'Melhor: ' + Math.floor(Save.data.tour.best / 60) + ':' + String(Math.floor(Save.data.tour.best % 60)).padStart(2, '0') : 'Recompensa: ★ 150', go: () => Visual5.startRush([6, 7, 8].sort(() => Math.random() - .5).concat([9])) } : null,
-    Save.data.cleared[9] ? { id: 'pil', name: 'PILOTOS', c: '#ffb340', l: 'Evolua cada guardião com estrelas.', foot: 'Colmeia, Pétreo, Vigia, Solaris', go: () => { G.state = 'pilots'; } } : null,
     { id: 'gal', name: 'GALERIA', c: '#c8a0ff', l: 'Reveja os vídeos da história.', foot: Object.keys(Save.data.vseen || {}).length + ' / 7 vistos', go: () => { G.state = 'gallery'; } },
     { id: 'mut', name: 'MUTADORES', c: '#ff8a5f', l: 'Regras extras para jogar mais difícil e ganhar mais estrelas.', foot: Object.keys(Save.data.mut || {}).filter(k => Save.data.mut[k]).length + ' ativos', go: () => { G.state = 'mutators'; } },
-    { id: 'tal', name: 'TALENTOS', c: '#ffd36a', l: 'Melhorias permanentes de ataque, defesa e sorte.', foot: 'Gaste suas estrelas', go: () => { G.state = 'talents'; } },
     { id: 'sta', name: 'ESTATÍSTICAS', c: '#9fe8ff', l: 'Tempo jogado, derrotas, arma favorita e mais.', foot: 'Seu histórico', go: () => { G.state = 'stats'; } },
-    { id: 'cos', name: 'COSMÉTICOS', c: '#ff7ac8', l: 'Rastros, auras, títulos e molduras para personalizar o seu jogo.', foot: Object.keys((Save.data.cosm || { own: {} }).own).length + ' conquistados', go: () => { G.state = 'cosmetics'; } },
     { id: 'exp', name: 'EXPEDIÇÃO', c: '#ff8a5f', l: 'Uma rota roguelite: batalhas, lojas, eventos e chefes. Se morrer, acabou.', foot: 'Melhor: ' + ((Save.data.exp||{}).best||0) + ' / 8 etapas', go: () => Visual32.start() },
-    { id: 'fus', name: 'FUSÃO DE ARMAS', c: '#ffd36a', l: 'Una duas armas numa só e atire as duas ao mesmo tempo.', foot: ((Save.data.fusions||[]).length) + ' / 6 fusões', go: () => { G.state = 'fusion'; } },
     { id: 'tr', name: 'TREINO', c: '#7fe0a0', l: 'Arena livre: armas, skins e inimigos.', foot: 'sem pressão :)', go: () => Game.startTraining() },
   ].filter(Boolean);
   const MP = Math.ceil(cards0.length / 12); G.mpage = Math.min(G.mpage || 0, MP - 1); const cards = cards0.slice(G.mpage * 12, G.mpage * 12 + 12);

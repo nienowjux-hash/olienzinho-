@@ -87,7 +87,7 @@ Screens.talents = function () {
       else if (UI.button('ta' + id, x + w - 150, y + 48, 128, 34, '★ ' + cost, { size: 15, color: can ? '#9a63ff' : undefined })) { if (can) { Save.data.coins -= cost; sv('tal', {})[id] = l + 1; Save.save(); Snd.play('buy'); shockwave(x + w - 86, y + 65, 90, b.c); } else Snd.play('uiDeny'); }
     });
   });
-  if (UI.button('back', W / 2 - 160, 600, 320, 50, 'VOLTAR', { size: 22 }) || Input.pressed('escape')) { Snd.play('uiBack'); G.state = 'modes'; }
+  if (UI.button('back', W / 2 - 160, 600, 320, 50, 'VOLTAR', { size: 22 }) || Input.pressed('escape')) { Snd.play('uiBack'); G.state = 'hangar'; }
   Screens.thinFrame();
 };
 { // bonus de estrelas: talento + mutadores

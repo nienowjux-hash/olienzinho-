@@ -3,7 +3,6 @@
 const COSM = {
   trail: { label: 'RASTRO', items: [['none', 'Padrão', 0], ['chama', 'Chama Viva', 200], ['estrela', 'Chuva de Estrelas', 250], ['arco', 'Arco-íris', 300], ['neve', 'Neve Estelar', 250], ['neon', 'Neon', 350], ['sombra', 'Fumaça Sombria', 300]] },
   aura: { label: 'AURA', items: [['none', 'Nenhuma', 0], ['pulso', 'Pulso de Luz', 300], ['halo', 'Halo Dourado', 350], ['orbitais', 'Orbitais', 400], ['chamas', 'Anel de Chamas', 450]] },
-  title: { label: 'TÍTULO', items: [['t0', 'Novato', 0], ['t_vazio', 'Quem Venceu o Vazio', 0, 'part2'], ['t_outro', 'Viajante do Outro Lado', 0, 'part3'], ['t_luz', 'Guardião do Último Céu', 0, 'part4'], ['t_seg', 'Caçador de Segredos', 0, 'secret3'], ['t_pes', 'Sobrevivente do Pesadelo', 0, 'nightmare'], ['t_true', 'Luz Verdadeira', 0, 'trueend'], ['t_cara', 'Cara a Cara', 0, 'epi']] },
   frame: { label: 'MOLDURA', items: [['padrao', 'Padrão', 0], ['ouro', 'Dourada', 250], ['chama', 'Chama', 300], ['cristal', 'Cristal', 300]] },
 };
 ACH.push({ id: 'nightmare', name: 'Pesadelo Vencido', desc: 'Conclua uma fase no Pesadelo.', ok: () => !!Save.data.nmClear });
@@ -12,7 +11,7 @@ const cs = () => (Save.data.cosm = Save.data.cosm || { own: {}, eq: { trail: 'no
 const owned = (k, id, it) => { const c = cs(); if (it[2] === 0 && !it[3]) return true; if (it[3]) return !!Save.data.ach[it[3]] || !!c.own[k + ':' + id]; return !!c.own[k + ':' + id]; };
 const eqd = k => cs().eq[k] || (k === 'title' ? 't0' : k === 'frame' ? 'padrao' : 'none');
 const Visual29 = {};
-Visual29.titleName = () => { const it = COSM.title.items.find(x => x[0] === eqd('title')); return it ? it[1] : 'Novato'; };
+Visual29.titleName = () => 'Novato';
 
 // recompensas por conquista: estrelas ou cosmetico
 const ACH_REW = { part2: ['trail', 'chama'], part3: ['aura', 'halo'], part4: ['frame', 'ouro'], secret3: ['frame', 'cristal'], trueend: ['aura', 'chamas'], epi: ['trail', 'sombra'], nightmare: ['aura', 'orbitais'], combo30: ['trail', 'estrela'], wlv5: ['trail', 'neon'] };
@@ -30,20 +29,20 @@ Visual29.grant = function (id) {
 const RB = ['#ff4a6e', '#ffb340', '#ffe04a', '#7fff9a', '#6ac8ff', '#c88aff'];
 Visual29.trailFx = function (id, x, y, t, P, rate) {
   if (id === 'none' || Math.random() > rate) return;
-  const a = (c, o) => P.push(Object.assign({ x: x + rand(-12, 12), y: y + 24, vx: rand(-25, 25), vy: rand(70, 140), life: .6, max: .6, r: rand(2, 5), c, drag: 1 }, o));
-  if (id === 'chama') a(Math.random() < .5 ? '#ff8a1f' : '#ffd36a', { r: rand(3, 7), life: .5, max: .5 });
-  else if (id === 'estrela') a('#ffffff', { r: rand(2, 4), vx: rand(-50, 50), vy: rand(30, 90), life: 1, max: 1 });
-  else if (id === 'arco') a(RB[Math.floor(t * 9) % 6], { r: rand(3, 5), life: .7, max: .7 });
-  else if (id === 'neve') a(Math.random() < .5 ? '#e8f4ff' : '#9fd0ff', { r: rand(2, 4), vx: rand(-40, 40), vy: rand(20, 60), life: 1.2, max: 1.2, drag: .5 });
-  else if (id === 'neon') a(Math.floor(t * 6) % 2 ? '#33e0ff' : '#ff4ad0', { r: rand(2, 3.5), vx: rand(-10, 10), vy: rand(100, 190), life: .8, max: .8 });
-  else if (id === 'sombra') a('#2a1450', { k: 'smoke', r: rand(8, 15), life: .9, max: .9, vy: rand(30, 70), drag: .8 });
+  const a = (c, o) => P.push(Object.assign({ x: x + rand(-9, 9), y: y + 26, vx: rand(-25, 25), vy: rand(90, 170), life: .7, max: .7, r: rand(3, 6), c, drag: 1 }, o));
+  if (id === 'chama') { a('#ff5a14', { r: rand(7, 12), life: .55, max: .55, vx: rand(-18, 18) }); a('#ffb340', { r: rand(4, 8), life: .45, max: .45, vy: rand(120, 190) }); a('#fff1a8', { r: rand(2, 4), life: .3, max: .3, y: y + 20 }); if (Math.random() < .25) a('#ffd36a', { r: 2, vx: rand(-90, 90), vy: rand(-30, 60), life: 1, max: 1, x: x + rand(-18, 18) }); }
+  else if (id === 'estrela') { const c = ['#ffffff', '#ffe9a8', '#c8a0ff', '#9fe8ff'][Math.floor(Math.random() * 4)]; a(c, { r: rand(4, 8), vx: rand(-70, 70), vy: rand(30, 110), life: 1.3, max: 1.3, x: x + rand(-16, 16) }); a('#ffffff', { r: rand(1.5, 3), vx: rand(-40, 40), vy: rand(20, 70), life: 1.6, max: 1.6 }); }
+  else if (id === 'arco') { for (let k = 0; k < 2; k++) a(RB[(Math.floor(t * 8) + k) % 6], { r: rand(6, 9), life: .9, max: .9, vx: (k ? 1 : -1) * rand(8, 24), x: x + (k ? 7 : -7) }); }
+  else if (id === 'neve') { a('#ffffff', { r: rand(3, 6), vx: rand(-60, 60), vy: rand(20, 80), life: 1.5, max: 1.5, drag: .5, x: x + rand(-18, 18) }); a('#9fd0ff', { r: rand(6, 9), vx: rand(-20, 20), vy: rand(60, 120), life: .8, max: .8 }); }
+  else if (id === 'neon') { const c = Math.floor(t * 5) % 2 ? '#33e0ff' : '#ff4ad0'; a(c, { r: rand(5, 8), vx: rand(-8, 8), vy: rand(150, 230), life: .9, max: .9, x: x - 8 }); a(c, { r: rand(5, 8), vx: rand(-8, 8), vy: rand(150, 230), life: .9, max: .9, x: x + 8 }); a('#ffffff', { r: 2.5, vy: rand(160, 240), life: .5, max: .5 }); }
+  else if (id === 'sombra') { a('#5a2a9a', { k: 'smoke', r: rand(12, 20), life: 1.1, max: 1.1, vy: rand(30, 70), drag: .8 }); a('#a06aff', { r: rand(3, 5), vx: rand(-40, 40), vy: rand(40, 100), life: .8, max: .8 }); }
 };
 Visual29.auraFx = function (id, x, y, t) {
   if (id === 'none') return; ctx.save(); ctx.globalCompositeOperation = 'lighter';
-  if (id === 'pulso') { for (let k = 0; k < 2; k++) { const f = ((t * .7 + k * .5) % 1); ctx.strokeStyle = '#7fe0ff'; ctx.globalAlpha = (1 - f) * .6; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, y, 26 + f * 52, 0, TAU); ctx.stroke(); } }
-  else if (id === 'halo') { ctx.strokeStyle = '#ffd36a'; ctx.globalAlpha = .85; ctx.lineWidth = 4; ctx.beginPath(); ctx.ellipse(x, y - 54, 24, 7, 0, 0, TAU); ctx.stroke(); drawGlow(x, y - 54, 36, '#ffd36a', .45); }
-  else if (id === 'orbitais') { for (let i = 0; i < 3; i++) { const a = t * 2.3 + i * TAU / 3; drawGlow(x + Math.cos(a) * 54, y + Math.sin(a) * 54, 15, ['#ff7ac8', '#7fe0ff', '#ffd36a'][i], .9); ctx.globalAlpha = 1; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(x + Math.cos(a) * 54, y + Math.sin(a) * 54, 3.5, 0, TAU); ctx.fill(); } }
-  else if (id === 'chamas') { for (let i = 0; i < 12; i++) { const a = t * 1.3 + i * TAU / 12, r = 46 + Math.sin(t * 9 + i * 2) * 5; drawGlow(x + Math.cos(a) * r, y + Math.sin(a) * r, 16, i % 2 ? '#ff8a1f' : '#ffd36a', .75); } }
+  if (id === 'pulso') { drawGlow(x, y, 70 + Math.sin(t * 3) * 6, '#4aa8ff', .28); for (let k = 0; k < 3; k++) { const f = ((t * .6 + k / 3) % 1); ctx.strokeStyle = k % 2 ? '#c8a0ff' : '#7fe0ff'; ctx.globalAlpha = (1 - f) * .75; ctx.lineWidth = 5 * (1 - f) + 1; ctx.beginPath(); ctx.arc(x, y, 30 + f * 70, 0, TAU); ctx.stroke(); } }
+  else if (id === 'halo') { const hy = y - 60 + Math.sin(t * 2.4) * 3; drawGlow(x, hy, 52, '#ffd36a', .5); ctx.globalAlpha = .95; ctx.strokeStyle = '#fff3b0'; ctx.lineWidth = 6; ctx.beginPath(); ctx.ellipse(x, hy, 30, 9, 0, 0, TAU); ctx.stroke(); ctx.strokeStyle = '#ffb320'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.ellipse(x, hy, 36, 12, 0, 0, TAU); ctx.stroke(); for (let i = 0; i < 8; i++) { const a = t * .9 + i * TAU / 8; ctx.globalAlpha = .5 + .5 * Math.sin(t * 5 + i); ctx.fillStyle = '#fff6c0'; ctx.beginPath(); ctx.arc(x + Math.cos(a) * 36, hy + Math.sin(a) * 12, 2.4, 0, TAU); ctx.fill(); } ctx.globalAlpha = .2; for (let i = 0; i < 6; i++) { const a = -Math.PI / 2 + (i - 2.5) * .22; ctx.strokeStyle = '#ffd36a'; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(x, hy); ctx.lineTo(x + Math.cos(a) * 90, hy + 8 + Math.sin(a) * 90 + 90); ctx.stroke(); } }
+  else if (id === 'orbitais') { ctx.globalAlpha = .18; ctx.strokeStyle = '#c8a0ff'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, y, 58, 0, TAU); ctx.stroke(); const cols = ['#ff7ac8', '#7fe0ff', '#ffd36a', '#9fff9a']; for (let i = 0; i < 4; i++) { const a0 = t * 2.1 + i * TAU / 4; for (let k = 0; k < 9; k++) { const a = a0 - k * .09; ctx.globalAlpha = (1 - k / 9) * .7; drawGlow(x + Math.cos(a) * 58, y + Math.sin(a) * 58, 11 - k, cols[i], .8); } ctx.globalAlpha = 1; drawGlow(x + Math.cos(a0) * 58, y + Math.sin(a0) * 58, 20, cols[i], .9); ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(x + Math.cos(a0) * 58, y + Math.sin(a0) * 58, 4.5, 0, TAU); ctx.fill(); } }
+  else if (id === 'chamas') { drawGlow(x, y, 80, '#ff6a1a', .22); for (let i = 0; i < 16; i++) { const a = t * 1.1 + i * TAU / 16, fl = 16 + Math.abs(Math.sin(t * 8 + i * 2.3)) * 16, r0 = 46; ctx.save(); ctx.translate(x + Math.cos(a) * r0, y + Math.sin(a) * r0); ctx.rotate(a + Math.PI / 2); ctx.globalAlpha = .8; ctx.fillStyle = i % 2 ? '#ff7a1a' : '#ffb340'; ctx.beginPath(); ctx.moveTo(-6, 0); ctx.quadraticCurveTo(-3, -fl * .6, 0, -fl); ctx.quadraticCurveTo(3, -fl * .6, 6, 0); ctx.closePath(); ctx.fill(); ctx.fillStyle = '#fff1a8'; ctx.globalAlpha = .7; ctx.beginPath(); ctx.moveTo(-2.5, 0); ctx.quadraticCurveTo(0, -fl * .5, 0, -fl * .55); ctx.quadraticCurveTo(0, -fl * .5, 2.5, 0); ctx.fill(); ctx.restore(); } }
   ctx.restore(); ctx.globalAlpha = 1;
 };
 {
@@ -64,15 +63,13 @@ Visual29.auraFx = function (id, x, y, t) {
 // ---------- tela de cosmeticos ----------
 Screens.cosmetics = function () {
   const c = cs(), tab = G.ctab || 'trail', t = World.t; txt('COSMÉTICOS', W / 2, 18, 42, '#fff', 'center'); txt(Screens.stars(), W - 40, 30, 28, '#ffcf6b', 'right');
-  txt(Visual29.titleName(), W / 2, 70, 17, '#ffb340', 'center', 900);
-  Object.keys(COSM).forEach((k, i) => { if (UI.button('ctab' + k, 90 + i * 260, 100, 240, 40, COSM[k].label, { size: 17, color: tab === k ? '#9a63ff' : undefined })) G.ctab = k; });
+  Object.keys(COSM).forEach((k, i) => { if (UI.button('ctab' + k, 90 + i * 350, 100, 330, 40, COSM[k].label, { size: 17, color: tab === k ? '#9a63ff' : undefined })) G.ctab = k; });
   // previa
   const px = 1010, py = 330; UI.panel(780, 160, 440, 370, { r: 24 }); txt('PRÉVIA', px, 172, 16, '#8a7fb0', 'center', 900);
   G.cprev = G.cprev || []; Visual29.trailFx(tab === 'trail' && G.cpv ? G.cpv : eqd('trail'), px, py, t, G.cprev, .7); for (const q of G.cprev) { q.life -= 1 / 60; q.x += q.vx / 60; q.y += q.vy / 60; } G.cprev = G.cprev.filter(q => q.life > 0).slice(-80);
   ctx.save(); ctx.globalCompositeOperation = 'lighter'; for (const q of G.cprev) drawGlow(q.x, q.y, q.r * 3, q.c.length === 7 ? q.c : '#ffffff', clamp(q.life / q.max, 0, 1) * .8); ctx.restore();
   Visual29.auraFx(tab === 'aura' && G.cpv ? G.cpv : eqd('aura'), px, py, t); Art.ship(px, py, { pal: skinOf(Save.data.loadout.skin).pal, vx: 0, t, lookx: 0, looky: -.4, blinkT: 0, inv: 0, scale: 1.2, boost: .8 });
   if (tab === 'frame') Portraits.draw('O', px, py + 100, 120, { mood: 'happy', t });
-  if (tab === 'title') txt(Visual29.titleName(), px, py + 130, 22, '#ffe9a8', 'center', 900);
   const items = COSM[tab].items; G.cpv = null;
   items.forEach(([id, name, cost, ach], i) => {
     const x = 70 + (i % 2) * 350, y = 160 + Math.floor(i / 2) * 84, w = 330, h = 72, has = owned(tab, id, [id, name, cost, ach]), eq = eqd(tab) === id, bid = 'cs' + tab + id, can = Save.data.coins >= cost;
@@ -82,6 +79,6 @@ Screens.cosmetics = function () {
     txt(name, x + 18, y + 12, 21, has ? '#fff' : '#a99fd6', 'left', 900); const a = ach ? ACH.find(q => q.id === ach) : null;
     txt(eq ? 'EQUIPADO ✓' : has ? 'clique para equipar' : ach ? '🔒 conquista: ' + (a ? a.name : ach) : '★ ' + cost, x + 18, y + 42, 15, eq ? '#7fe0a0' : has ? '#8a7fb0' : ach ? '#ffcf6b' : (can ? '#ffcf6b' : '#7a70a0'), 'left', 800);
   });
-  if (UI.button('back', W / 2 - 160, 620, 320, 50, 'VOLTAR', { size: 22 }) || Input.pressed('escape')) { Snd.play('uiBack'); G.state = 'modes'; }
+  if (UI.button('back', W / 2 - 160, 620, 320, 50, 'VOLTAR', { size: 22 }) || Input.pressed('escape')) { Snd.play('uiBack'); G.state = 'hangar'; }
   Screens.thinFrame();
 };

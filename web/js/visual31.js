@@ -26,7 +26,7 @@ Screens.fusion = function () {
   txt(dup ? 'Escolha duas armas diferentes.' : have ? 'Essa fusão já existe.' : fz.length >= 6 ? 'Limite de 6 fusões.' : a && b ? WEAPONS[a].name + ' + ' + WEAPONS[b].name : 'Você precisa de pelo menos 2 armas.', W / 2, 360, 20, '#e2d4ff', 'center', 800);
   if (UI.button('fzmake', W / 2 - 170, 394, 340, 56, 'FUSIONAR  ★' + cost, { size: 22, color: can ? '#9a63ff' : undefined, disabled: !can })) { Save.data.coins -= cost; fz.push([a, b]); const id = Visual31.register(a, b); Save.save(); Snd.play('levelUp'); shockwave(W / 2, 200, 400, '#ffd36a'); popup(W / 2, 300, 'Nova arma: ' + WEAPONS[id].name, '#ffe9a8', 26); }
   txt('SUAS FUSÕES (equipe no Hangar)', 100, 480, 17, '#ffb340', 'left', 900); fz.forEach(([x, y], i) => { const id = 'fz_' + x + '_' + y; if (WEAPONS[id]) txt('• ' + WEAPONS[id].name, 100 + (i % 3) * 380, 512 + Math.floor(i / 3) * 30, 18, '#cdb8ff', 'left', 700); });
-  if (UI.button('back', W / 2 - 160, 620, 320, 50, 'VOLTAR', { size: 22 }) || Input.pressed('escape')) { Snd.play('uiBack'); G.state = 'modes'; }
+  if (UI.button('back', W / 2 - 160, 620, 320, 50, 'VOLTAR', { size: 22 }) || Input.pressed('escape')) { Snd.play('uiBack'); G.state = 'hangar'; }
   Screens.thinFrame();
 };
 
@@ -155,5 +155,15 @@ Visual31.seed = () => (Save.data.seed || '').toUpperCase();
     const sd = Visual31.seed(); if (UI.button('psseed', 680, 440, 400, 42, sd ? 'SEMENTE: ' + sd : 'SEMENTE: ALEATÓRIA', { size: 16, color: sd ? '#9a63ff' : undefined })) { const v = (prompt('Digite uma semente (letras e números, até 8) para repetir as mesmas ondas de inimigos. Deixe vazio para aleatória:', sd) || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8); Save.data.seed = v; Save.save(); }
     if (UI.button('psgen', 1090, 440, 18 * 0 + 0, 0, '', {})) { }
     if (Save.data.coop) { const w = sv31('p2pilot', {}); const l = ['orbi', ...guardsOn().map(g => 'g_' + g)], c = l.includes(w.id) ? w.id : 'orbi', nm = c === 'orbi' ? 'ORBI' : GUARDS[c[2]].name; if (UI.button('psp2', 220, 440, 420, 42, 'PILOTO DO P2: ' + nm, { size: 16 })) { w.id = l[(l.indexOf(c) + 1) % l.length]; Save.save(); Snd.play('uiSelect'); } }
+  };
+}
+
+// ---------- atalhos no Hangar: cosmeticos, talentos, pilotos (guardioes) e fusao ----------
+{
+  const hg = Screens.hangar;
+  Screens.hangar = function () {
+    hg.call(this); const y = 624, w = 195, h = 44, go = (id, x, lab, st, col) => { if (UI.button(id, x, y, w, h, lab, { size: 16 })) { Snd.play('uiSelect'); G.state = st; } };
+    go('hgcos', 60, 'COSMÉTICOS', 'cosmetics', '#ff7ac8'); go('hgtal', 265, 'TALENTOS', 'talents', '#ffd36a');
+    go('hgfus', 1025, 'FUSÃO DE ARMAS', 'fusion', '#ffd36a'); if (Save.data.cleared[9]) go('hgpil', 820, 'EVOLUIR GUARDIÕES', 'pilots', '#ffb340');
   };
 }

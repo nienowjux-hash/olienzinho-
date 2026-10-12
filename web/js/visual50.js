@@ -17,7 +17,7 @@ EchoBoss.prototype.drawShip = function () {
   // fantasmas cromaticos (vermelho e ciano)
   for (const [c, ox] of [['#ff2a6a', -1], ['#2ad4ff', 1]]) { const off = Math.sin(t * 17 + ox) * 4 + (Math.random() < .08 ? ox * 12 : 0); ctx.save(); ctx.globalAlpha = .22; ctx.translate(ox * 6 + off, 0); ctx.rotate(Math.PI); Art.ship(0, 0, { pal: { ...pal, g0: c, g1: c, g2: '#200' }, vx: 0, t, lookx: 0, looky: 1, blinkT: 0, scale: 1.5, noWings: true }); ctx.restore(); }
   // corpo fatiado: faixas horizontais deslocadas (glitch de ordenacao de pixels)
-  const N = 10, top = -120, hgt = 240, sh = hgt / N, tk = Math.floor(t * 9);
+  const N = 5, top = -120, hgt = 240, sh = hgt / N, tk = Math.floor(t * 9);
   for (let k = 0; k < N; k++) {
     const jump = hh50(k * 7 + tk) > .86 ? (hh50(k + tk * 3) - .5) * 60 : Math.sin(t * 2 + k * .7) * 2.2;
     ctx.save(); ctx.beginPath(); ctx.rect(-150, top + k * sh, 300, sh + .5); ctx.clip(); ctx.translate(jump, 0); ctx.rotate(Math.PI); Art.ship(0, 0, { pal, vx: Math.sin(t * 1.2) * 60, t, lookx: 0, looky: 1, blinkT: (t % 3.5) < .15 ? .15 : 0, scale: 1.5, boost: .8, noWings: true }); ctx.restore();

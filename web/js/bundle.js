@@ -13019,7 +13019,12 @@ Visual47.big = [
 const q48 = (x0, y0, x1, y1, st) => { const g = ctx.createLinearGradient(x0, y0, x1, y1); for (const [o, c] of st) g.addColorStop(o, c); return g; };
 const r48 = (x, y, r0, r1, st) => { const g = ctx.createRadialGradient(x, y, r0, x, y, r1); for (const [o, c] of st) g.addColorStop(o, c); return g; };
 const ink48 = (w = 4) => { ctx.strokeStyle = 'rgba(14,4,26,.82)'; ctx.lineWidth = w; ctx.lineJoin = 'round'; ctx.stroke(); };
-const hexGrid48 = (x0, y0, x1, y1, s, col) => { ctx.save(); ctx.strokeStyle = col; ctx.lineWidth = 1.4; const h = s * .866; for (let r = 0, y = y0; y < y1 + h; y += h, r++) for (let x = x0 + (r % 2) * s * .75; x < x1 + s; x += s * 1.5) { ctx.beginPath(); for (let k = 0; k < 6; k++) { const a = k / 6 * TAU; ctx.lineTo(x + Math.cos(a) * s * .5, y + Math.sin(a) * s * .5); } ctx.closePath(); ctx.stroke(); } ctx.restore(); };
+const hexCache48 = {};
+const hexGrid48 = (x0, y0, x1, y1, s, col) => { // a grade nao muda: desenhada uma vez num sprite
+  const q = Math.max(1, K), key = [x0, y0, x1, y1, s, col, Math.round(q * 10)].join('|'); let c = hexCache48[key];
+  if (!c) { const w = x1 - x0 + 2 * s, hh = y1 - y0 + 2 * s; c = document.createElement('canvas'); c.width = Math.ceil(w * q); c.height = Math.ceil(hh * q); const g = c.getContext('2d'); g.scale(q, q); g.translate(s - x0, s - y0); g.strokeStyle = col; g.lineWidth = 1.4; const h = s * .866; for (let r = 0, y = y0; y < y1 + h; y += h, r++) for (let x = x0 + (r % 2) * s * .75; x < x1 + s; x += s * 1.5) { g.beginPath(); for (let k = 0; k < 6; k++) { const a = k / 6 * TAU; g.lineTo(x + Math.cos(a) * s * .5, y + Math.sin(a) * s * .5); } g.closePath(); g.stroke(); } hexCache48[key] = c; }
+  ctx.drawImage(c, x0 - s, y0 - s, x1 - x0 + 2 * s, y1 - y0 + 2 * s);
+};
 
 // ================= NAVE-MAE ZANGAO: rainha-abelha com casco de favo =================
 MotherShip.prototype.draw = function () {
@@ -13314,7 +13319,7 @@ EchoBoss.prototype.drawShip = function () {
   // fantasmas cromaticos (vermelho e ciano)
   for (const [c, ox] of [['#ff2a6a', -1], ['#2ad4ff', 1]]) { const off = Math.sin(t * 17 + ox) * 4 + (Math.random() < .08 ? ox * 12 : 0); ctx.save(); ctx.globalAlpha = .22; ctx.translate(ox * 6 + off, 0); ctx.rotate(Math.PI); Art.ship(0, 0, { pal: { ...pal, g0: c, g1: c, g2: '#200' }, vx: 0, t, lookx: 0, looky: 1, blinkT: 0, scale: 1.5, noWings: true }); ctx.restore(); }
   // corpo fatiado: faixas horizontais deslocadas (glitch de ordenacao de pixels)
-  const N = 10, top = -120, hgt = 240, sh = hgt / N, tk = Math.floor(t * 9);
+  const N = 5, top = -120, hgt = 240, sh = hgt / N, tk = Math.floor(t * 9);
   for (let k = 0; k < N; k++) {
     const jump = hh50(k * 7 + tk) > .86 ? (hh50(k + tk * 3) - .5) * 60 : Math.sin(t * 2 + k * .7) * 2.2;
     ctx.save(); ctx.beginPath(); ctx.rect(-150, top + k * sh, 300, sh + .5); ctx.clip(); ctx.translate(jump, 0); ctx.rotate(Math.PI); Art.ship(0, 0, { pal, vx: Math.sin(t * 1.2) * 60, t, lookx: 0, looky: 1, blinkT: (t % 3.5) < .15 ? .15 : 0, scale: 1.5, boost: .8, noWings: true }); ctx.restore();
@@ -14964,7 +14969,7 @@ Visual65.apply = function () {
   Visual55.lvl = () => { const b = lv(), L = Visual65.level; return L >= 2 ? 0 : L >= 1 ? Math.min(b, 1) : b; };
   hookRender(rn => function () {
     const now = performance.now(), d = now - Visual65.last; Visual65.last = now; rn();
-    if (G.state !== 'play' || d > 120 || d <= 0) { Visual65.win.length = 0; return; }
+    if (G.state !== 'play' || d > 120 || d <= 0 || (Save.data.settings && Save.data.settings.gov === false)) { Visual65.win.length = 0; return; }
     if (Visual65.cool > 0) { Visual65.cool--; return; }
     const W_ = Visual65.win; W_.push(d); if (W_.length < 70) return;
     const avg = W_.reduce((a, b) => a + b, 0) / W_.length; W_.length = 0;
@@ -14972,6 +14977,14 @@ Visual65.apply = function () {
     if (avg > lim && Visual65.level < Visual65.MAX) { if (++Visual65.bad >= 2) { Visual65.bad = 0; Visual65.level++; Visual65.cool = 150; Visual65.log.push([Math.round(avg), Visual65.level]); Visual65.apply(); } } else Visual65.bad = 0;
   });
   const ss = Game.startStage; Game.startStage = function (i, o) { if (Visual65.level > 0) { Visual65.level--; Visual65.apply(); } Visual65.win.length = 0; Visual65.bad = 0; Visual65.cool = 480; return ss.call(this, i, o); };
+}
+
+// botao nas Opcoes (aba Acessibilidade): liga/desliga o governador
+{
+  const st = Screens.settings;
+  Screens.settings = function () {
+    const r = st.call(this); if (G.stab === 'acc') { const s = Save.data.settings, on = s.gov !== false; if (UI.button('gov', 210, 590, 420, 40, 'QUALIDADE AUTOMÁTICA: ' + (on ? 'SIM' : 'NÃO'), { size: 15, color: on ? '#9a63ff' : undefined })) { s.gov = !on; if (!s.gov) { Visual65.level = 0; Visual65.apply(); } Save.save(); } txt('Baixa os efeitos e a resolução sozinha se o jogo ficar pesado.', 650, 600, 14, '#8a7fb0', 'left', 700); } return r;
+  };
 }
 
 ;

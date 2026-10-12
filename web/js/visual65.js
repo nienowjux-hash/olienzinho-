@@ -16,7 +16,7 @@ Visual65.apply = function () {
   Visual55.lvl = () => { const b = lv(), L = Visual65.level; return L >= 2 ? 0 : L >= 1 ? Math.min(b, 1) : b; };
   hookRender(rn => function () {
     const now = performance.now(), d = now - Visual65.last; Visual65.last = now; rn();
-    if (G.state !== 'play' || d > 120 || d <= 0) { Visual65.win.length = 0; return; }
+    if (G.state !== 'play' || d > 120 || d <= 0 || (Save.data.settings && Save.data.settings.gov === false)) { Visual65.win.length = 0; return; }
     if (Visual65.cool > 0) { Visual65.cool--; return; }
     const W_ = Visual65.win; W_.push(d); if (W_.length < 70) return;
     const avg = W_.reduce((a, b) => a + b, 0) / W_.length; W_.length = 0;
@@ -24,4 +24,12 @@ Visual65.apply = function () {
     if (avg > lim && Visual65.level < Visual65.MAX) { if (++Visual65.bad >= 2) { Visual65.bad = 0; Visual65.level++; Visual65.cool = 150; Visual65.log.push([Math.round(avg), Visual65.level]); Visual65.apply(); } } else Visual65.bad = 0;
   });
   const ss = Game.startStage; Game.startStage = function (i, o) { if (Visual65.level > 0) { Visual65.level--; Visual65.apply(); } Visual65.win.length = 0; Visual65.bad = 0; Visual65.cool = 480; return ss.call(this, i, o); };
+}
+
+// botao nas Opcoes (aba Acessibilidade): liga/desliga o governador
+{
+  const st = Screens.settings;
+  Screens.settings = function () {
+    const r = st.call(this); if (G.stab === 'acc') { const s = Save.data.settings, on = s.gov !== false; if (UI.button('gov', 210, 590, 420, 40, 'QUALIDADE AUTOMÁTICA: ' + (on ? 'SIM' : 'NÃO'), { size: 15, color: on ? '#9a63ff' : undefined })) { s.gov = !on; if (!s.gov) { Visual65.level = 0; Visual65.apply(); } Save.save(); } txt('Baixa os efeitos e a resolução sozinha se o jogo ficar pesado.', 650, 600, 14, '#8a7fb0', 'left', 700); } return r;
+  };
 }

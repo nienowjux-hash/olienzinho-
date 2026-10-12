@@ -3,7 +3,12 @@
 const q48 = (x0, y0, x1, y1, st) => { const g = ctx.createLinearGradient(x0, y0, x1, y1); for (const [o, c] of st) g.addColorStop(o, c); return g; };
 const r48 = (x, y, r0, r1, st) => { const g = ctx.createRadialGradient(x, y, r0, x, y, r1); for (const [o, c] of st) g.addColorStop(o, c); return g; };
 const ink48 = (w = 4) => { ctx.strokeStyle = 'rgba(14,4,26,.82)'; ctx.lineWidth = w; ctx.lineJoin = 'round'; ctx.stroke(); };
-const hexGrid48 = (x0, y0, x1, y1, s, col) => { ctx.save(); ctx.strokeStyle = col; ctx.lineWidth = 1.4; const h = s * .866; for (let r = 0, y = y0; y < y1 + h; y += h, r++) for (let x = x0 + (r % 2) * s * .75; x < x1 + s; x += s * 1.5) { ctx.beginPath(); for (let k = 0; k < 6; k++) { const a = k / 6 * TAU; ctx.lineTo(x + Math.cos(a) * s * .5, y + Math.sin(a) * s * .5); } ctx.closePath(); ctx.stroke(); } ctx.restore(); };
+const hexCache48 = {};
+const hexGrid48 = (x0, y0, x1, y1, s, col) => { // a grade nao muda: desenhada uma vez num sprite
+  const q = Math.max(1, K), key = [x0, y0, x1, y1, s, col, Math.round(q * 10)].join('|'); let c = hexCache48[key];
+  if (!c) { const w = x1 - x0 + 2 * s, hh = y1 - y0 + 2 * s; c = document.createElement('canvas'); c.width = Math.ceil(w * q); c.height = Math.ceil(hh * q); const g = c.getContext('2d'); g.scale(q, q); g.translate(s - x0, s - y0); g.strokeStyle = col; g.lineWidth = 1.4; const h = s * .866; for (let r = 0, y = y0; y < y1 + h; y += h, r++) for (let x = x0 + (r % 2) * s * .75; x < x1 + s; x += s * 1.5) { g.beginPath(); for (let k = 0; k < 6; k++) { const a = k / 6 * TAU; g.lineTo(x + Math.cos(a) * s * .5, y + Math.sin(a) * s * .5); } g.closePath(); g.stroke(); } hexCache48[key] = c; }
+  ctx.drawImage(c, x0 - s, y0 - s, x1 - x0 + 2 * s, y1 - y0 + 2 * s);
+};
 
 // ================= NAVE-MAE ZANGAO: rainha-abelha com casco de favo =================
 MotherShip.prototype.draw = function () {

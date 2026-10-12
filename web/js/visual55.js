@@ -21,12 +21,15 @@ Visual55.K = () => [.3, .55, 1][Visual55.lvl()];
     up.call(this, dt); const n = G.eb ? G.eb.length : 0, busy = clamp((n - 22) / 40, 0, 1); Visual55.busy += (busy - Visual55.busy) * Math.min(1, 4 * dt);
     Visual55.glowK = [.62, .86, 1][Visual55.lvl()] * (1 - Visual55.busy * .3);
   };
-  const ov = Visual.overlay;
-  Visual.overlay = function () {
-    ov.call(this); if (G.state !== 'play' || !G.eb || !G.eb.length || Visual55.lvl() === 2) return;
-    // tiros inimigos redesenhados por cima de qualquer efeito, com um aro escuro para contraste
-    ctx.save(); for (const q of G.eb) { if (q.dead) continue; ctx.strokeStyle = 'rgba(10,0,24,.55)'; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.arc(q.x, q.y, (q.r || 6) * 1.7, 0, TAU); ctx.stroke(); } ctx.restore(); for (const q of G.eb) if (!q.dead) Art.ebullet(q);
+  // os tiros inimigos passam a ser desenhados POR ULTIMO (em vez de duas vezes): mesma legibilidade, sem custo extra
+  const eb0 = Art.ebullet; Visual55.skipEb = false; Art.ebullet = function (b) { if (Visual55.skipEb) return; return eb0.call(this, b); };
+  const dp = Game.drawPlay;
+  Game.drawPlay = function () {
+    Visual55.ovDone = false; Visual55.skipEb = Visual55.lvl() < 2 && G.state === 'play' && !G.furyCut;
+    try { dp.call(this); } finally { if (Visual55.skipEb && !Visual55.ovDone) { Visual55.skipEb = false; for (const q of G.eb) if (!q.dead) eb0.call(Art, q); } Visual55.skipEb = false; }
   };
+  const ov = Visual.overlay;
+  Visual.overlay = function () { ov.call(this); Visual55.ovDone = true; if (Visual55.skipEb) { Visual55.skipEb = false; for (const q of G.eb) if (!q.dead) eb0.call(Art, q); } };
 }
 
 // ---------- respiros: de tempos em tempos a pressao cai por alguns segundos e depois volta mais forte ----------

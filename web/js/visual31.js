@@ -53,7 +53,7 @@ Visual31.compUpdate = function (dt) {
 };
 {
   const vd = Visual13.draw;
-  Visual13.draw = function () { vd.call(this); const k = G.comp; if (!k) return; const c = COMP[k.id][1]; ctx.save(); ctx.translate(k.x, k.y); ctx.globalCompositeOperation = 'lighter'; drawGlow(0, 0, 38, c, .45); ctx.globalCompositeOperation = 'source-over'; ctx.scale(.32, .32); Art.guardian(0, 0, { guard: 'g_' + k.id, vx: 0, t: World.t, scale: 1, lookx: 0, looky: 0, blinkT: 0 }); if (k.id === 'P' && !k.rock) { ctx.globalAlpha = .4; ctx.fillStyle = '#000'; ctx.fillRect(-60, -60, 120, 120); } ctx.restore(); };
+  Visual13.draw = function () { vd.call(this); const k = G.comp; if (!k) return; const c = COMP[k.id][1]; ctx.save(); ctx.translate(k.x, k.y); ctx.globalCompositeOperation = 'lighter'; drawGlow(0, 0, 38, c, .45); ctx.globalCompositeOperation = 'source-over'; ctx.scale(.32, .32); Art.guardian(0, 0, { guard: 'g_' + k.id, vx: 0, t: World.t, scale: 1, lookx: 0, looky: 0, blinkT: 0 }); if (k.id === 'P' && !k.rock) { ctx.globalAlpha = .35; ctx.fillStyle = '#10062a'; ctx.beginPath(); ctx.arc(0, 0, 44, 0, TAU); ctx.fill(); ctx.globalAlpha = .9; ctx.strokeStyle = '#c8a0b8'; ctx.lineWidth = 8; ctx.beginPath(); ctx.arc(0, 0, 52, -Math.PI / 2, -Math.PI / 2 + TAU * clamp(1 - k.rc / 6, 0, 1)); ctx.stroke(); } ctx.restore(); };
 }
 
 // ---------- cooperativo: piloto do P2 e reviver por proximidade ----------

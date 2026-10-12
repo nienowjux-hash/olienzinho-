@@ -181,6 +181,7 @@ Screens.modes = function () {
     { id: 'mut', name: 'MUTADORES', c: '#ff8a5f', l: 'Regras extras para jogar mais difícil e ganhar mais estrelas.', foot: Object.keys(Save.data.mut || {}).filter(k => Save.data.mut[k]).length + ' ativos', go: () => { G.state = 'mutators'; } },
     { id: 'sta', name: 'ESTATÍSTICAS', c: '#9fe8ff', l: 'Tempo jogado, derrotas, arma favorita e mais.', foot: 'Seu histórico', go: () => { G.state = 'stats'; } },
     { id: 'exp', name: 'EXPEDIÇÃO', c: '#ff8a5f', l: 'Uma rota roguelite: batalhas, lojas, eventos e chefes. Se morrer, acabou.', foot: 'Melhor: ' + ((Save.data.exp||{}).best||0) + ' / 8 etapas', go: () => Visual32.start() },
+    { id: 'twr', name: 'TORRE INFINITA', c: '#ff4a6e', l: 'Chefes em sequência sem fim. Cada andar deixa o chefe mais forte.', foot: 'Melhor andar: ' + ((Save.data.tower || {}).best || 0), go: () => Visual35.start() },
     { id: 'tr', name: 'TREINO', c: '#7fe0a0', l: 'Arena livre: armas, skins e inimigos.', foot: 'sem pressão :)', go: () => Game.startTraining() },
   ].filter(Boolean);
   const MP = Math.ceil(cards0.length / 12); G.mpage = Math.min(G.mpage || 0, MP - 1); const cards = cards0.slice(G.mpage * 12, G.mpage * 12 + 12);

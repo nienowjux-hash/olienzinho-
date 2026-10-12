@@ -19,7 +19,7 @@ Visual6.pollPads = function () {
     const role = coop ? (i === 0 ? 'p2' : 'p1') : (i === 0 ? 'p1' : 'none');   // no coop: controle 1 joga; com coop: controle 1 = P2, controle 2 = P1
     if (role === 'p1') {
       if (mx < 0) Input.gpk.a = true; if (mx > 0) Input.gpk.d = true; if (my < 0) Input.gpk.w = true; if (my > 0) Input.gpk.s = true;
-      if (inPlay) { if (edge('a')) Input.hit[' '] = true; if (edge('x') || edge('rt')) Input.hit.q = true; if (edge('lb') || edge('rb') || edge('y')) Input.hit.shift = true; }
+      if (inPlay) { const pm = Save.data.pad || {}, ev = (act, def) => { const k = pm[act]; return k ? edge(k) : def.some(edge); }; if (ev('pulse', ['a'])) Input.hit[' '] = true; if (ev('special', ['x', 'rt'])) Input.hit.q = true; if (ev('dash', ['lb', 'rb', 'y'])) Input.hit.shift = true; if (ev('parry', ['b'])) Input.hit.f = true; if (ev('sec', ['lt'])) Input.hit.r = true; }
     } else if (role === 'p2') { Visual6.pad2 = { x: mx, y: my, sp: edge('x') || edge('rt') || edge('a'), dash: edge('lb') || edge('rb') || edge('y') }; }
     if (role !== 'none') { // menus
       const now = performance.now();

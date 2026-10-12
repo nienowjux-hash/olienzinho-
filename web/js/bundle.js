@@ -15974,7 +15974,7 @@ const ok73 = c => typeof c === 'string' && /^#[0-9a-f]{6}$/i.test(c);
   Visual73.remix = function (i, fn) { Visual73.warn = { t: World.t, i, n: NM[i] || 'REMIX' }; if (G.timers) G.timers.push({ t: .9, fn }); else fn(); };
   const hd = Visual15.hudDraw;
   Visual15.hudDraw = function () {
-    hd.call(this); const w = Visual73.warn, p = G.player; if (!w || G.state !== 'play' || !p) return; const u = (World.t - w.t) / .9; if (u > 1.05) { Visual73.warn = null; return; } const k = clamp(u, 0, 1), t = World.t;
+    hd.call(this); const w = Visual73.warn, p = G.player; if (w && World.t - w.t > .9) Visual73.warn = null; if (true) return; if (!w || G.state !== 'play' || !p) return; const u = (World.t - w.t) / .9; if (u > 1.05) { Visual73.warn = null; return; } const k = clamp(u, 0, 1), t = World.t;
     ctx.save();
     const g = ctx.createRadialGradient(W / 2, H / 2, H * .4, W / 2, H / 2, H * .95); g.addColorStop(0, 'rgba(90,232,255,0)'); g.addColorStop(1, 'rgba(90,232,255,' + (.22 * Math.sin(k * Math.PI)) + ')'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
     ctx.strokeStyle = 'rgba(90,232,255,.85)'; ctx.fillStyle = 'rgba(90,232,255,.9)'; ctx.lineWidth = 3; ctx.setLineDash([12, 10]); ctx.lineDashOffset = -t * 80;
@@ -16086,7 +16086,7 @@ const h74 = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s 
 {
   const hd = Visual15.hudDraw;
   Visual15.hudDraw = function () {
-    hd.call(this); const b = G.boss; if (!b || b.state !== 'fight' || G.state !== 'play' || QL() < 1 || !b.tele) return; let m = 0, mk = ''; for (const k in b.tele) if (b.tele[k] > m) { m = b.tele[k]; mk = k; } if (m < .35) return;
+    hd.call(this); const b = G.boss; return; if (!b || b.state !== 'fight' || G.state !== 'play' || QL() < 1 || !b.tele) return; let m = 0, mk = ''; for (const k in b.tele) if (b.tele[k] > m) { m = b.tele[k]; mk = k; } if (m < .35) return;
     const R = (b.rad || 90) * (2.2 - m * 1.1); ctx.save(); ctx.strokeStyle = 'rgba(255,214,120,' + (.3 + m * .6) + ')'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(b.x, b.y, R, 0, TAU); ctx.stroke();
     ctx.restore();
   };

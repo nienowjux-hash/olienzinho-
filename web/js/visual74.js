@@ -21,7 +21,7 @@ const h74 = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s 
 {
   const hd = Visual15.hudDraw;
   Visual15.hudDraw = function () {
-    hd.call(this); const b = G.boss; if (!b || b.state !== 'fight' || G.state !== 'play' || QL() < 1 || !b.tele) return; let m = 0, mk = ''; for (const k in b.tele) if (b.tele[k] > m) { m = b.tele[k]; mk = k; } if (m < .35) return;
+    hd.call(this); const b = G.boss; return; if (!b || b.state !== 'fight' || G.state !== 'play' || QL() < 1 || !b.tele) return; let m = 0, mk = ''; for (const k in b.tele) if (b.tele[k] > m) { m = b.tele[k]; mk = k; } if (m < .35) return;
     const R = (b.rad || 90) * (2.2 - m * 1.1); ctx.save(); ctx.strokeStyle = 'rgba(255,214,120,' + (.3 + m * .6) + ')'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(b.x, b.y, R, 0, TAU); ctx.stroke();
     ctx.restore();
   };

@@ -17,7 +17,7 @@ const ACH = [
   { id: 'chat5', name: 'Melhor Amigo', desc: 'Converse 5 vezes com o Orbi.', ok: () => (Save.data.stats.chats || 0) >= 5 },
   { id: 'mini5', name: 'Caçador de Capitães', desc: 'Derrote 5 minichefes.', ok: () => (Save.data.stats.minis || 0) >= 5 },
   { id: 'enc4', name: 'Bom Vizinho', desc: 'Ajude 4 viajantes perdidos.', ok: () => Extras.encCount() >= 4 },
-  { id: 'part2', name: 'O Vazio Vencido', desc: 'Derrote o Vazio e zere o jogo.', ok: () => !!Save.data.won },
+  { id: 'part2', name: 'O Vazio Vencido', desc: 'Derrote o Vazio na fase 6.', ok: () => !!Save.data.won },
   { id: 'daily', name: 'Desafio do Dia', desc: 'Termine um Desafio Diário.', ok: () => !!(Save.data.daily && Save.data.daily.played) },
 ];
 

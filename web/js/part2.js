@@ -297,7 +297,7 @@ STORY.finale = [
   { music: 'hope' },
   { who: 'O', mood: 'happy', text: 'Obrigado, Orbi. Eu vou acender cada uma delas por você.' },
   { who: 'N', fx: 'dawn', text: 'E assim, o menor foguete da galáxia voltou para casa, com um olho só... e o céu inteiro de olhos abertos.' },
-  { title: 'FIM', sub: 'OLIENZINHO — GUARDIÃO DAS ESTRELAS' },
+  { title: 'FIM DA PARTE 2', sub: 'O CORAÇÃO DO VAZIO' },
   { who: 'B', mood: 'happy', text: '(Ainda estou aqui, Olienzinho.)' },
 ];
 

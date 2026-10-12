@@ -841,7 +841,7 @@ const Screens = {
       ctx.restore();
     }
     if (r.best === r.score) txt('NOVO RECORDE!', 640, 540, 18, '#ffb340', 'center');
-    const last = G.stageIdx === 5 || G.stageIdx + 1 >= STAGES.length;
+    const last = G.stageIdx + 1 >= STAGES.length;
     if (UI.button('next', 340, 570, 300, 62, last ? 'VER O FINAL' : 'PRÓXIMA FASE', { size: 26, color: '#9a63ff', sub: last ? 'você zerou tudo!' : '' })) { G.stamped = false; if (last) { G.victT = undefined; G.state = 'victory'; } else { G.sel = G.stageIdx + 1; Game.goSelect(); } }
     if (UI.button('shop', 660, 570, 280, 62, 'LOJA', { size: 24, sub: this.stars() })) { G.shopBack = 'clear'; G.state = 'shop'; }
   },

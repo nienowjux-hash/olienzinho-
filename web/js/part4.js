@@ -20,7 +20,7 @@ Portraits.face_K = function (mood, t, talk) {
 // ---------- o chefe ----------
 const ACT_COL = ['#ffd36a', '#33c4ff', '#e8d0ff'];
 class Heart extends Boss {
-  constructor() { super('Coração do Outro Lado', 2200); this.col = ACT_COL[0]; this.dark = '#3a1050'; this.rad = 120; this.N = 18; this.dive = null; this.real = 0; this.chargeT = 0; this.chargeMax = 1; this.spin = 0; }
+  constructor() { super('Coração do Outro Lado', 1500); this.col = ACT_COL[0]; this.dark = '#3a1050'; this.rad = 120; this.N = 18; this.dive = null; this.real = 0; this.chargeT = 0; this.chargeMax = 1; this.spin = 0; }
   hitTest(x, y, r) { return Math.hypot(x - this.x, y - this.y) < 104 + r; }
   seg(i) { return [this.x + Math.sin(this.t * 2 + i * .6) * (10 + i * 5), this.y + 60 + i * 15]; }
   pathAt() { return [this.x, this.y]; }

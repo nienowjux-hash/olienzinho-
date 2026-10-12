@@ -81,7 +81,7 @@ Visual16.ambient = function () {
   const se = spawnEnemy;
   spawnEnemy = function (type, x, y, o = {}) {
     const e = se(type, x, y, o); const st = G.stage ? G.stage.id : 0;
-    if (type === 'captain' && st >= 6) { e.name = CAPTAINS[4 + (st === 9 ? Math.min(2, Math.floor((G.t || 0) / (G.stage.duration || 135) * 3)) : st - 6)]; e.hp = e.maxHp = Math.ceil(e.hp * 1.5); }
+    if (type === 'captain' && st >= 6) { e.name = CAPTAINS[4 + (st === 9 ? Math.min(2, Math.floor((G.t || 0) / (G.stage.duration || 135) * 3)) : st - 6)]; e.hp = e.maxHp = Math.ceil(e.hp * 1.15); }
     const tips = { prism: ['Prisma', 'Gira soltando espirais de luz. Contorne os braços sem parar de se mover.'], lantern: ['Lanterna', 'Os orbes dourados explodem em anéis depois de um instante. Afaste-se.'], lancer: ['Lanceiro', 'A linha pontilhada mostra por onde vai a rajada. Saia dela.'], jelly: ['Água-viva', 'Solta anéis de bolhas lentas. Passe pelos vãos.'], eel: ['Enguia', 'Atravessa a tela atirando para baixo. Fique fora do caminho dela.'], urchin: ['Ouriço', 'Explode em espinhos ao morrer. Derrote de longe.'], shade: ['Sombra', 'Fica no lado oposto ao seu e atira reto. Evite a linha roxa.'], facet: ['Faceta', 'Os estilhaços quicam nas paredes e voltam.'], warden: ['Guardião', 'Com o escudo branco ele reflete tiros. Ataque quando o olho abrir.'] };
     if (tips[type] && !o.noElite) Visual16.tip('en_' + type, tips[type][0], tips[type][1]);
     return e;

@@ -6,18 +6,18 @@ P3.on = () => !!(G.stage && G.stage.id >= 6);
 // poder de fogo do jogador -> multiplicador que faz os inimigos crescerem junto (1 = jogador novo)
 P3.pw = () => { const p = G.player; if (!p) return 1; return p.dmg * p.shots * (1 + p.crit * (p.critMul - 1)) / (p.fireDelay * (WEAPONS[p.weapon] ? WEAPONS[p.weapon].delay : 1)); };
 P3.REF = 28;
-P3.heat = () => { if (!P3.on()) return 1; return clamp(Math.pow(P3.pw() / (P3.REF || 1), .45), 1, 1.6); };
+P3.heat = () => { if (!P3.on()) return 1; return clamp(Math.pow(P3.pw() / (P3.REF || 1), .4), 1, 1.35); };
 
 const ENEMY3 = {
-  prism: { hp: 22, rad: 36, spd: 0, xp: 7, score: 90, coin: .6, glow: '#ffd36a' },
-  lantern: { hp: 12, rad: 28, spd: 70, xp: 4, score: 55, coin: .4, glow: '#ffa03a' },
-  lancer: { hp: 15, rad: 28, spd: 0, xp: 5, score: 70, coin: .45, glow: '#fff0b0' },
-  jelly: { hp: 26, rad: 36, spd: 55, xp: 7, score: 90, coin: .6, glow: '#7fe8ff' },
-  eel: { hp: 16, rad: 26, spd: 250, xp: 5, score: 70, coin: .5, glow: '#3affc8' },
-  urchin: { hp: 24, rad: 32, spd: 60, xp: 6, score: 80, coin: .5, glow: '#5a8aff' },
-  shade: { hp: 15, rad: 28, spd: 0, xp: 5, score: 70, coin: .45, glow: '#b070ff' },
-  facet: { hp: 10, rad: 24, spd: 170, xp: 4, score: 50, coin: .35, glow: '#e8d0ff' },
-  warden: { hp: 34, rad: 40, spd: 50, xp: 9, score: 120, coin: .8, glow: '#ffffff' },
+  prism: { hp: 14, rad: 36, spd: 0, xp: 7, score: 90, coin: .6, glow: '#ffd36a' },
+  lantern: { hp: 8, rad: 28, spd: 70, xp: 4, score: 55, coin: .4, glow: '#ffa03a' },
+  lancer: { hp: 10, rad: 28, spd: 0, xp: 5, score: 70, coin: .45, glow: '#fff0b0' },
+  jelly: { hp: 16, rad: 36, spd: 55, xp: 7, score: 90, coin: .6, glow: '#7fe8ff' },
+  eel: { hp: 10, rad: 26, spd: 250, xp: 5, score: 70, coin: .5, glow: '#3affc8' },
+  urchin: { hp: 15, rad: 32, spd: 60, xp: 6, score: 80, coin: .5, glow: '#5a8aff' },
+  shade: { hp: 10, rad: 28, spd: 0, xp: 5, score: 70, coin: .45, glow: '#b070ff' },
+  facet: { hp: 7, rad: 24, spd: 170, xp: 4, score: 50, coin: .35, glow: '#e8d0ff' },
+  warden: { hp: 22, rad: 40, spd: 50, xp: 9, score: 120, coin: .8, glow: '#ffffff' },
 };
 Object.assign(ENEMY_DEF, ENEMY3);
 Object.assign(SRC_NAME, { prism: 'Prisma', lantern: 'Lanterna', lancer: 'Lanceiro', jelly: 'Água-viva', eel: 'Enguia', urchin: 'Ouriço', shade: 'Sombra Espelhada', facet: 'Faceta', warden: 'Guardião do Espelho' });
@@ -81,7 +81,7 @@ TRAIN_TYPES.push(...P3.types);
   spawnEnemy = function (type, x, y, o = {}) {
     const e = se(type, x, y, o);
     if (P3.on() && type !== 'bit' && type !== 'dummy' && type !== 'boulder' && type !== 'rod' && !o.noScale) {
-      const m = (1.0 + (G.stage.id - 6) * .08) * P3.heat();
+      const m = (.85 + (G.stage.id - 6) * .05) * P3.heat();
       e.hp = e.maxHp = Math.ceil(e.hp * m); if (e.shield) e.shield = e.maxShield = Math.ceil(e.shield * m);
     }
     return e;
@@ -138,7 +138,7 @@ const leave = (e, dt, at, v = 190) => { if (e.age > at) { e.y -= v * dt; if (e.y
         e.rot = (e.rot || 0) + dt * 3; break;
       case 'warden':
         e.y += ((e.sy || 150) - e.y) * Math.min(1, 2 * dt); e.x = e.bx + Math.sin(e.age * .5 + e.ph) * 150;
-        e.closed = (e.age % 4.6) < 2.6; e.cnT = Math.max(0, (e.cnT || 0) - dt);
+        e.closed = (e.age % 4.2) < 2.0; e.cnT = Math.max(0, (e.cnT || 0) - dt);
         if (!e.closed) { e.fT = (e.fT ?? 1) - dt; if (e.fT <= 0) { e.fT = 1.05; fanAimed(e.x, e.y + 20, 5, .9, 235); } }
         leave(e, dt, 20); break;
     }
@@ -149,7 +149,7 @@ const leave = (e, dt, at, v = 190) => { if (e.age > at) { e.y -= v * dt; if (e.y
     if (e.type === 'warden' && e.closed && !chained) {
       sparks(e.x, e.y - e.rad * .5, '#ffffff', 3, 200);
       if (e.cnT <= 0) { e.cnT = .5; fanAimed(e.x, e.y + 20, 1, 0, 320, { sty: 'shard' }); }
-      dmg *= .15;
+      dmg *= .3;
     }
     return de(e, dmg, crit, chained);
   };
@@ -318,7 +318,7 @@ addAI(Mirror, function (dt) {
 {
   const bu = Game.updatePlay;
   Game.updatePlay = function (dt) {
-    const b = G.boss; if (b && !b._p3 && P3.on() && (b instanceof Herald || b instanceof Leviathan || b instanceof Mirror || (typeof Heart !== 'undefined' && b instanceof Heart))) { b._p3 = 1; const m = 1.1 * (1 + (P3.heat() - 1) * .35); b.maxHp = b.hp = Math.round(b.maxHp * m); }
+    const b = G.boss; if (b && !b._p3 && P3.on() && (b instanceof Herald || b instanceof Leviathan || b instanceof Mirror || (typeof Heart !== 'undefined' && b instanceof Heart))) { b._p3 = 1; const m = .9 * (1 + (P3.heat() - 1) * .3); b.maxHp = b.hp = Math.round(b.maxHp * m); }
     return bu.call(this, dt);
   };
 }

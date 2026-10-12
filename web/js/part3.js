@@ -56,7 +56,7 @@ Portraits.face_R = function (mood, t, talk) {
 
 // ---------- chefes ----------
 class Herald extends Boss {
-  constructor() { super('Arauto Luminoso', 900); this.col = '#ffd36a'; this.dark = '#6a4a10'; this.rad = 110; this.spin = 0; this.chargeT = 0; this.chargeMax = 1; }
+  constructor() { super('Arauto Luminoso', 650); this.col = '#ffd36a'; this.dark = '#6a4a10'; this.rad = 110; this.spin = 0; this.chargeT = 0; this.chargeMax = 1; }
   hitTest(x, y, r) { return Math.hypot(x - this.x, y - this.y) < 100 + r; }
   move(dt) { this.chargeT = Math.max(0, this.chargeT - dt); const s = .42 + this.phase * .1; this.x = W / 2 + Math.sin(this.t * s) * 330; this.y = this.baseY + 20 + Math.sin(this.t * s * 1.9) * 22; }
   ai(dt) {
@@ -81,7 +81,7 @@ class Herald extends Boss {
   }
 }
 class Leviathan extends Boss {
-  constructor() { super('Leviatã Estelar', 1000); this.col = '#33c4ff'; this.dark = '#04203a'; this.rad = 90; this.dive = null; this.N = 18; }
+  constructor() { super('Leviatã Estelar', 700); this.col = '#33c4ff'; this.dark = '#04203a'; this.rad = 90; this.dive = null; this.N = 18; }
   pathAt(t) { return [W / 2 + Math.sin(t * .5) * 440, 170 + Math.sin(t * 1.1) * 56 + Math.cos(t * .37) * 20]; }
   seg(i) { const [x, y] = this.pathAt(this.t - i * .16); return [x, y + (this.dive ? this.dive.off * Math.max(0, 1 - i * .08) : 0)]; }
   hitTest(x, y, r) { for (let i = 0; i < this.N; i += 1) { const [sx, sy] = this.seg(i), rr = (i === 0 ? 56 : 40 - i * .8); if (Math.hypot(x - sx, y - sy) < rr + r) return true; } return false; }
@@ -116,10 +116,10 @@ class Leviathan extends Boss {
   }
 }
 class Mirror extends Boss {
-  constructor() { super('Reflexo do Vazio', 1100); this.col = '#e8d0ff'; this.dark = '#10062a'; this.rad = 120; this.real = 0; this.swapT = 6; this._hit = null; this.chargeT = 0; this.chargeMax = 1; }
+  constructor() { super('Reflexo do Vazio', 760); this.col = '#e8d0ff'; this.dark = '#10062a'; this.rad = 120; this.real = 0; this.swapT = 6; this._hit = null; this.chargeT = 0; this.chargeMax = 1; }
   pos(s) { const d = 190 + 110 * Math.sin(this.t * .55); return [W / 2 + (s ? 1 : -1) * d, this.baseY + 24 + Math.sin(this.t * .9 + s) * 20]; }
   hitTest(x, y, r) { for (const s of [0, 1]) { const [bx, by] = this.pos(s); if (Math.hypot(x - bx, y - by) < 96 + r) { this._hit = s === this.real ? 'real' : 'decoy'; return true; } } return false; }
-  damage(n, c) { if (this._hit === 'decoy') { n *= .12; this._sf = World.t; } super.damage(n, c); }
+  damage(n, c) { if (this._hit === 'decoy') { n *= .25; this._sf = World.t; } super.damage(n, c); }
   move(dt) { this.chargeT = Math.max(0, this.chargeT - dt); this.swapT -= dt; if (this.swapT <= 0 && this.state === 'fight') { this.swapT = 6.5 - this.phase; this.real = 1 - this.real; shockwave(...this.pos(this.real), 240, '#ffffff'); popup(W / 2, 230, 'O REFLEXO TROCOU!', '#e8d0ff', 26); Snd.play('shield'); } this.x = W / 2; this.y = this.baseY + 20; }
   ai(dt) {
     const ph = this.phase;

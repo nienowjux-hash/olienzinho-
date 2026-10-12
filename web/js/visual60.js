@@ -119,10 +119,10 @@ const ok60 = c => typeof c === 'string' && /^#[0-9a-f]{6}$/i.test(c);
   Art.ship = function (x, y, o) { if (G.state === 'hangar' && o && o.sx === undefined && !o.orbi && QL() >= 1) o = Object.assign({}, o, { sx: .9 + .1 * Math.cos(World.t * 1.1) }); return sh.call(this, x, y, o); };
   const hg = Screens.hangar;
   Screens.hangar = function () {
-    const r = hg.call(this); if (QL() < 1) return r; const t = World.t, S = Visual60.sp; const pop = G.skinPop;
-    if (pop !== undefined && pop !== Visual60.lastPop) { Visual60.lastPop = pop; for (let i = 0; i < 22; i++) { const a = rand(0, TAU), v = rand(80, 280); S.push({ x: 420, y: 350, vx: Math.cos(a) * v, vy: Math.sin(a) * v, l: .9, c: i % 2 ? '#ffe9a8' : '#b98cff' }); } }
+    const r = hg.call(this); if (QL() < 1 || G.htab !== 'nav') return r; const t = World.t, S = Visual60.sp; const pop = G.skinPop;
+    if (pop !== undefined && pop !== Visual60.lastPop) { Visual60.lastPop = pop; for (let i = 0; i < 22; i++) { const a = rand(0, TAU), v = rand(80, 280); S.push({ x: 420, y: 290, vx: Math.cos(a) * v, vy: Math.sin(a) * v, l: .9, c: i % 2 ? '#ffe9a8' : '#b98cff' }); } }
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
-    for (let i = 0; i < 6; i++) { const a = t * .7 + i * 1.047, rr = 150 + Math.sin(t + i) * 12; ctx.globalAlpha = .5; drawGlow(420 + Math.cos(a) * rr, 350 + Math.sin(a) * rr * .55, 6, '#ffe9a8', .8); }
+    for (let i = 0; i < 6; i++) { const a = t * .7 + i * 1.047, rr = 150 + Math.sin(t + i) * 12; ctx.globalAlpha = .5; drawGlow(420 + Math.cos(a) * rr, 290 + Math.sin(a) * rr * .55, 6, '#ffe9a8', .8); }
     for (let i = S.length - 1; i >= 0; i--) { const q = S[i]; q.l -= 1 / 60; if (q.l <= 0) { S.splice(i, 1); continue; } q.x += q.vx / 60; q.y += q.vy / 60; q.vx *= .96; q.vy *= .96; ctx.globalAlpha = q.l; drawGlow(q.x, q.y, 7, q.c, .9); }
     ctx.restore(); return r;
   };

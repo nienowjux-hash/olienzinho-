@@ -117,9 +117,9 @@ const h63 = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s 
 {
   const hg = Screens.hangar;
   Screens.hangar = function () {
-    const r = hg.call(this); if (QL() < 1) return r; const ld = Save.data.loadout || {}, w = WEAPONS[ld.weapon || 'violet'], c = w && ok63(w.c) ? w.c : '#b98cff', S = Visual63.hs, now = World.t;
-    if (now - Visual63.hsT > .22) { Visual63.hsT = now; S.push({ x: 420 + rand(-12, 12), y: 290, vy: -520 }); } ctx.save(); ctx.globalCompositeOperation = 'lighter';
-    for (let i = S.length - 1; i >= 0; i--) { const q = S[i]; q.y += q.vy / 60; if (q.y < 130) { S.splice(i, 1); continue; } ctx.globalAlpha = clamp((q.y - 130) / 60, 0, 1); ctx.fillStyle = c; ctx.beginPath(); ctx.roundRect(q.x - 3, q.y - 14, 6, 26, 3); ctx.fill(); drawGlow(q.x, q.y, 18, c, .6); }
+    const r = hg.call(this); if (QL() < 1 || G.htab !== 'nav') return r; const ld = Save.data.loadout || {}, w = WEAPONS[ld.weapon || 'violet'], c = w && ok63(w.c) ? w.c : '#b98cff', S = Visual63.hs, now = World.t;
+    if (now - Visual63.hsT > .22) { Visual63.hsT = now; S.push({ x: 420 + rand(-12, 12), y: 235, vy: -520 }); } ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    for (let i = S.length - 1; i >= 0; i--) { const q = S[i]; q.y += q.vy / 60; if (q.y < 100) { S.splice(i, 1); continue; } ctx.globalAlpha = clamp((q.y - 100) / 60, 0, 1); ctx.fillStyle = c; ctx.beginPath(); ctx.roundRect(q.x - 3, q.y - 14, 6, 26, 3); ctx.fill(); drawGlow(q.x, q.y, 18, c, .6); }
     ctx.restore(); return r;
   };
 }

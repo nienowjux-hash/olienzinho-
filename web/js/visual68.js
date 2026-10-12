@@ -78,12 +78,9 @@ const h68 = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s 
   };
   const hg = Screens.hangar;
   Screens.hangar = function () {
-    const r = hg.call(this); if (QL() < 1) return r; const t = World.t; ctx.save(); ctx.globalCompositeOperation = 'lighter';
-    const sy = ((t * 90) % 360) + 170; const g = ctx.createLinearGradient(240, sy - 24, 240, sy + 3); g.addColorStop(0, 'rgba(127,224,255,0)'); g.addColorStop(1, 'rgba(127,224,255,.35)'); ctx.fillStyle = g; ctx.fillRect(240, sy - 24, 360, 27);
-    for (let k = 0; k < 2; k++) { ctx.save(); ctx.translate(420, 350); ctx.rotate(t * (.3 + k * .2) * (k ? -1 : 1)); ctx.strokeStyle = 'rgba(190,160,255,.35)'; ctx.lineWidth = 2; ctx.setLineDash([14, 12]); ctx.beginPath(); ctx.ellipse(0, 0, 150 + k * 30, 150 + k * 30, 0, 0, TAU); ctx.stroke(); ctx.restore(); }
-    // rastro e escudo de demonstracao
-    for (let q = 1; q <= 10; q++) { ctx.globalAlpha = (1 - q / 11) * .5; drawGlow(420 + Math.sin(t * 1.6 - q * .3) * 6, 350 + 70 + q * 12, 20 - q, '#b98cff', .7); }
-    ctx.globalAlpha = .35 + .15 * Math.sin(t * 3); ctx.strokeStyle = '#7fe0ff'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(420, 352, 118, 0, TAU); ctx.stroke();
+    const r = hg.call(this); if (QL() < 1 || G.htab !== 'nav') return r; const t = World.t; ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, 405); ctx.clip(); ctx.globalCompositeOperation = 'lighter';
+    const sy = ((t * 90) % 220) + 150; const g = ctx.createLinearGradient(240, sy - 24, 240, sy + 3); g.addColorStop(0, 'rgba(127,224,255,0)'); g.addColorStop(1, 'rgba(127,224,255,.3)'); ctx.fillStyle = g; ctx.fillRect(240, sy - 24, 360, 27);
+    for (let k = 0; k < 2; k++) { ctx.save(); ctx.translate(420, 290); ctx.rotate(t * (.3 + k * .2) * (k ? -1 : 1)); ctx.strokeStyle = 'rgba(190,160,255,.3)'; ctx.lineWidth = 2; ctx.setLineDash([14, 12]); ctx.beginPath(); ctx.ellipse(0, 0, 140 + k * 26, 140 + k * 26, 0, 0, TAU); ctx.stroke(); ctx.restore(); }
     ctx.restore(); return r;
   };
 }

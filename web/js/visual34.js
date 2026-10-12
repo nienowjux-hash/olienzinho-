@@ -46,12 +46,12 @@ Visual34.armas = function () {
 Visual34.nave = function () {
   const t = World.t, ld = hx(); const sk = SKINS[G.skinIdx || 0], unlocked = sk.ok(), eqs = ld.skin === sk.id;
   UI.panel(70, 140, 700, 480, { r: 24 }); txt('SKINS', 96, 154, 18, '#ffb340', 'left', 900);
-  ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(420, 350, 250, sk.pal.glow, .4); ctx.restore(); ctx.globalAlpha = 1;
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(420, 290, 250, sk.pal.glow, .4); ctx.restore(); ctx.globalAlpha = 1;
   ctx.save(); ctx.globalAlpha = unlocked ? 1 : .35;
-  Visual29.auraFx && unlocked && Visual29.auraFx((Save.data.cosm && Save.data.cosm.eq.aura) || 'none', 420, 350 + Math.sin(t * 1.6) * 8, t);
-  Art.ship(420, 350 + Math.sin(t * 1.6) * 8, { vx: Math.sin(t * .8) * 80, t, pal: sk.pal, scale: 1.7 * (1 + .22 * Math.max(0, 1 - (World.t - (G.skinPop || -9)) * 3.5)), boost: .5, lookx: clamp((Input.mouse.x - 420) / 400, -1, 1), looky: clamp((Input.mouse.y - 350) / 400, -1, 1), blinkT: Screens.blinkAt(t), inv: 0 });
-  ctx.restore(); if (!unlocked) Screens.lock(420, 350, 2);
-  txt(sk.name, 420, 500, 30, '#fff', 'center'); txt(unlocked ? (eqs ? 'EQUIPADA' : 'liberada') : '🔒 ' + sk.how, 420, 542, 17, unlocked ? '#7fe0a0' : '#ffb340', 'center', 800);
+  Visual29.auraFx && unlocked && Visual29.auraFx((Save.data.cosm && Save.data.cosm.eq.aura) || 'none', 420, 290 + Math.sin(t * 1.6) * 8, t);
+  Art.ship(420, 290 + Math.sin(t * 1.6) * 8, { vx: Math.sin(t * .8) * 80, t, pal: sk.pal, scale: 1.4 * (1 + .22 * Math.max(0, 1 - (World.t - (G.skinPop || -9)) * 3.5)), boost: .2, lookx: clamp((Input.mouse.x - 420) / 400, -1, 1), looky: clamp((Input.mouse.y - 290) / 400, -1, 1), blinkT: Screens.blinkAt(t), inv: 0 });
+  ctx.restore(); if (!unlocked) Screens.lock(420, 290, 2);
+  txt(sk.name, 420, 492, 30, '#fff', 'center'); txt(unlocked ? (eqs ? 'EQUIPADA' : 'liberada') : '🔒 ' + sk.how, 420, 534, 17, unlocked ? '#7fe0a0' : '#ffb340', 'center', 800);
   const n = SKINS.length; if (UI.button('skL', 96, 330, 54, 80, '◀', { size: 30 })) { G.skinIdx = ((G.skinIdx || 0) + n - 1) % n; G.skinPop = World.t; } if (UI.button('skR', 690, 330, 54, 80, '▶', { size: 30 })) { G.skinIdx = ((G.skinIdx || 0) + 1) % n; G.skinPop = World.t; }
   if (unlocked && !eqs && UI.button('skEq', 330, 570, 180, 36, 'EQUIPAR', { size: 16, color: '#9a63ff' })) { ld.skin = sk.id; Save.save(); Snd.play('buy'); }
   // direita: estilo e cosmeticos

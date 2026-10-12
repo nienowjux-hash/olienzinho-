@@ -29,9 +29,9 @@ Visual3.furyUpdate = function (dt) {
   for (const o of G.pops) { o.y -= 50 * dt; o.life -= dt * 1.2; }
   G.parts = G.parts.filter(q => q.life > 0); G.rings = G.rings.filter(r => r.life > 0); G.pops = G.pops.filter(o => o.life > 0);
   World.update(dt * .25, 0);
-  const R = b.rad || 110, shaking = c.t > .45 && c.t < 1.85;
-  c.prog = clamp((c.t - .45) / 1.4, 0, 1);
-  const inZ = easeOut(clamp(c.t / .7, 0, 1)), outZ = c.endAt === null ? 0 : easeOut(clamp((c.t - c.endAt) / .5, 0, 1));
+  const R = b.rad || 110, shaking = c.t > .2 && c.t < .95;
+  c.prog = clamp((c.t - .2) / .75, 0, 1);
+  const inZ = easeOut(clamp(c.t / .4, 0, 1)), outZ = c.endAt === null ? 0 : easeOut(clamp((c.t - c.endAt) / .5, 0, 1));
   c.zk = inZ * (1 - outZ); G.zoom = .55 * c.zk;
   // a camera leva o chefe para o meio da tela
   const z = 1 + G.zoom, S = { x: lerp(b.x, W / 2, .85 * c.zk), y: lerp(b.y, H * .4, .85 * c.zk) };
@@ -43,23 +43,16 @@ Visual3.furyUpdate = function (dt) {
     if (Math.random() < dt * 24) { const a = rand(0, TAU), r = R * rand(1.6, 2.6); G.parts.push({ x: b.x + Math.cos(a) * r, y: b.y + Math.sin(a) * r * .8, vx: -Math.cos(a) * r * 1.6, vy: -Math.sin(a) * r * 1.3, life: .6, max: .6, r: rand(2, 4), c: b.col || '#ffb340', drag: 0 }); }
     if (Math.random() < dt * 6) shockwave(b.x, b.y, R * 2.2, b.col);
   }
-  if (c.t >= 1.85 && !c.flashed) { // o momento da transformacao
+  if (c.t >= 1.0 && !c.flashed) { // o momento da transformacao
     c.flashed = true; flashScreen(1); shake(26); Snd.play('impact'); Snd.play('bossWarn');
     for (let i = 0; i < 5; i++) shockwave(b.x, b.y, R * 2 + i * 150, i % 2 ? '#ffffff' : b.col);
     burst(b.x, b.y, [b.col, '#ffe9a8', '#ffffff', '#ff5a3c'], 90, 700, 8); b.popK = .32;
     G.parts.push({ k: 'flash', x: b.x, y: b.y, vx: 0, vy: 0, life: .35, max: .35, r: R * 3, c: '#ffffff', drag: 1 });
   }
   b.popK = Math.max(0, (b.popK || 0) - dt * .35);
-  // dialogo
-  if (c.t > 2.05 && c.endAt === null) {
-    const ln = c.lines[c.li], full = ln[1].length;
-    if (c.typed < full) { const was = Math.floor(c.typed); c.typed = Math.min(full, c.typed + dt * 46); if (Math.floor(c.typed) !== was && Math.floor(c.typed) % 2 === 0) Snd.play('blip', { who: ln[0], mood: ln[0] === 'O' ? 'determined' : 'angry' }); }
-    else c.wait += dt;
-    const adv = c.t > 2.4 && (Input.pressed('enter') || Input.mouse.click);
-    if (adv && c.typed < full) c.typed = full;
-    else if ((adv && c.typed >= full) || c.wait > 3.2) { c.li++; c.typed = 0; c.wait = 0; if (c.li >= c.lines.length) { c.endAt = c.t; c.li = c.lines.length - 1; Snd.play('uiSelect'); } }
-  }
-  if (c.endAt !== null && c.t > c.endAt + .55) { G.furyCut = null; b.shx = b.shy = 0; b.stun = Math.max(b.stun, .7); G.zoom = .02; }
+  // a cena agora e curta: a fala vira uma legenda que aparece SEM pausar o jogo
+  if (c.t > 1.12 && c.endAt === null) { c.endAt = c.t; G.furyCap = { lines: c.lines, i: 0, t: 0 }; Snd.play('uiSelect'); }
+  if (c.endAt !== null && c.t > c.endAt + .4) { G.furyCut = null; b.shx = b.shy = 0; b.stun = Math.max(b.stun, .7); G.zoom = .02; }
 };
 
 Visual3.furyDraw = function () {
@@ -68,8 +61,8 @@ Visual3.furyDraw = function () {
   ctx.save(); ctx.fillStyle = '#03010b'; ctx.fillRect(0, 0, W, bh); ctx.fillRect(0, H - bh, W, bh);
   const vg = ctx.createRadialGradient(W / 2, H * .42, H * .25, W / 2, H * .42, H * .85); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(40,0,10,' + .55 * env + ')'); ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
   // titulo da fase de furia
-  if (c.t < 2.3) {
-    const a = clamp((c.t - .3) / .3, 0, 1) * clamp((2.3 - c.t) / .3, 0, 1), sc = 1 + (1 - clamp((c.t - .3) / .5, 0, 1)) * .3;
+  if (c.t < 1.5) {
+    const a = clamp((c.t - .15) / .2, 0, 1) * clamp((1.5 - c.t) / .3, 0, 1), sc = 1 + (1 - clamp((c.t - .3) / .5, 0, 1)) * .3;
     ctx.save(); ctx.translate(W / 2, bh + 54); ctx.scale(sc, sc); ctx.globalAlpha = a; ctx.shadowColor = b.col; ctx.shadowBlur = 36; txt(FURY_TITLE[c.ph] || 'FÚRIA', 0, -34, 54, '#fff', 'center', 900); ctx.restore();
   }
   if (c.t > 2.0) { // caixa de fala

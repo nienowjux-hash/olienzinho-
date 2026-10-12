@@ -678,6 +678,6 @@ const Game = {
       txt(name, cx, cy + 36, 12, rdy ? '#e2d4ff' : '#8a7fb0', 'center', 800);
     });
     // tutorial
-    if (Save.data.runs <= 1 && G.t < 8) { ctx.globalAlpha = Math.min(1, (8 - G.t) / 1.5); txt('Mova com WASD, setas ou mouse  •  O tiro é automático  •  ESPAÇO pulso  •  SHIFT esquiva  •  Q especial', W / 2, H - 56, 20, '#e2d4ff', 'center', 700); ctx.globalAlpha = 1; }
+    if (Save.data.runs <= 1 && G.t < 9) { const al = Math.min(1, (9 - G.t) / 1.5) * Math.min(1, G.t / .6); ctx.save(); ctx.globalAlpha = al; ctx.font = `700 18px ${FONT}`; const tt = 'Mova com WASD, setas ou mouse  •  O tiro é automático  •  ESPAÇO pulso  •  SHIFT esquiva  •  Q especial', tw = Math.min(W - 80, ctx.measureText(tt).width + 56); ctx.fillStyle = 'rgba(12,4,34,.78)'; ctx.strokeStyle = 'rgba(190,160,255,.5)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(W / 2 - tw / 2, 150, tw, 40, 20); ctx.fill(); ctx.stroke(); txt(tt, W / 2, 160, 18, '#e2d4ff', 'center', 700); ctx.restore(); }
   },
 };

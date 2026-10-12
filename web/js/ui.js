@@ -50,11 +50,13 @@ const UI = {
     ctx.translate(x + w / 2, y + h / 2); ctx.scale(pulse, pulse); ctx.translate(-w / 2, -h / 2);
     const sel = !!o.color && !f && !dis;
     if (f && !dis) { ctx.shadowColor = o.color || '#8b4dff'; ctx.shadowBlur = 28; } else if (sel) { ctx.shadowColor = o.color; ctx.shadowBlur = 16; }
-    const g = ctx.createLinearGradient(0, 0, 0, h);
-    if (dis) { g.addColorStop(0, 'rgba(60,50,90,.6)'); g.addColorStop(1, 'rgba(30,20,60,.6)'); }
-    else if (f) { g.addColorStop(0, o.color || '#9a63ff'); g.addColorStop(1, '#4b2bd6'); }
-    else if (sel) { g.addColorStop(0, o.color); g.addColorStop(1, '#3a1a9a'); }
-    else { g.addColorStop(0, 'rgba(70,40,150,.75)'); g.addColorStop(1, 'rgba(30,14,80,.85)'); }
+    const gk = h + '|' + (dis ? 'd' : f ? 'f' + (o.color || '') : sel ? 's' + o.color : 'n'), GC = UI._gc || (UI._gc = {}); let g = GC[gk];
+    if (!g) { g = ctx.createLinearGradient(0, 0, 0, h);
+      if (dis) { g.addColorStop(0, 'rgba(60,50,90,.6)'); g.addColorStop(1, 'rgba(30,20,60,.6)'); }
+      else if (f) { g.addColorStop(0, o.color || '#9a63ff'); g.addColorStop(1, '#4b2bd6'); }
+      else if (sel) { g.addColorStop(0, o.color); g.addColorStop(1, '#3a1a9a'); }
+      else { g.addColorStop(0, 'rgba(70,40,150,.75)'); g.addColorStop(1, 'rgba(30,14,80,.85)'); }
+      GC[gk] = g; }
     ctx.fillStyle = g; ctx.beginPath(); ctx.roundRect(0, 0, w, h, Math.min(18, h / 2)); ctx.fill();
     ctx.shadowBlur = 0; ctx.lineWidth = f || sel ? 3 : 2; ctx.strokeStyle = f ? '#e2d4ff' : sel ? '#ffe9a8' : 'rgba(190,160,255,.35)'; ctx.stroke();
     ctx.restore();

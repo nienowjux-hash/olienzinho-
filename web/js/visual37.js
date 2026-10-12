@@ -46,7 +46,8 @@ Screens.settings = function () {
     tg('calm', 0, 'Menos tremor', 'calm', 'Reduz o tremor de tela e os clarões.'); tg('outl', 1, 'Contorno nos tiros', 'outline', 'Contorno branco para enxergar melhor.');
     tg('contr', 2, 'Alto contraste', 'contrast', 'Tiros inimigos mais destacados.'); tg('assist2', 3, 'Modo assistido', 'assist', 'Escudo contra tiros muito próximos.');
     tg('soft', 4, 'Brilhos suaves', 'softGlow', 'Metade da intensidade dos brilhos.');
-    if (UI.button('sacc', X, 470, 420, 52, 'TECLAS, LEGENDAS E CONTROLE ▸', { size: 17 })) { Snd.play('uiSelect'); G.state = 'access'; }
+    if (Visual37.toggle('foco', X, 452, 420, 78, 'Modo foco', !!s.foco, 'Escurece o fundo para destacar nave, tiros e chefe.')) { s.foco = !s.foco; Save.save(); }
+    if (UI.button('sacc', X, 548, 420, 46, 'TECLAS, LEGENDAS E CONTROLE ▸', { size: 17 })) { Snd.play('uiSelect'); G.state = 'access'; }
     if (Visual37.toggle('cbs', X + 440, 360, 420, 78, 'Formas nos tiros inimigos', !!s.cbs, 'Losangos em vez de círculos, sem depender só da cor.')) { s.cbs = !s.cbs; Save.save(); }
     if (Visual37.toggle('gov', X + 440, 452, 420, 78, 'Qualidade automática', s.gov !== false, 'Baixa efeitos e resolução sozinha se o jogo pesar.')) { s.gov = s.gov === false ? true : false; if (s.gov === false && typeof Visual65 !== 'undefined') { Visual65.level = 0; Visual65.apply(); } Save.save(); }
   } else if (G.stab === 'ctl') {

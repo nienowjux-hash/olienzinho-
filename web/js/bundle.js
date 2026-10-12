@@ -4032,7 +4032,7 @@ const Game = {
       txt(name, cx, cy + 36, 12, rdy ? '#e2d4ff' : '#8a7fb0', 'center', 800);
     });
     // tutorial
-    if (Save.data.runs <= 1 && G.t < 8) { ctx.globalAlpha = Math.min(1, (8 - G.t) / 1.5); txt('Mova com WASD, setas ou mouse  •  O tiro é automático  •  ESPAÇO pulso  •  SHIFT esquiva  •  Q especial', W / 2, H - 56, 20, '#e2d4ff', 'center', 700); ctx.globalAlpha = 1; }
+    if (Save.data.runs <= 1 && G.t < 9) { const al = Math.min(1, (9 - G.t) / 1.5) * Math.min(1, G.t / .6); ctx.save(); ctx.globalAlpha = al; ctx.font = `700 18px ${FONT}`; const tt = 'Mova com WASD, setas ou mouse  •  O tiro é automático  •  ESPAÇO pulso  •  SHIFT esquiva  •  Q especial', tw = Math.min(W - 80, ctx.measureText(tt).width + 56); ctx.fillStyle = 'rgba(12,4,34,.78)'; ctx.strokeStyle = 'rgba(190,160,255,.5)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(W / 2 - tw / 2, 150, tw, 40, 20); ctx.fill(); ctx.stroke(); txt(tt, W / 2, 160, 18, '#e2d4ff', 'center', 700); ctx.restore(); }
   },
 };
 
@@ -4090,11 +4090,13 @@ const UI = {
     ctx.translate(x + w / 2, y + h / 2); ctx.scale(pulse, pulse); ctx.translate(-w / 2, -h / 2);
     const sel = !!o.color && !f && !dis;
     if (f && !dis) { ctx.shadowColor = o.color || '#8b4dff'; ctx.shadowBlur = 28; } else if (sel) { ctx.shadowColor = o.color; ctx.shadowBlur = 16; }
-    const g = ctx.createLinearGradient(0, 0, 0, h);
-    if (dis) { g.addColorStop(0, 'rgba(60,50,90,.6)'); g.addColorStop(1, 'rgba(30,20,60,.6)'); }
-    else if (f) { g.addColorStop(0, o.color || '#9a63ff'); g.addColorStop(1, '#4b2bd6'); }
-    else if (sel) { g.addColorStop(0, o.color); g.addColorStop(1, '#3a1a9a'); }
-    else { g.addColorStop(0, 'rgba(70,40,150,.75)'); g.addColorStop(1, 'rgba(30,14,80,.85)'); }
+    const gk = h + '|' + (dis ? 'd' : f ? 'f' + (o.color || '') : sel ? 's' + o.color : 'n'), GC = UI._gc || (UI._gc = {}); let g = GC[gk];
+    if (!g) { g = ctx.createLinearGradient(0, 0, 0, h);
+      if (dis) { g.addColorStop(0, 'rgba(60,50,90,.6)'); g.addColorStop(1, 'rgba(30,20,60,.6)'); }
+      else if (f) { g.addColorStop(0, o.color || '#9a63ff'); g.addColorStop(1, '#4b2bd6'); }
+      else if (sel) { g.addColorStop(0, o.color); g.addColorStop(1, '#3a1a9a'); }
+      else { g.addColorStop(0, 'rgba(70,40,150,.75)'); g.addColorStop(1, 'rgba(30,14,80,.85)'); }
+      GC[gk] = g; }
     ctx.fillStyle = g; ctx.beginPath(); ctx.roundRect(0, 0, w, h, Math.min(18, h / 2)); ctx.fill();
     ctx.shadowBlur = 0; ctx.lineWidth = f || sel ? 3 : 2; ctx.strokeStyle = f ? '#e2d4ff' : sel ? '#ffe9a8' : 'rgba(190,160,255,.35)'; ctx.stroke();
     ctx.restore();
@@ -11785,7 +11787,8 @@ Screens.settings = function () {
     tg('calm', 0, 'Menos tremor', 'calm', 'Reduz o tremor de tela e os clarões.'); tg('outl', 1, 'Contorno nos tiros', 'outline', 'Contorno branco para enxergar melhor.');
     tg('contr', 2, 'Alto contraste', 'contrast', 'Tiros inimigos mais destacados.'); tg('assist2', 3, 'Modo assistido', 'assist', 'Escudo contra tiros muito próximos.');
     tg('soft', 4, 'Brilhos suaves', 'softGlow', 'Metade da intensidade dos brilhos.');
-    if (UI.button('sacc', X, 470, 420, 52, 'TECLAS, LEGENDAS E CONTROLE ▸', { size: 17 })) { Snd.play('uiSelect'); G.state = 'access'; }
+    if (Visual37.toggle('foco', X, 452, 420, 78, 'Modo foco', !!s.foco, 'Escurece o fundo para destacar nave, tiros e chefe.')) { s.foco = !s.foco; Save.save(); }
+    if (UI.button('sacc', X, 548, 420, 46, 'TECLAS, LEGENDAS E CONTROLE ▸', { size: 17 })) { Snd.play('uiSelect'); G.state = 'access'; }
     if (Visual37.toggle('cbs', X + 440, 360, 420, 78, 'Formas nos tiros inimigos', !!s.cbs, 'Losangos em vez de círculos, sem depender só da cor.')) { s.cbs = !s.cbs; Save.save(); }
     if (Visual37.toggle('gov', X + 440, 452, 420, 78, 'Qualidade automática', s.gov !== false, 'Baixa efeitos e resolução sozinha se o jogo pesar.')) { s.gov = s.gov === false ? true : false; if (s.gov === false && typeof Visual65 !== 'undefined') { Visual65.level = 0; Visual65.apply(); } Save.save(); }
   } else if (G.stab === 'ctl') {
@@ -15113,8 +15116,11 @@ const h63 = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s 
     const d = CL[name].prototype.draw;
     CL[name].prototype.draw = function () {
       const p = G.player; if (QL() < 1 || !p || this.state === 'dying' || G.state !== 'play' || G.furyCut) return d.call(this);
-      const t = World.t, lean = clamp((p.x - this.x) / W, -1, 1) * .05, br = 1 + .014 * Math.sin(t * 2.2) + (this.flash > 0 ? .03 : 0);
-      ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(lean); ctx.scale(br, br * (this.flash > 0 ? .97 : 1)); ctx.translate(-this.x, -this.y); d.call(this); ctx.restore();
+      const t = World.t, lean = clamp((p.x - this.x) / W, -1, 1) * .05, br = 1 + .014 * Math.sin(t * 2.2) + (this.flash > 0 ? .03 : 0), blink = (t % 5.6) < .14 ? .955 : 1, r = this.ratio;
+      if (r < .5 && !this._startle && this.state === 'fight') { this._startle = true; shockwave(this.x, this.y, 260, '#ffffff'); popup(this.x, this.y - (this.rad || 100) - 30, '!', '#ffe9a8', 40); }
+      if (this.flash > 0) { this._rx = rand(-2.5, 2.5); this._ry = rand(-1.5, 1.5); } else { this._rx = (this._rx || 0) * .6; this._ry = (this._ry || 0) * .6; }
+      if (r < .25 && this.state === 'fight') { ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(this.x, this.y, (this.rad || 100) * 2.4, '#ff3a2a', .12 + .1 * Math.max(0, Math.sin(t * 8)) ** 4); ctx.restore(); }
+      ctx.save(); ctx.translate(this.x + (this._rx || 0), this.y + (this._ry || 0)); ctx.rotate(lean); ctx.scale(br, br * (this.flash > 0 ? .97 : 1) * blink); ctx.translate(-this.x, -this.y); d.call(this); ctx.restore();
     };
   }
 }
@@ -15413,6 +15419,108 @@ Visual6.rumble = Visual67.rumble;
   const op = Boss.prototype.onPhase; Boss.prototype.onPhase = function () { Visual67.rumble(420, .9, .7); return op.call(this); };
   const bd = Game.bossDefeated; Game.bossDefeated = function () { Visual67.rumble(800, 1, .8); return bd.apply(this, arguments); };
   const ke = killEnemy; killEnemy = function (e, by) { const was = e && !e.dead; const r = ke(e, by); if (was && e.dead && (e.mini || e.type === 'captain')) Visual67.rumble(200, .6, .4); return r; };
+}
+
+;
+/* ==== visual68.js ==== */
+'use strict';
+// ---------- 68: painel unico no HUD, modo foco, eventos grandes de fundo, causa da derrota com cartas usadas,
+// identidade da loja e do hangar, foco forte no controle ----------
+const Visual68 = { bg: null, next: 0, killer: '', foc: 0 };
+const ok68 = c => typeof c === 'string' && /^#[0-9a-f]{6}$/i.test(c);
+const h68 = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
+
+// ---------- 2. HUD: uma placa translucida atras do bloco esquerdo (relíquia, sinergias e bonus) ----------
+{
+  const h5 = Visual5.hud;
+  Visual5.hud = function () {
+    if (G.state === 'play' && G.player && QL() >= 1) {
+      const p = G.player, nb = Object.keys(p.buffs || {}).filter(k => p.buffs[k] > 0).length, rel = !!G.relic, tags = !!G.ngp || (typeof Visual11 !== 'undefined' && Object.values(Visual11.syn()).some(v => v > 0));
+      const rows = (rel ? 1 : 0) + (tags ? 1 : 0), hh = (rel ? 26 : 0) + (tags ? 24 : 0) + nb * 28;
+      if (hh > 0) { const y0 = rel ? 94 : tags ? 122 : 150; ctx.save(); ctx.fillStyle = 'rgba(8,3,26,.45)'; ctx.strokeStyle = 'rgba(190,160,255,.25)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.roundRect(12, y0, 250, hh + 16, 14); ctx.fill(); ctx.stroke(); ctx.restore(); }
+    }
+    return h5.apply(this, arguments);
+  };
+}
+
+// ---------- 3. modo foco: escurece o fundo (opcao em Acessibilidade) ----------
+{
+  const bi = Visual.biome;
+  Visual.biome = function () { bi.call(this); if (G.state === 'play' && Save.data.settings && Save.data.settings.foco) { ctx.save(); ctx.fillStyle = 'rgba(2,0,12,.42)'; ctx.fillRect(0, 0, W, H); ctx.restore(); } };
+}
+
+// ---------- 4. eventos grandes de fundo: planeta que cruza a tela e nevoa que varre o cenario ----------
+{
+  const bi = Visual.biome;
+  Visual.biome = function () {
+    bi.call(this); if (G.state !== 'play' || QL() < 1 || !G.stage || (G.boss && G.boss.state === 'fight')) return; const t = World.t, c = ok68(G.stage.tint) ? G.stage.tint : '#b98cff';
+    if (!Visual68.bg && t > Visual68.next) { Visual68.bg = { k: Math.random() < .5 ? 'planet' : 'sweep', t0: t, dur: 26, s: Math.random() }; }
+    const e = Visual68.bg; if (!e) { if (!Visual68.next) Visual68.next = t + rand(25, 45); return; }
+    const u = (t - e.t0) / e.dur; if (u >= 1) { Visual68.bg = null; Visual68.next = t + rand(50, 80); return; }
+    const fade = Math.sin(clamp(u, 0, 1) * Math.PI);
+    ctx.save();
+    if (e.k === 'planet') { const R = 240 + e.s * 80, x = W + R - u * (W + R * 2.2), y = H * (.25 + e.s * .35); ctx.globalAlpha = .5 * Math.min(1, fade * 2.5); const g = ctx.createRadialGradient(x - R * .35, y - R * .35, R * .1, x, y, R * 1.05); g.addColorStop(0, c); g.addColorStop(.55, '#2a1a58'); g.addColorStop(1, '#04010c'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, R, 0, TAU); ctx.fill(); ctx.strokeStyle = 'rgba(230,215,255,.35)'; ctx.lineWidth = 6; ctx.beginPath(); ctx.ellipse(x, y, R * 1.6, R * .3, -.25, 0, TAU); ctx.stroke(); }
+    else { ctx.globalCompositeOperation = 'lighter'; for (let i = 0; i < 4; i++) { const x = lerp(-300, W + 300, u) + i * 160 - 240, y = H * (.2 + i * .2) + Math.sin(t * .5 + i) * 30; ctx.globalAlpha = .1 * fade; drawGlow(x, y, 360, c, .8); } }
+    ctx.restore();
+  };
+  const ss = Game.startStage; Game.startStage = function (i, o) { Visual68.bg = null; Visual68.next = 0; return ss.call(this, i, o); };
+}
+
+// ---------- 7. derrota: quem acertou a nave por ultimo e as cartas usadas ----------
+{
+  const NM = { drone: 'Zangão', zig: 'Ziguezague', kami: 'Kamikaze', shooter: 'Atirador', tank: 'Tanque', mine: 'Mina', bit: 'Bit', rock: 'Rocha', shield: 'Escudeiro', healer: 'Curandeiro', captain: 'Capitão', hunter: 'Caçador', ghost: 'Fantasma', swarmer: 'Enxame' };
+  const hp = hurtPlayer;
+  hurtPlayer = function (d) {
+    const p = G.player, b0 = p ? p.hp : 0; const r = hp(d);
+    if (p && p.hp < b0) {
+      let best = 1e9, nm = '';
+      if (G.boss && G.boss.state === 'fight') { best = Math.hypot(G.boss.x - p.x, G.boss.y - p.y) * .7; nm = G.boss.name || ''; }
+      for (const q of G.eb) { if (q.dead) continue; const dd = Math.hypot(q.x - p.x, q.y - p.y); if (dd < best) { best = dd; nm = q.bo ? ((G.boss && G.boss.name) || 'Chefe') : 'Tiro inimigo'; } }
+      for (const e of G.enemies) { if (e.dead) continue; const dd = Math.hypot(e.x - p.x, e.y - p.y) - (e.rad || 0); if (dd < best) { best = dd; nm = e.name || NM[e.type] || e.type; } }
+      Visual68.killer = nm;
+    }
+    return r;
+  };
+  const strip = (x0, y) => { // grade de cartas ao lado do placar
+    const L = typeof Visual59 !== 'undefined' ? Visual59.list() : []; if (!L.length) return; const n = Math.min(8, L.length);
+    ctx.save(); ctx.globalAlpha = .95; txt('CARTAS USADAS', x0 + 130, y - 24, 12, '#8a7fb0', 'center', 800);
+    L.slice(0, n).forEach(({ id, n: c, u }, i) => { const x = x0 + (i % 4) * 66 + 33, yy = y + ((i / 4) | 0) * 66, col = ok68((RARITY[u.r] || {}).c) ? RARITY[u.r].c : '#b98cff'; ctx.fillStyle = 'rgba(14,6,40,.85)'; ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(x - 28, yy, 56, 56, 12); ctx.fill(); ctx.stroke(); try { Visual2.upIcon(id, x, yy + 28, 14, col, false); } catch (e) { } if (c > 1) txt('x' + c, x + 24, yy + 38, 12, col, 'right', 900); });
+    ctx.restore();
+  };
+  const ov = Screens.over;
+  Screens.over = function () { const r = ov.call(this); if (QL() >= 1) { if (Visual68.killer) { ctx.save(); ctx.fillStyle = 'rgba(14,4,36,.78)'; ctx.strokeStyle = '#ff7a9a'; ctx.lineWidth = 2; const w = 340; ctx.beginPath(); ctx.roundRect(W / 2 - w / 2, 244, w, 28, 14); ctx.fill(); ctx.stroke(); txt('Derrotado por: ' + Visual68.killer, W / 2, 249, 15, '#ffd0da', 'center', 800); ctx.restore(); } strip(912, 310); } return r; };
+  const ss = Game.startStage; Game.startStage = function (i, o) { Visual68.killer = ''; return ss.call(this, i, o); };
+}
+
+// ---------- 8. loja: vitrine com cones de luz; hangar: laser de varredura e aneis ao redor da nave ----------
+{
+  const sh = Screens.shop;
+  if (sh) Screens.shop = function () {
+    const r = sh.call(this); if (QL() < 1) return r; const t = World.t; ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    for (let i = 0; i < 4; i++) { const x = W * (.12 + i * .26) + Math.sin(t * .35 + i * 2) * 40, g = ctx.createLinearGradient(x, 0, x + 40, H); g.addColorStop(0, 'rgba(255,233,168,.11)'); g.addColorStop(1, 'rgba(255,233,168,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(x - 14, 0); ctx.lineTo(x + 14, 0); ctx.lineTo(x + 170, H); ctx.lineTo(x - 130, H); ctx.closePath(); ctx.fill(); }
+    for (let i = 0; i < 14; i++) { const x = (h68(i) * W + Math.sin(t + i) * 20), y = H - ((t * (14 + h68(i + 3) * 24) + h68(i + 6) * H) % H); ctx.globalAlpha = .5; drawGlow(x, y, 5, '#ffd36a', .8); }
+    ctx.restore(); return r;
+  };
+  const hg = Screens.hangar;
+  Screens.hangar = function () {
+    const r = hg.call(this); if (QL() < 1) return r; const t = World.t; ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    const sy = ((t * 90) % 360) + 170; const g = ctx.createLinearGradient(240, sy - 24, 240, sy + 3); g.addColorStop(0, 'rgba(127,224,255,0)'); g.addColorStop(1, 'rgba(127,224,255,.35)'); ctx.fillStyle = g; ctx.fillRect(240, sy - 24, 360, 27);
+    for (let k = 0; k < 2; k++) { ctx.save(); ctx.translate(420, 350); ctx.rotate(t * (.3 + k * .2) * (k ? -1 : 1)); ctx.strokeStyle = 'rgba(190,160,255,.35)'; ctx.lineWidth = 2; ctx.setLineDash([14, 12]); ctx.beginPath(); ctx.ellipse(0, 0, 150 + k * 30, 150 + k * 30, 0, 0, TAU); ctx.stroke(); ctx.restore(); }
+    // rastro e escudo de demonstracao
+    for (let q = 1; q <= 10; q++) { ctx.globalAlpha = (1 - q / 11) * .5; drawGlow(420 + Math.sin(t * 1.6 - q * .3) * 6, 350 + 70 + q * 12, 20 - q, '#b98cff', .7); }
+    ctx.globalAlpha = .35 + .15 * Math.sin(t * 3); ctx.strokeStyle = '#7fe0ff'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(420, 352, 118, 0, TAU); ctx.stroke();
+    ctx.restore(); return r;
+  };
+}
+
+// ---------- 9. foco forte no controle: o botao selecionado ganha aro pulsando ----------
+{
+  const bt = UI.button;
+  UI.button = function (id, x, y, w, h, label, o = {}) {
+    const r = bt.call(this, id, x, y, w, h, label, o);
+    if (typeof Visual67 !== 'undefined' && Visual67.pad() && UI.focus(id) && !(o && o.disabled) && QL() >= 1) { const k = .5 + .5 * Math.sin(World.t * 7); ctx.save(); ctx.strokeStyle = '#ffe9a8'; ctx.globalAlpha = .6 + .4 * k; ctx.lineWidth = 3; ctx.beginPath(); ctx.roundRect(x - 5 - k * 2, y - 5 - k * 2, w + 10 + k * 4, h + 10 + k * 4, Math.min(24, h / 2 + 5)); ctx.stroke(); ctx.globalCompositeOperation = 'lighter'; drawGlow(x + w / 2, y + h / 2, Math.max(w, h) * .8, '#ffe9a8', .12 + k * .08); ctx.restore(); }
+    return r;
+  };
 }
 
 ;

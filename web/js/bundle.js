@@ -14334,8 +14334,6 @@ const ok60 = c => typeof c === 'string' && /^#[0-9a-f]{6}$/i.test(c);
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round';
     for (let i = 0; i < Math.min(nS - 1, unl - 1); i++) { const [x0, y0] = pos(i), [x1, y1] = pos(i + 1); ctx.strokeStyle = 'rgba(255,214,120,' + (.3 + .1 * Math.sin(t * 3 + i)) + ')'; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke(); }
     ctx.restore();
-    const tgt = pos(clamp(G.sel ?? 0, 0, nS - 1)); if (!Visual60.mapP) Visual60.mapP = tgt.slice(); const m = Visual60.mapP, vx = (tgt[0] - m[0]) * .12; m[0] += vx; m[1] += (tgt[1] - m[1]) * .12;
-    ctx.save(); Art.ship(m[0], m[1] - 74 + Math.sin(t * 3) * 3, { vx: vx * 40, t, pal: SKIN_DEFAULT, scale: .3, boost: .4, lookx: 0, looky: -.2 }); ctx.restore();
     const ut = t - Visual60.unlT; if (ut >= 0 && ut < 2) { const [x, y] = pos(clamp(unl - 1, 0, nS - 1)); ctx.save(); ctx.globalCompositeOperation = 'lighter'; for (let k = 0; k < 3; k++) { const q = clamp(ut / 2 - k * .15, 0, 1); ctx.globalAlpha = (1 - q) * .8; ctx.strokeStyle = '#ffe9a8'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(x, y, 30 + q * 160, 0, TAU); ctx.stroke(); } for (let k = 0; k < 10; k++) { const a = k / 10 * TAU + ut, q = ut / 2; ctx.globalAlpha = 1 - q; drawGlow(x + Math.cos(a) * (40 + q * 110), y + Math.sin(a) * (40 + q * 110), 9, '#fff0b0', .9); } ctx.restore(); }
     return r;
   };

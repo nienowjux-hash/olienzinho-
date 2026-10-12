@@ -644,7 +644,7 @@ const Snd = (() => {
   let pending = null;
 
   const noteOf = (th, d) => { const n = th.scale.length; return th.root + th.scale[((d % n) + n) % n] + 12 * Math.floor(d / n); };
-  const stepDur = () => 60 / mus.th.bpm / 4;
+  const stepDur = () => 60 / (mus.th.bpm * (mus.tempoMul || 1)) / 4;
 
   function taiko(t, v) {
     voice('sine', 100, 42, t, .4, v, { bus: musBus });
@@ -787,6 +787,7 @@ const Snd = (() => {
   function musicPlay(key, inten = 1) {
     if (!ac) { pending = { key, inten }; return; }
     pending = null;
+    if (!(mus.on && mus.key === key)) mus.tempoMul = 1;
     if (mus.on && mus.key === key) { mus.inten = inten; return; }
     const t = now(), xf = mus.on; // havia musica tocando? entao e uma troca suave
     if (xf) {
@@ -806,6 +807,7 @@ const Snd = (() => {
     mus.timer = setInterval(tick, 40);
   }
   function setIntensity(i) { mus.inten = i; }
+  function setTempo(m) { mus.tempoMul = m; }
   function setLayers(c, d) { mus.lay.combo = c; mus.lay.danger = d; }
   function musicStop(fast) {
     pending = null;
@@ -830,5 +832,5 @@ const Snd = (() => {
     let p = 0; for (const v of b) p = Math.max(p, Math.abs(v)); return p;
   }
 
-  return { get track() { return mus.on ? mus.key : null; }, init, play, panX, musicPlay, musicStop, setIntensity, setLayers, setVolumes, peak, duck, get ready() { return !!ac; }, get state() { return ac && ac.state; } };
+  return { get track() { return mus.on ? mus.key : null; }, init, play, panX, musicPlay, musicStop, setIntensity, setTempo, setLayers, setVolumes, peak, duck, get ready() { return !!ac; }, get state() { return ac && ac.state; } };
 })();

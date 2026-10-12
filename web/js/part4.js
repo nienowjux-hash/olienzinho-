@@ -175,7 +175,7 @@ class SelfEcho extends Heart {
   Game.bossDefeated = function () {
     if (G.epi) {
       const d = Save.data, first = !d.epiDone; d.epiDone = true; const reward = first ? 300 : 0; d.coins += reward; Save.save(); Ach.check(); G.bossDone = true; for (const k of G.pickups) k.mag = true;
-      G.timers.push({ t: 2.4, fn: () => { G.bonusEnd = { title: 'EPÍLOGO CONCLUÍDO', sub: 'Você venceu o seu próprio reflexo.', rows: [['Golpes sofridos', String(G.stats.hits)], ['Recompensa (1ª vez)', '★ ' + reward + ' + skin Reflexo']], again: () => Visual16.startEpi(), best: '' }; G.state = 'bonusEnd'; G.bonusAt = undefined; Snd.play('stageClear'); Snd.musicPlay('triumph', 1); } }); return;
+      G.timers.push({ t: 2.4, fn: () => { G.bonusEnd = { title: 'EPÍLOGO CONCLUÍDO', sub: 'Você venceu o seu próprio reflexo.', rows: [['Golpes sofridos', String(G.stats.hits)], ['Recompensa (1ª vez)', '★ ' + reward], ['Skin nova', first ? 'Reflexo' : 'já liberada']], again: () => Visual16.startEpi(), best: '' }; G.state = 'bonusEnd'; G.bonusAt = undefined; Snd.play('stageClear'); Snd.musicPlay('triumph', 1); } }); return;
     }
     return bd.call(this);
   };

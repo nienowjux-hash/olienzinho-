@@ -1541,7 +1541,7 @@ const STORY = {
     { who: 'B', scene: 'lumiFade', fade: [0, .15], mood: 'shock', text: 'Mestra Lumi! O seu sinal está caindo!' },
     { who: 'L', scene: 'lumiFade', fade: [.15, .5], mood: 'fade', text: 'Não chorem. Luz não desaparece... só muda de lugar. Orbi, cuide dele.' },
     { who: 'L', scene: 'lumiFade', fade: [.5, .8], mood: 'fade', text: 'E lembre, pequeno: os quatro caíram, mas não são o inimigo. Traga-os de volta.' },
-    { who: 'O', scene: 'lumiFade', fade: [.8, .97], mood: 'sad', text: 'Mestra? ...LUMI!' },
+    { who: 'O', scene: 'lumiFade', fade: [.8, .97], mood: 'cry', text: 'Mestra? ...LUMI!' },
     { music: 'hope' },
     { who: 'N', scene: 'lumiFade', fade: [.97, 1], text: 'A luz se apagou. Mas a Faísca, no peito do Olienzinho, continuou acesa.' },
     { who: 'B', mood: 'worry', text: 'Faísca estável. Combustível: esperança. Primeiro destino: Nebulosa Violeta.' },
@@ -1577,7 +1577,7 @@ const STORY = {
         { music: 'sad' },
         { who: 'C', scene: 'freed', mood: 'free', text: '...Pequeno? Onde estou? Eu me lembro dos meus filhos... estavam todos acesos.' },
         { music: 'hope' },
-        { who: 'O', scene: 'lit', mood: 'happy', text: 'E estão de novo! Olha só, a nebulosa está brilhando!' },
+        { who: 'O', scene: 'lit', mood: 'laugh', text: 'E estão de novo! Olha só, a nebulosa está brilhando!' },
         { who: 'C', scene: 'litKeep', mood: 'free', text: 'Obrigada, pequeno. Eu só tinha um medo: ficar sozinha. E o Vazio deu uma voz a esse medo.' },
         { who: 'C', scene: 'fragment', frag: '#ffb340', mood: 'free', text: 'Leve isto. É um fragmento do Coração de Luz. Os outros três guardiões também guardam um.' },
         { music: 'mystery' },
@@ -1653,7 +1653,7 @@ const STORY = {
         { who: 'E', mood: 'free', text: 'Cuide de quem voa ao seu lado.' },
         { who: 'B', mood: 'worry', text: '...Isso foi sobre mim? Eu não gostei do tom.' },
         { music: 'hope' },
-        { who: 'O', scene: 'lit', mood: 'happy', text: 'Ei, Orbi. Eu cuido de você.' },
+        { who: 'O', scene: 'lit', mood: 'laugh', text: 'Ei, Orbi. Eu cuido de você.' },
         { who: 'B', mood: 'happy', text: '...Obrigado. Isso foi inesperadamente reconfortante.' },
       ],
     },
@@ -1706,7 +1706,7 @@ const STORY = {
     { who: 'V', scene: 'void', text: 'O quinto fragmento nunca esteve com os guardiões. Esteve com você esse tempo todo. Seu pequeno amigo... é a última peça do Coração de Luz.' },
     { who: 'O', scene: 'void', mood: 'shock', text: 'O quê?!' },
     { music: 'sad' },
-    { who: 'B', scene: 'void', mood: 'sad', text: 'Eu... eu não sabia. Eu achava que era só um copiloto.' },
+    { who: 'B', scene: 'void', mood: 'cry', text: 'Eu... eu não sabia. Eu achava que era só um copiloto.' },
     { who: 'V', scene: 'void', text: 'Entregue-o, e eu deixo o céu em paz. Recuse, e eu apago uma estrela para cada passo seu.' },
     { music: 'heroic' },
     { who: 'O', scene: 'void', mood: 'determined', text: 'O Orbi não é um fragmento de nada. É o meu parceiro.' },
@@ -13995,6 +13995,214 @@ Visual56.drawLayer = function (i, speed, alpha) { const st = G.stage; if (!st) r
     let left = shown, yy = y; const total = lines.reduce((a, l) => a + l.length + 1, 0); if (shown >= total - 1) return;
     for (const ln of lines) { if (left <= 0) break; if (left <= ln.length) { const seg = ln.slice(0, left), m = /(\S+)$/.exec(seg); if (m) { ctx.font = `${weight} ${size}px ${FONT}`; const pre = seg.slice(0, seg.length - m[1].length), x0 = align === 'center' ? x - ctx.measureText(ln).width / 2 : x; ctx.save(); ctx.shadowColor = '#ffd36a'; ctx.shadowBlur = 12; txt(m[1], x0 + ctx.measureText(pre).width, yy, size, '#ffe9a8', 'left', weight); ctx.restore(); } break; } left -= ln.length + 1; yy += lh; }
   };
+}
+
+;
+/* ==== visual57.js ==== */
+'use strict';
+// ---------- 57: retratos com mais expressoes (boca por silaba, riso, choro) e avisos visuais unicos antes dos golpes de cada chefe ----------
+const Visual57 = {};
+
+// ---------- retratos: boca falando por silaba, riso e choro ----------
+{
+  const syl = t => { const e = .5 + .5 * Math.sin(t * 3.3), v = Math.abs(Math.sin(t * 13.5)); return clamp(v * (.35 + e * .65), 0, 1); };
+  Visual57.syl = syl;
+  for (const who of ['O', 'B']) {
+    const f = Portraits['face_' + who];
+    Portraits['face_' + who] = function (mood, t, talk) {
+      const laugh = mood === 'laugh', cry = mood === 'cry';
+      if (laugh || cry) ctx.translate(0, laugh ? Math.abs(Math.sin(t * 14)) * -5 : Math.sin(t * 22) * 1.2);
+      f.call(this, laugh ? 'happy' : cry ? 'sad' : mood, t, talk || laugh);
+      if (who === 'O') {
+        // a boca do Olienzinho nasce aqui: abre conforme a silaba, vira sorriso no riso e tremida no choro
+        ctx.save(); ctx.lineCap = 'round'; const my = 46, o = talk || laugh ? syl(t) : 0;
+        if (o > .08) { ctx.fillStyle = '#2a0b4a'; ctx.beginPath(); ctx.ellipse(0, my, 11 + o * 10, 4 + o * 17, 0, 0, 7); ctx.fill(); if (o > .45) { ctx.fillStyle = '#ff7aa8'; ctx.beginPath(); ctx.ellipse(0, my + 5 + o * 5, 6, 3 + o * 3, 0, 0, 7); ctx.fill(); } }
+        else if (mood !== 'happy' && !laugh) { ctx.strokeStyle = '#2a0b4a'; ctx.lineWidth = 5; ctx.beginPath(); if (mood === 'sad' || mood === 'worry' || cry) ctx.arc(0, my + 12, 12, Math.PI * 1.15, Math.PI * 1.85); else ctx.arc(0, my - 6, 12, .25, Math.PI - .25); ctx.stroke(); }
+        if (cry) { ctx.fillStyle = 'rgba(150,210,255,.9)'; for (const s of [-1, 1]) for (let i = 0; i < 2; i++) { ctx.beginPath(); ctx.ellipse(s * 32, 6 + ((t * 70 + i * 30) % 60), 4, 7, 0, 0, 7); ctx.fill(); } }
+        if (laugh) { ctx.strokeStyle = '#2a0b4a'; ctx.lineWidth = 4; for (const s of [-1, 1]) { ctx.beginPath(); ctx.moveTo(s * 58, -18); ctx.lineTo(s * 70, -26); ctx.stroke(); } }
+        ctx.restore();
+      } else if (cry) {
+        ctx.save(); ctx.fillStyle = 'rgba(190,235,255,.95)'; for (const s of [-1, 1]) for (let i = 0; i < 2; i++) { ctx.beginPath(); ctx.ellipse(s * 26, 6 + ((t * 70 + i * 32) % 62), 4, 7, 0, 0, 7); ctx.fill(); } ctx.restore();
+      }
+    };
+  }
+  // estrelinhas de alegria em volta do retrato quando ri
+  const pd = Portraits.draw;
+  Portraits.draw = function (who, x, y, size, o = {}) {
+    pd.call(this, who, x, y, size, o);
+    if (o.mood === 'laugh' && size >= 60) { const t = o.t ?? World.t; ctx.save(); ctx.globalCompositeOperation = 'lighter'; for (let i = 0; i < 4; i++) { const a = t * 2 + i * 1.57, r = size * .62; drawGlow(x + Math.cos(a) * r, y + Math.sin(a) * r * .8, size * .09, '#ffe9a8', .8); } ctx.restore(); }
+  };
+}
+
+// ---------- avisos de golpe unicos por chefe ----------
+{
+  const tk = Boss.prototype.tick;
+  Boss.prototype.tick = function (k, dt, every) {
+    const r = tk.call(this, k, dt, every); const v = this.cd[k];
+    if (v !== undefined && every > .6 && this.state === 'fight') { (this.tele || (this.tele = {}))[k] = v < .55 && v > 0 ? 1 - v / .55 : 0; }
+    return r;
+  };
+  const tp = b => { let m = 0; if (b.tele) for (const k in b.tele) if (b.tele[k] > m) m = b.tele[k]; return m; };
+  const hexp = (x, y, r, rot) => { ctx.beginPath(); for (let i = 0; i < 6; i++) { const a = rot + i * TAU / 6; ctx.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r); } ctx.closePath(); };
+  const SIG = {
+    MotherShip(b, p, t) { ctx.strokeStyle = '#ffd36a'; ctx.lineWidth = 4; for (let i = 0; i < 3; i++) { const r = 190 - p * 110 + i * 34; ctx.globalAlpha = p * (.9 - i * .25); hexp(b.x, b.y, r, t * .8 + i); ctx.stroke(); } },
+    RockGolem(b, p, t) { ctx.fillStyle = '#d8c09a'; for (let i = 0; i < 9; i++) { const x = b.x + (i - 4) * 70 + Math.sin(i * 9) * 20, y = H - 10 - Math.abs(Math.sin(t * 20 + i)) * 26 * p; ctx.globalAlpha = p * .8; ctx.fillRect(x, y, 10, 14 * p + 4); } ctx.strokeStyle = '#ffb06a'; ctx.lineWidth = 3; ctx.globalAlpha = p; ctx.beginPath(); ctx.moveTo(b.x - 70, b.y + 10); ctx.lineTo(b.x - 20 * p, b.y + 80 * p); ctx.lineTo(b.x + 60, b.y + 20); ctx.stroke(); },
+    StormEye(b, p, t) { ctx.strokeStyle = '#e8f6ff'; ctx.lineWidth = 3; ctx.globalAlpha = p; for (let i = 0; i < 6; i++) { const a = i * 1.047 + t * 3; let x = b.x + Math.cos(a) * 60, y = b.y + Math.sin(a) * 60; ctx.beginPath(); ctx.moveTo(x, y); for (let k = 0; k < 5; k++) { x += Math.cos(a) * 24 + (Math.random() - .5) * 20; y += Math.sin(a) * 24 + (Math.random() - .5) * 20; ctx.lineTo(x, y); } ctx.stroke(); } },
+    SunGuardian(b, p, t) { drawGlow(b.x, b.y, 140 + 160 * p, '#ffcf5a', .5 * p); ctx.strokeStyle = '#fff1b0'; ctx.lineWidth = 3; ctx.globalAlpha = p; for (let i = 0; i < 16; i++) { const a = i * TAU / 16 + t, r0 = 90 + 40 * p, r1 = r0 + 40 + 120 * p * (i % 2 ? .5 : 1); ctx.beginPath(); ctx.moveTo(b.x + Math.cos(a) * r0, b.y + Math.sin(a) * r0); ctx.lineTo(b.x + Math.cos(a) * r1, b.y + Math.sin(a) * r1); ctx.stroke(); } },
+    EchoBoss(b, p, t) { ctx.strokeStyle = '#c8a0ff'; ctx.lineWidth = 3; ctx.globalAlpha = p * .7; for (let i = 1; i <= 3; i++) { ctx.beginPath(); ctx.ellipse(b.x + Math.sin(t * 9 + i) * 30 * i * p, b.y, 70 + i * 16, 50 + i * 10, 0, 0, TAU); ctx.stroke(); } },
+    VoidBoss(b, p, t) { ctx.fillStyle = '#b98cff'; ctx.globalAlpha = p; for (let i = 0; i < 18; i++) { const a = i * 2.4 + t * 2, r = (1 - p) * 260 + 30 + (i % 3) * 14; ctx.beginPath(); ctx.arc(b.x + Math.cos(a) * r, b.y + Math.sin(a) * r, 3, 0, TAU); ctx.fill(); } ctx.strokeStyle = '#8a4aff'; ctx.lineWidth = 5; ctx.beginPath(); ctx.arc(b.x, b.y, 50 + 30 * p, 0, TAU); ctx.stroke(); },
+    Herald(b, p, t) { ctx.strokeStyle = '#ffe9a8'; ctx.lineWidth = 3; ctx.globalAlpha = p * .8; ctx.setLineDash([14, 12]); ctx.lineDashOffset = -t * 90; for (let i = -2; i <= 2; i++) { const x = b.x + i * 120; ctx.beginPath(); ctx.moveTo(x, b.y + 40); ctx.lineTo(x + i * 20, H); ctx.stroke(); } ctx.setLineDash([]); },
+    Leviathan(b, p, t) { ctx.strokeStyle = '#7fe0ff'; ctx.lineWidth = 3; for (let i = 0; i < 3; i++) { const k = (p * 1.5 + i * .33) % 1; ctx.globalAlpha = (1 - k) * p; ctx.beginPath(); ctx.ellipse(b.x, b.y + 20, 60 + k * 220, 24 + k * 80, 0, 0, TAU); ctx.stroke(); } ctx.fillStyle = '#cdf6ff'; ctx.globalAlpha = p; for (let i = 0; i < 8; i++) { ctx.beginPath(); ctx.arc(b.x + Math.sin(i * 5) * 90, b.y + 60 - ((t * 120 + i * 40) % 160), 4, 0, TAU); ctx.fill(); } },
+    Mirror(b, p, t) { ctx.fillStyle = '#ffffff'; ctx.globalAlpha = p * .8; for (let i = 0; i < 5; i++) { const a = i * 1.26 + t, r = 80 + i * 8; ctx.save(); ctx.translate(b.x + Math.cos(a) * r, b.y + Math.sin(a) * r); ctx.rotate(a); ctx.beginPath(); ctx.moveTo(0, -14); ctx.lineTo(8, 0); ctx.lineTo(0, 14); ctx.lineTo(-8, 0); ctx.closePath(); ctx.fill(); ctx.restore(); } },
+    Heart(b, p, t) { ctx.strokeStyle = '#ff7aa8'; ctx.lineWidth = 4; const k = Math.abs(Math.sin(p * Math.PI * 3)); ctx.globalAlpha = p; ctx.beginPath(); ctx.arc(b.x, b.y, 80 + k * 30 + p * 60, 0, TAU); ctx.stroke(); drawGlow(b.x, b.y, 120 + k * 40, '#ff4a8a', .35 * p); }
+  };
+  const CL = { MotherShip, RockGolem, StormEye, SunGuardian, EchoBoss, VoidBoss, Herald, Leviathan, Mirror, Heart };
+  for (const name in SIG) {
+    const C = CL[name], d = C.prototype.draw;
+    C.prototype.draw = function () {
+      d.call(this); if (QL() < 1 || this.state !== 'fight') return; const p = tp(this); if (p < .04) return;
+      ctx.save(); ctx.globalCompositeOperation = 'lighter'; SIG[name](this, p, World.t); ctx.restore();
+    };
+  }
+}
+
+// ---------- inimigos comuns: cardumes em onda, enxames e divisores (a partir do setor 2) ----------
+{
+  let busy = false;
+  const se = spawnEnemy;
+  spawnEnemy = function (type, x, y, o = {}) {
+    const e = se(type, x, y, o); if (busy || !e || o.nofx || !G.stage) return e;
+    const st = G.stage.id, boss = G.boss && G.boss.state === 'fight';
+    if (st < 2 || boss || G.enemies.length > 34 || type !== 'drone' && type !== 'bit') return e;
+    busy = true;
+    try {
+      if (type === 'drone') {
+        const r = Math.random();
+        if (r < .26) { e.wv = 1; for (let i = 1; i <= 4; i++) { const s = se('drone', clamp(x + (i - 2.5) * 62, 40, W - 40), y - Math.abs(i - 2.5) * 34, { nofx: 1, wv: 1 }); s.ph = e.ph + i * .55; s.fr = e.fr; s.amp = e.amp; s.bx = clamp(x + (i - 2.5) * 62, 40, W - 40); } }
+        else if (st >= 4 && r < .42) { e.split = 1; e.hp = e.maxHp = Math.ceil(e.hp * 1.4); }
+      } else if (type === 'bit' && st >= 3 && Math.random() < .3) { for (let i = 0; i < 6; i++) se('bit', clamp(x + rand(-110, 110), 30, W - 30), y - rand(0, 90), { nofx: 1 }); }
+    } finally { busy = false; }
+    return e;
+  };
+  const ke = killEnemy;
+  killEnemy = function (e, by) {
+    const was = e && !e.dead, x = e && e.x, y = e && e.y; const r = ke(e, by);
+    if (was && e.dead && e.split && by && !busy) { busy = true; try { for (const s of [-1, 1]) { const b = se('bit', x + s * 16, y, { nofx: 1, xp: 0, coin: 0, score: 2, vx: s * 90 }); b.bx = b.x; b.hp = b.maxHp = 1; } } finally { busy = false; } burst(x, y, ['#ffe9a8', e.glow || '#fff'], 10, 220, 4); }
+    return r;
+  };
+  const ae = Art.enemy;
+  Art.enemy = function (e) {
+    ae.call(this, e); if (QL() < 1 || (!e.split && !e.wv)) return; const t = World.t;
+    ctx.save(); ctx.translate(e.x, e.y); if (e.split) { ctx.strokeStyle = '#ffe9a8'; ctx.lineWidth = 2; ctx.setLineDash([6, 5]); ctx.lineDashOffset = -t * 20; ctx.beginPath(); ctx.arc(0, 0, e.rad + 7, 0, TAU); ctx.stroke(); ctx.setLineDash([]); ctx.beginPath(); ctx.moveTo(0, -e.rad); ctx.lineTo(0, e.rad); ctx.stroke(); }
+    else { ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = .35; ctx.fillStyle = e.glow || '#fff'; ctx.beginPath(); ctx.ellipse(0, -e.rad - 6, 4, 12 + Math.sin(t * 9 + e.ph) * 3, 0, 0, TAU); ctx.fill(); }
+    ctx.restore();
+  };
+}
+
+;
+/* ==== visual58.js ==== */
+'use strict';
+// ---------- 58: efeitos dos tiros, derrota cinematografica, cartoes de resumo da vitoria e letreiros animados ----------
+const Visual58 = { nb: 0, signs: [] };
+
+// ---------- tiros: brilho no cano, rastros por arma e faiscas ao acertar ----------
+{
+  const okc = c => typeof c === 'string' && c.length === 7 && c[0] === '#';
+  const wc = id => { const w = WEAPONS[id]; return w && okc(w.c) ? w.c : '#b98cff'; };
+  const sty = id => { let h = 0; for (let i = 0; i < (id || '').length; i++) h = (h * 31 + id.charCodeAt(i)) | 0; return Math.abs(h) % 3; };
+  let lastM = -1;
+  const mb = mkBullet;
+  mkBullet = function (p, x, y, ang, speed, dmgMul, o) {
+    const b = mb(p, x, y, ang, speed, dmgMul, o);
+    if (World.t - lastM > .06 && Visual55.lvl() >= 1 && p === G.player) {
+      lastM = World.t; const c = wc(p.weapon), k = Visual55.lvl() >= 2 ? 1 : .7;
+      G.parts.push({ k: 'flash', x: p.x, y: p.y - 40, vx: 0, vy: 0, life: .11, max: .11, r: 30 * k, c, drag: 1 });
+      for (let i = 0; i < 2; i++) G.parts.push({ x: p.x + rand(-6, 6), y: p.y - 38, vx: rand(-90, 90), vy: rand(-220, -90), life: .22, max: .22, r: rand(2, 4), c: '#ffffff', drag: 2 });
+    }
+    return b;
+  };
+  const pb = Art.pbullet;
+  Art.pbullet = function (b) {
+    pb.call(this, b); if (QL() < 1 || Visual55.lvl() < 1 || b.dead || b.kind === 'cannon' || b.kind === 'bomb' || b.kind === 'missile') return;
+    if (++Visual58.nb > 28) return; const c = okc(b.c) ? b.c : wc(b.w), sp = Math.hypot(b.vx, b.vy) || 1, ux = b.vx / sp, uy = b.vy / sp, L = Math.min(64, sp * .06), s = sty(b.w), t = World.t;
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = c; ctx.lineCap = 'round';
+    if (s === 0) { ctx.globalAlpha = .35; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(b.x, b.y); ctx.lineTo(b.x - ux * L, b.y - uy * L); ctx.stroke(); }
+    else if (s === 1) { ctx.globalAlpha = .45; ctx.lineWidth = 3; ctx.beginPath(); for (let i = 0; i <= 5; i++) { const k = i / 5, w = Math.sin(t * 40 + k * 7 + b.x) * 5 * k; ctx.lineTo(b.x - ux * L * k - uy * w, b.y - uy * L * k + ux * w); } ctx.stroke(); }
+    else { ctx.globalAlpha = .5; ctx.fillStyle = c; for (let i = 1; i <= 3; i++) { ctx.beginPath(); ctx.arc(b.x - ux * i * L * .3, b.y - uy * i * L * .3, 3.4 - i * .7, 0, TAU); ctx.fill(); } }
+    ctx.restore();
+  };
+  const de = damageEnemy;
+  damageEnemy = function (e, dmg, crit, chained) {
+    if (!chained && Visual55.lvl() >= 1 && e && !e.dead) {
+      let nb = null, bd = 1e9; for (const b of G.pb) { if (b.dead) continue; const d = Math.hypot(b.x - e.x, b.y - e.y); if (d < bd) { bd = d; nb = b; } }
+      if (nb && bd < e.rad + 40) { const c = okc(nb.c) ? nb.c : wc(nb.w), s = sty(nb.w), n = s === 0 ? 4 : s === 1 ? 6 : 3; for (let i = 0; i < n; i++) { const a = s === 2 ? -Math.PI / 2 + rand(-1.2, 1.2) : rand(0, TAU); G.parts.push({ x: nb.x, y: nb.y, vx: Math.cos(a) * rand(80, 260), vy: Math.sin(a) * rand(80, 260), life: .28, max: .28, r: rand(2, 4), c: i % 2 ? c : '#ffffff', drag: 2.5 }); } G.parts.push({ k: 'flash', x: nb.x, y: nb.y, vx: 0, vy: 0, life: .09, max: .09, r: crit ? 36 : 22, c, drag: 1 }); }
+    }
+    return de(e, dmg, crit, chained);
+  };
+}
+
+// ---------- tela de derrota cinematografica: a nave se desfaz em cacos e estrelas caem ----------
+{
+  const ov = Screens.over;
+  Screens.over = function () {
+    ov.call(this); if (QL() < 1) return; const t = World.t - (G.overAt ?? World.t), p = G.player, t2 = World.t;
+    if (t < .05) Visual58.deadX = undefined;
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    for (let i = 0; i < 9; i++) { const sx = (i * 197 + 60) % W, k = ((t2 * .35 + i * .13) % 1), y = -40 + k * (H + 80), x = sx - k * 160; ctx.globalAlpha = .5 * Math.sin(k * Math.PI); ctx.strokeStyle = i % 2 ? '#ffe9a8' : '#ff9ac0'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + 46, y - 74); ctx.stroke(); drawGlow(x, y, 9, '#fff0b0', .7); }
+    if (p && t < 2.6) {
+      if (Visual58.deadX === undefined) { Visual58.deadX = p.x; Visual58.deadY = p.y; }
+      const px = Visual58.deadX, py = Visual58.deadY;
+      for (let i = 0; i < 16; i++) { const a = i * 2.399 + .4, sp = 90 + (i * 37) % 160, d = Math.min(t, 2.6), x = px + Math.cos(a) * sp * d, y = py + Math.sin(a) * sp * d + 48 * d * d, f = clamp(1 - d / 2.6, 0, 1); ctx.save(); ctx.translate(x, y); ctx.rotate(a * 3 + d * (i % 2 ? 4 : -4)); ctx.globalAlpha = f; ctx.fillStyle = i % 3 ? '#b98cff' : '#e2d4ff'; ctx.beginPath(); ctx.moveTo(0, -12 - i % 4 * 3); ctx.lineTo(8 + i % 3 * 2, 9); ctx.lineTo(-8, 7); ctx.closePath(); ctx.fill(); drawGlow(0, 0, 14, '#ff9a6a', f * .5); ctx.restore(); }
+    }
+    ctx.restore();
+  };
+}
+
+// ---------- vitoria: cartoes de resumo ----------
+{
+  const cl = Screens.clear;
+  Screens.clear = function () {
+    cl.call(this); if (QL() < 1 || !G.result) return; const r = G.result, t = World.t - (G.clearAt ?? World.t), mm = Math.floor((r.time || 0) / 60), ss = Math.floor((r.time || 0) % 60);
+    const cards = [['TEMPO', mm + ':' + String(ss).padStart(2, '0'), '#7fe0ff'], ['ESTRELAS', '★ ' + (r.coins || 0), '#ffe9a8'], ['DERROTADOS', String(r.kills || 0), '#ff9ac0'], ['MAIOR COMBO', 'x' + (r.maxCombo || 0), '#ffb340']];
+    cards.forEach(([lab, val, c], i) => {
+      const k = easeOut(clamp((t - .9 - i * .15) / .4, 0, 1)); if (k <= 0) return; const w = 190, x = 235 + i * 205, y = 648 + (1 - k) * 40;
+      ctx.save(); ctx.globalAlpha = k; ctx.fillStyle = 'rgba(14,6,40,.85)'; ctx.strokeStyle = c; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(x, y, w, 56, 14); ctx.fill(); ctx.stroke();
+      txt(lab, x + w / 2, y + 7, 12, c, 'center', 800); txt(val, x + w / 2, y + 24, 24, '#fff', 'center', 900); ctx.restore();
+    });
+  };
+}
+
+// ---------- letreiros: letras que entram girando, seguram e se abrem ----------
+{
+  Visual58.sign = (text, c, o = {}) => { Visual58.signs.push({ text, c, t: 0, dur: o.dur || 1.7, y: o.y || H * .34, size: o.size || 96 }); if (Visual58.signs.length > 3) Visual58.signs.shift(); };
+  const up = Game.updatePlay;
+  Game.updatePlay = function (dt) {
+    Visual58.nb = 0; const hadMk = Visual52.mk, b0 = G.boss && G.boss.state;
+    up.call(this, dt);
+    if (Visual52.mk && !hadMk) { Visual58.sign(Visual52.mk.text, Visual52.mk.c, { size: 78, y: H * .26, dur: 1.4 }); Visual52.mk = null; }
+    const b1 = G.boss && G.boss.state; if (b1 === 'fight' && b0 && b0 !== 'fight' && b0 !== 'dying') Visual58.sign('CHEFE!', '#ff8a5f', { size: 110, dur: 1.9 });
+    if (Visual58.pend && G.stage && G.state === 'play') { Visual58.pend = false; if (!G.training) Visual58.sign('FASE ' + (G.stageIdx + 1), /^#[0-9a-f]{6}$/i.test(G.stage.tint) ? G.stage.tint : '#ffe9a8', { size: 100, y: H * .52, dur: 1.9 }); }
+  };
+  const hd = Visual15.hudDraw;
+  Visual15.hudDraw = function () {
+    hd.call(this); const S = Visual58.signs; if (!S.length || G.state !== 'play') return;
+    for (let n = S.length - 1; n >= 0; n--) {
+      const s = S[n]; s.t += 1 / 60; if (s.t > s.dur) { S.splice(n, 1); continue; }
+      const cc = /^#[0-9a-f]{6}$/i.test(s.c) ? s.c : '#ffe9a8', L = [...s.text], N = L.length, gap = s.size * .62, x0 = W / 2 - (N - 1) * gap / 2;
+      ctx.save(); ctx.font = `900 ${s.size}px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      const outK = clamp((s.t - (s.dur - .45)) / .45, 0, 1);
+      ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = .5 * Math.min(1, s.t / .2) * (1 - outK); const bw = N * gap + 160, g = ctx.createLinearGradient(W / 2 - bw / 2, 0, W / 2 + bw / 2, 0); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(.5, cc); g.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = g; ctx.fillRect(W / 2 - bw / 2, s.y - 3, bw, 6);
+      ctx.globalCompositeOperation = 'source-over';
+      L.forEach((ch, i) => {
+        const k = easeBack(clamp((s.t - i * .045) / .35, 0, 1)), dir = i % 2 ? 1 : -1; if (k <= 0 || ch === ' ') return;
+        const ox = (i - (N - 1) / 2) * gap * outK * .9, oy = dir * 80 * (1 - clamp((s.t - i * .045) / .3, 0, 1)) + outK * dir * -40, rot = dir * (1 - clamp((s.t - i * .045) / .35, 0, 1)) * .9 + outK * dir * .5;
+        ctx.save(); ctx.translate(x0 + i * gap + ox, s.y + oy); ctx.rotate(rot); ctx.scale(k, k); ctx.globalAlpha = (1 - outK) * clamp(k * 2, 0, 1);
+        ctx.lineJoin = 'round'; ctx.lineWidth = s.size * .12; ctx.strokeStyle = 'rgba(14,4,28,.9)'; ctx.strokeText(ch, 0, 0); ctx.shadowColor = cc; ctx.shadowBlur = 18; ctx.fillStyle = '#fff'; ctx.fillText(ch, 0, 0); ctx.restore();
+      });
+      ctx.restore();
+    }
+  };
+  const ss = Game.startStage; Game.startStage = function (i, o) { Visual58.signs.length = 0; Visual58.pend = true; return ss.call(this, i, o); };
 }
 
 ;

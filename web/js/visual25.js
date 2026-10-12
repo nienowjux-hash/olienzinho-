@@ -11,7 +11,7 @@ Visual25.selftest = async function () {
   const keep = JSON.stringify(Save.data); Save.data.mut = {}; Save.data.tal = {}; Save.data.ngpOn = false; Save.data.keys = {};
   try {
     G.state = 'selftest'; await new Promise(r => setTimeout(r, 50));
-    for (const s of ['title', 'playsetup', 'select', 'hangar', 'settings', 'access', 'modes', 'pilots', 'talents', 'mutators', 'stats', 'gallery', 'achievements', 'codex', 'records', 'orbi', 'custom']) {
+    for (const s of ['title', 'playsetup', 'profiles', 'cosmetics', 'select', 'hangar', 'settings', 'access', 'modes', 'pilots', 'talents', 'mutators', 'stats', 'gallery', 'achievements', 'codex', 'records', 'orbi', 'custom']) {
       const n0 = rep.errs.length; try { G.state = s; Trans.t = 9; for (let i = 0; i < 3; i++) { Trans.t = 9; render(); } } catch (e) { rep.errs.push(s + ': ' + e.message); } rep.scr.push([s, rep.errs.length === n0]);
     }
     rep.phase = 'fases'; const mx = {}; SHOP_ITEMS.forEach(s => mx[s.id] = s.max || 5);

@@ -769,7 +769,7 @@ const Screens = {
     txt('EFEITOS SONOROS  ' + Math.round(s.sfx * 100) + '%', 360, 258, 22, '#e2d4ff');
     const e = UI.slider('sfx', 360, 303, 560, s.sfx);
     txt('DIFICULDADE', 360, 346, 22, '#e2d4ff');
-    DIFF.forEach((d, i) => { if (UI.button('diff' + i, 360 + i * 142, 382, 132, 44, d.name, { size: 16, color: (s.diff ?? 1) === i ? '#9a63ff' : undefined })) { s.diff = i; Save.save(); } });
+    DIFF.forEach((d, i) => { if (UI.button('diff' + i, 360 + i * (560 / DIFF.length), 382, 560 / DIFF.length - 8, 44, d.name, { size: 15, color: (s.diff ?? 1) === i ? '#9a63ff' : undefined })) { s.diff = i; Save.save(); } });
     UI.wrap(DIFF[s.diff ?? 1].desc, 360, 436, 560, 22, 15, '#cdb8ff');
     if (m !== s.music || e !== s.sfx) {
       const sfxChanged = e !== s.sfx; s.music = m; s.sfx = e; Snd.setVolumes(s.sfx, s.music); Save.save();

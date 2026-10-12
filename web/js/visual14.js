@@ -164,7 +164,7 @@ Visual14.resumeEndless = function () {
 Screens.modes = function () {
   const day = Extras.todayMod(), cp = Save.data.endlessCp, wr = WEEK_RULES[Visual14.weekRule()];
   txt('MODOS EXTRAS', W / 2, 24, 44, '#fff', 'center');
-  const cards = [
+  const cards0 = [
     { id: 'inf', name: 'INFINITO', c: '#ffb340', l: 'Ondas sem fim e um chefe a cada 5.', foot: 'Melhor onda: ' + (Save.data.bestWave || 0), go: () => Game.startEndless() },
     cp ? { id: 'cp', name: 'CONTINUAR INFINITO', c: '#7fe0a0', l: 'Volte ao ponto de controle salvo (uma vez).', foot: 'Onda ' + cp.wave + ' • ' + cp.score + ' pts', go: () => Visual14.resumeEndless() } : null,
     { id: 'day', name: 'DESAFIO DO DIA', c: '#7fe0ff', l: day.name + ': ' + day.desc, foot: 'Seu melhor: ' + Extras.dailyBest(), go: () => Game.startDaily() },
@@ -176,8 +176,12 @@ Screens.modes = function () {
     Save.data.won4 ? { id: 'epi', name: 'EPÍLOGO', c: '#c8a0ff', l: 'Enfrente o seu reflexo: ele ataca conforme a sua arma.', foot: Save.data.epiDone ? 'Concluído ✓' : 'Recompensa: ★ 300', go: () => Visual16.startEpi() } : null,
     { id: 'orb', name: 'ORBI', c: '#7fe0ff', l: 'Melhore as habilidades do Orbi com estrelas.', foot: 'Nível ' + ['shot', 'grav', 'shield'].reduce((n, k) => n + Visual16.orbiLv(k), 0) + ' / 13', go: () => { G.state = 'orbi'; } },
     { id: 'rec', name: 'RECORDES', c: '#ffd36a', l: 'Sua melhor pontuação em cada fase e o piloto usado.', foot: Object.keys(Save.data.rec || {}).length + ' / ' + STAGES.length + ' fases', go: () => { G.state = 'records'; } },
+    Save.data.cleared[9] ? { id: 'tour', name: 'TORNEIO FINAL', c: '#ff8a5f', l: 'Os chefes das fases 7 a 10 em sequência, em ordem aleatória.', foot: Save.data.tour && Save.data.tour.best ? 'Melhor: ' + Math.floor(Save.data.tour.best / 60) + ':' + String(Math.floor(Save.data.tour.best % 60)).padStart(2, '0') : 'Recompensa: ★ 150', go: () => Visual5.startRush([6, 7, 8].sort(() => Math.random() - .5).concat([9])) } : null,
+    Save.data.cleared[9] ? { id: 'pil', name: 'PILOTOS', c: '#ffb340', l: 'Evolua cada guardião com estrelas.', foot: 'Colmeia, Pétreo, Vigia, Solaris', go: () => { G.state = 'pilots'; } } : null,
+    { id: 'gal', name: 'GALERIA', c: '#c8a0ff', l: 'Reveja os vídeos da história.', foot: Object.keys(Save.data.vseen || {}).length + ' / 5 vistos', go: () => { G.state = 'gallery'; } },
     { id: 'tr', name: 'TREINO', c: '#7fe0a0', l: 'Arena livre: armas, skins e inimigos.', foot: 'sem pressão :)', go: () => Game.startTraining() },
   ].filter(Boolean);
+  const MP = Math.ceil(cards0.length / 12); G.mpage = Math.min(G.mpage || 0, MP - 1); const cards = cards0.slice(G.mpage * 12, G.mpage * 12 + 12);
   const cw = 198, gap = 10, per = 6;
   cards.forEach((cd, i) => {
     const col = i % per, row = (i / per) | 0, n = row === 0 ? Math.min(per, cards.length) : cards.length - per, x0 = W / 2 - (cw * Math.max(n, 1) + gap * (Math.max(n, 1) - 1)) / 2, x = x0 + col * (cw + gap), y = 90 + row * 250, h = 232, id = 'm_' + cd.id, f = UI.focus(id);
@@ -191,6 +195,7 @@ Screens.modes = function () {
     else { ctx.arc(0, 0, 22, 0, TAU); ctx.stroke(); ctx.beginPath(); ctx.arc(0, 0, 10, 0, TAU); ctx.stroke(); ctx.beginPath(); ctx.arc(0, 0, 3.5, 0, TAU); ctx.fill(); }
     ctx.restore(); UI.wrap(cd.name, x + cw / 2, y + 100, cw - 24, 22, 17, '#fff', 'center'); UI.wrap(cd.l, x + cw / 2, y + 148, cw - 28, 18, 13, '#cdb8ff', 'center'); UI.wrap(cd.foot, x + cw / 2, y + h - 36, cw - 20, 16, 12, cd.c, 'center'); ctx.restore();
   });
+  if (MP > 1) { txt('PÁGINA ' + (G.mpage + 1) + '/' + MP, W - 130, 566, 15, '#cdb8ff', 'center', 800); if (UI.button('mpL', W - 210, 586, 70, 40, '◀', { size: 18 })) G.mpage = (G.mpage + MP - 1) % MP; if (UI.button('mpR', W - 130, 586, 70, 40, '▶', { size: 18 })) G.mpage = (G.mpage + 1) % MP; }
   if (UI.button('back', W / 2 - 160, 600, 320, 48, 'VOLTAR', { size: 22 }) || Input.pressed('escape')) { Snd.play('uiBack'); Game.goTitle(); }
   Screens.thinFrame();
 };

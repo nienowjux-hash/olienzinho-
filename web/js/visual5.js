@@ -188,16 +188,17 @@ Visual5.hud = function () {
   if (G.relic) { const r = RELICS.find(q => q.id === G.relic); if (r) { ctx.save(); ctx.globalAlpha = .9; Visual2.upIcon(r.icon, 40, 112, 11, '#ffb340', false); ctx.restore(); txt(r.name, 58, 104, 13, '#ffcf6b', 'left', 800); } }
   if (G.grazeAt !== undefined && World.t - G.grazeAt < 2) { ctx.globalAlpha = clamp(2 - (World.t - G.grazeAt), 0, 1); txt('RASPÃO x' + G.grazeN, W - 24, 144, 15, '#ffe9a8', 'right', 800); ctx.globalAlpha = 1; }
   let i = 0; for (const k of Object.keys(p.buffs || {})) if (p.buffs[k] > 0) { const c = CAPS[k]; txt(c.name, 24, 140 + i * 22, 13, c.c, 'left', 800); ctx.fillStyle = 'rgba(255,255,255,.15)'; ctx.fillRect(24, 156 + i * 22, 110, 3); ctx.fillStyle = c.c; ctx.fillRect(24, 156 + i * 22, 110 * clamp(p.buffs[k] / c.dur, 0, 1), 3); i++; }
-  if (G.rush) txt('CHEFE ' + (G.rushI + 1) + ' / 6', W - 24, 164, 15, '#ff8a5f', 'right', 900);
+  if (G.rush) txt('CHEFE ' + (G.rushI + 1) + ' / ' + (Visual5.tourList ? Visual5.tourList.length : 6), W - 24, 164, 15, '#ff8a5f', 'right', 900);
 };
 
 // ===== chefes em sequencia =====
-Visual5.startRush = function () {
+Visual5.startRush = function (tour) {
+  Visual5.tourList = tour || null;
   if (Game._nsPrev === undefined) Game._nsPrev = Game.noStory; Game.noStory = true;
   Visual5.rush = { score: 0, up: {}, hp: null, hits: 0, t0: performance.now() }; Visual5.rushRelic = undefined; Visual5.rushStep(0);
 };
 Visual5.rushStep = function (i) {
-  const r = Visual5.rush; Game.startStage(i, { skipStory: true }); G.rush = true; G.rushI = i; G.score = r.score; G.upCounts = r.up;
+  const r = Visual5.rush; Game.startStage(Visual5.tourList ? Visual5.tourList[i] : i, { skipStory: true }); G.rush = true; G.rushI = i; G.score = r.score; G.upCounts = r.up;
   recalcStats(G.player); G.player.hp = r.hp ?? G.player.maxHp; G.t = G.stage.duration - .1; G.miniDone = true; Events.banner = null; G.state = 'play';
 };
 {
@@ -206,17 +207,17 @@ Visual5.rushStep = function (i) {
     if (!G.rush) return bd.call(this);
     const r = Visual5.rush; r.score = G.score; r.hits += G.stats.hits; r.hp = Math.min(G.player.maxHp, G.player.hp + 2);
     G.bossDone = true; G.player.mood = 'happy'; G.player.moodT = 3; for (const k of G.pickups) k.mag = true; flashScreen(.5); Snd.play('stinger');
-    const last = G.rushI >= 5;
+    const last = G.rushI >= (Visual5.tourList ? Visual5.tourList.length - 1 : 5);
     if (last) G.timers.push({ t: 2.2, fn: () => Visual5.rushEnd() });
     else { popup(W / 2, 240, 'PRÓXIMO CHEFE...', '#ffb340', 34); G.timers.push({ t: 2.8, fn: () => Visual5.rushStep(G.rushI + 1) }); }
   };
 }
 Visual5.rushEnd = function () {
-  const r = Visual5.rush, secs = (performance.now() - r.t0) / 1000, perfect = r.hits === 0, d = Save.data; d.rush = d.rush || {};
-  const firstClear = !d.rush.best, firstPerfect = perfect && !d.rush.perfect, nb = firstClear || secs < d.rush.best; if (nb) d.rush.best = secs; if (perfect) d.rush.perfect = true;
+  const r = Visual5.rush, secs = (performance.now() - r.t0) / 1000, perfect = r.hits === 0, d = Save.data, RK = Visual5.tourList ? 'tour' : 'rush'; d[RK] = d[RK] || {};
+  const firstClear = !d[RK].best, firstPerfect = perfect && !d[RK].perfect, nb = firstClear || secs < d[RK].best; if (nb) d[RK].best = secs; if (perfect) d[RK].perfect = true;
   const reward = (firstClear ? 150 : 0) + (firstPerfect ? 250 : 0); d.coins += reward + G.runCoins; // recompensa so na primeira vez: nada de farmar estrelas Save.save(); Ach.check();
   const fmt = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
-  G.bonusEnd = { title: 'CHEFES DERROTADOS!', sub: perfect ? 'SEM TOMAR DANO. Perfeito!' : 'Os seis guardiões caíram.', rows: [['Tempo', fmt(secs)], ['Pontuação', r.score + ' pts'], ['Golpes sofridos', String(r.hits)], ['Recompensa (1ª vez)', '★ ' + reward]], again: () => Visual5.startRush(), best: nb ? 'NOVO RECORDE DE TEMPO!' : 'Recorde: ' + fmt(d.rush.best) };
+  G.bonusEnd = { title: Visual5.tourList ? 'TORNEIO FINAL CONCLUÍDO!' : 'CHEFES DERROTADOS!', sub: perfect ? 'SEM TOMAR DANO. Perfeito!' : (Visual5.tourList ? 'Os guardiões do Outro Lado caíram.' : 'Os seis guardiões caíram.'), rows: [['Tempo', fmt(secs)], ['Pontuação', r.score + ' pts'], ['Golpes sofridos', String(r.hits)], ['Recompensa (1ª vez)', '★ ' + reward]], again: () => Visual5.startRush(Visual5.tourList ? [6, 7, 8].sort(() => Math.random() - .5).concat([9]) : null), best: nb ? 'NOVO RECORDE DE TEMPO!' : 'Recorde: ' + fmt(d[RK].best) };
   G.state = 'bonusEnd'; G.bonusAt = undefined; Snd.play('stageClear'); Snd.musicPlay('triumph', 1);
 };
 Screens.bonusEnd = function () {

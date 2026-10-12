@@ -47,7 +47,7 @@ Visual16.impact = function (x, y, crit) {
   killEnemy = function (e, by) {
     const was = e.counted; ke(e, by); if (was || !e.counted) return; const x = e.x, y = e.y;
     switch (e.type) {
-      case 'jelly': burst(x, y, ['#bfefff', '#7fe8ff', '#ffffff'], 18, 260, 6); for (let i = 0; i < 8; i++) G.parts.push({ x: x + rand(-20, 20), y: y + rand(-10, 10), vx: rand(-40, 40), vy: rand(-90, -20), life: rand(.8, 1.4), max: 1.4, r: rand(4, 9), c: 'rgba(150,235,255,.7)', drag: .8 }); shockwave(x, y, 130, '#7fe8ff'); break;
+      case 'jelly': burst(x, y, ['#bfefff', '#7fe8ff', '#ffffff'], 18, 260, 6); for (let i = 0; i < 8; i++) G.parts.push({ x: x + rand(-20, 20), y: y + rand(-10, 10), vx: rand(-40, 40), vy: rand(-90, -20), life: rand(.8, 1.4), max: 1.4, r: rand(4, 9), c: '#96ebff', drag: .8 }); shockwave(x, y, 130, '#7fe8ff'); break;
       case 'eel': burst(x, y, ['#35f0c0', '#9fffe8', '#ffffff'], 22, 300, 6); shockwave(x, y, 110, '#35f0c0'); break;
       case 'prism': shedDebris(x, y, 10, ['#ffd36a', '#fff6d8', '#ff9a2a'], 380, 11); break;
       case 'lantern': burst(x, y, ['#ffb340', '#ffe9a8', '#ffffff'], 20, 300, 5); for (let i = 0; i < 6; i++) G.parts.push({ x, y, vx: rand(-80, 80), vy: rand(-200, -60), life: rand(.5, 1), max: 1, r: rand(2, 4), c: '#ff9a2a', drag: 1 }); break;
@@ -170,7 +170,7 @@ Screens.records = function () {
     const y = 130 + i * 44, r = rec[i], gi = Save.data.grades[i]; const col = i % 2 ? 'rgba(255,255,255,.04)' : 'rgba(255,255,255,.09)'; ctx.fillStyle = col; ctx.fillRect(166, y - 2, 948, 38);
     txt((i + 1) + '. ' + s.name, 184, y + 4, 19, r ? '#fff' : '#8a7fb0', 'left', 420);
     if (r) {
-      const w = WEAPONS[r.w], nm = w ? w.name : r.w; txt(String(r.score).padStart(7, ' ') + ' pts', 660, y + 4, 20, '#ffe9a8', 'right', 200); txt(nm, 700, y + 6, 17, w ? w.c : '#cdb8ff', 'left', 200); txt(['CALMO', 'NORMAL', 'DIFÍCIL', 'PESADELO'][r.d] || '', 900, y + 7, 14, '#cdb8ff', 'left', 120);
+      const w = WEAPONS[r.w], nm = w ? w.name : r.w; txt(String(r.score).padStart(7, ' ') + ' pts', 660, y + 4, 20, '#ffe9a8', 'right', 200); txt(nm, 700, y + 6, 17, w ? w.c : '#cdb8ff', 'left', 200); txt(['CALMO', 'NORMAL', 'DIFÍCIL', 'PESADELO', 'LIVRE'][r.d] || '', 900, y + 7, 14, '#cdb8ff', 'left', 120);
       if (gi !== undefined) txt('CBAS'[gi], 1090, y, 26, ['#cdb8ff', '#7fe0ff', '#ffd36a', '#ff8a5f'][gi], 'right', 40);
     } else txt('ainda não concluída', 660, y + 6, 16, '#6a5f90', 'left', 300);
   });

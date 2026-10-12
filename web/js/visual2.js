@@ -210,7 +210,7 @@ Screens.settings = function () {
   }
   if (G.sfxTest) G.sfxTest--;
   txt('DIFICULDADE', 360, 272, 21, '#e2d4ff');
-  DIFF.forEach((d, i) => { if (UI.button('diff' + i, 360 + i * 142, 304, 132, 40, d.name, { size: 15, color: (s.diff ?? 1) === i ? '#9a63ff' : undefined })) { s.diff = i; Save.save(); } });
+  DIFF.forEach((d, i) => { if (UI.button('diff' + i, 360 + i * (560 / DIFF.length), 304, 560 / DIFF.length - 8, 40, d.name, { size: 14, color: (s.diff ?? 1) === i ? '#9a63ff' : undefined })) { s.diff = i; Save.save(); } });
   UI.wrap(DIFF[s.diff ?? 1].desc, 360, 352, 560, 20, 14, '#cdb8ff');
   txt('GRÁFICOS', 360, 392, 21, '#e2d4ff');
   if (UI.button('res', 700, 386, 220, 32, 'RESOLUÇÃO: ' + Math.round((s.res || 1) * 100) + '%', { size: 13 })) { s.res = (s.res || 1) === 1 ? .75 : (s.res === .75 ? .5 : 1); Save.save(); resize(); }

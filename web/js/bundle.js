@@ -4213,10 +4213,10 @@ const Screens = {
   sceneBoss(S, t) {
     if (!S.bossObj) { try { const b = new BOSS_CLASSES[G.stage.boss](); b.state = 'fight'; S.bossObj = b; } catch (e) { return; } }
     const b = S.bossObj; b.t = t; b.x = W / 2; b.y = 250; b.flash = 0; b.phase = 0;
-    ctx.save(); ctx.globalAlpha = .55; ctx.translate(W / 2 + Math.sin(t * .3) * 22, 250); ctx.scale(1.6, 1.6); ctx.translate(-b.x, -b.y);
+    ctx.save(); ctx.globalAlpha = .88; ctx.translate(W / 2 + Math.sin(t * .3) * 22, 250); ctx.scale(1.6, 1.6); ctx.translate(-b.x, -b.y);
     try { b.draw(); } catch (e) { /* so cenario */ }
     ctx.restore(); ctx.globalAlpha = 1;
-    ctx.fillStyle = 'rgba(20,6,50,.5)'; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = 'rgba(20,6,50,.26)'; ctx.fillRect(0, 0, W, H);
   },
   // ajusta o tamanho da letra para o texto sempre caber na area disponivel
   fit(text, maxW, availH, sizes) {
@@ -11788,6 +11788,7 @@ Screens.settings = function () {
     tg('contr', 2, 'Alto contraste', 'contrast', 'Tiros inimigos mais destacados.'); tg('assist2', 3, 'Modo assistido', 'assist', 'Escudo contra tiros muito próximos.');
     tg('soft', 4, 'Brilhos suaves', 'softGlow', 'Metade da intensidade dos brilhos.');
     if (Visual37.toggle('foco', X, 452, 420, 78, 'Modo foco', !!s.foco, 'Escurece o fundo para destacar nave, tiros e chefe.')) { s.foco = !s.foco; Save.save(); }
+    if (Visual37.toggle('big', X + 440, 540, 420, 62, 'Interface grande', !!s.big, 'Textos do jogo 20% maiores.')) { s.big = !s.big; Save.save(); }
     if (UI.button('sacc', X, 548, 420, 46, 'TECLAS, LEGENDAS E CONTROLE ▸', { size: 17 })) { Snd.play('uiSelect'); G.state = 'access'; }
     if (Visual37.toggle('cbs', X + 440, 360, 420, 78, 'Formas nos tiros inimigos', !!s.cbs, 'Losangos em vez de círculos, sem depender só da cor.')) { s.cbs = !s.cbs; Save.save(); }
     if (Visual37.toggle('gov', X + 440, 452, 420, 78, 'Qualidade automática', s.gov !== false, 'Baixa efeitos e resolução sozinha se o jogo pesar.')) { s.gov = s.gov === false ? true : false; if (s.gov === false && typeof Visual65 !== 'undefined') { Visual65.level = 0; Visual65.apply(); } Save.save(); }
@@ -14438,7 +14439,8 @@ const Visual58 = { nb: 0, signs: [] };
   damageEnemy = function (e, dmg, crit, chained) {
     if (!chained && Visual55.lvl() >= 1 && e && !e.dead) {
       let nb = null, bd = 1e9; for (const b of G.pb) { if (b.dead) continue; const d = Math.hypot(b.x - e.x, b.y - e.y); if (d < bd) { bd = d; nb = b; } }
-      if (nb && bd < e.rad + 40) { const c = okc(nb.c) ? nb.c : wc(nb.w), s = sty(nb.w), n = s === 0 ? 4 : s === 1 ? 6 : 3; for (let i = 0; i < n; i++) { const a = s === 2 ? -Math.PI / 2 + rand(-1.2, 1.2) : rand(0, TAU); G.parts.push({ x: nb.x, y: nb.y, vx: Math.cos(a) * rand(80, 260), vy: Math.sin(a) * rand(80, 260), life: .28, max: .28, r: rand(2, 4), c: i % 2 ? c : '#ffffff', drag: 2.5 }); } G.parts.push({ k: 'flash', x: nb.x, y: nb.y, vx: 0, vy: 0, life: .09, max: .09, r: crit ? 36 : 22, c, drag: 1 }); }
+      if (nb && bd < e.rad + 40) { const c = okc(nb.c) ? nb.c : wc(nb.w), s = sty(nb.w), n = s === 0 ? 4 : s === 1 ? 6 : 3; for (let i = 0; i < n; i++) { const a = s === 2 ? -Math.PI / 2 + rand(-1.2, 1.2) : rand(0, TAU); G.parts.push({ x: nb.x, y: nb.y, vx: Math.cos(a) * rand(80, 260), vy: Math.sin(a) * rand(80, 260), life: .28, max: .28, r: rand(2, 4), c: i % 2 ? c : '#ffffff', drag: 2.5 }); } G.parts.push({ k: 'flash', x: nb.x, y: nb.y, vx: 0, vy: 0, life: .09, max: .09, r: crit ? 36 : 22, c, drag: 1 });
+        if (s === 0) G.rings.push({ x: nb.x, y: nb.y, r: 4, max: crit ? 70 : 42, c, life: .5 }); else if (s === 1) { for (let q = 0; q < 2; q++) G.parts.push({ k: 'bolt', x: nb.x, y: nb.y, vx: rand(-160, 160), vy: rand(-160, 160), life: .16, max: .16, r: 3, c, drag: 3 }); } else { G.parts.push({ k: 'spark', x: nb.x, y: nb.y, vx: rand(-60, 60), vy: -rand(200, 360), life: .3, max: .3, r: 3, c: '#ffffff', drag: 2 }); } }
     }
     return de(e, dmg, crit, chained);
   };
@@ -14806,7 +14808,7 @@ const h61 = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s 
     bi.call(this); if (G.state !== 'play' || QL() < 2) return; const b = G.boss, p = G.player; ctx.save(); ctx.globalCompositeOperation = 'lighter';
     if (b && b.state === 'fight' && ok61(b.col)) drawGlow(b.x, b.y + 40, 420, b.col, .13 + .04 * Math.sin(World.t * 3));
     if (p && !p.dead) drawGlow(p.x, p.y + 20, 240, '#b98cff', .08);
-    let n = 0; for (const q of G.pb) { if (q.dead || ++n > 12) break; if (ok61(q.c)) drawGlow(q.x, q.y, 80, q.c, .08); }
+    const lite = /cidade|oceano|gelo|cristal|espelho/i.test(G.stage ? G.stage.name : ''); let n = 0; for (const q of G.pb) { if (q.dead || ++n > (lite ? 10 : 12)) break; if (ok61(q.c)) drawGlow(q.x, q.y, lite ? 130 : 80, q.c, lite ? .12 : .08); }
     ctx.restore();
   };
 }
@@ -15233,7 +15235,7 @@ Visual65.MAX = 4;
 Visual65.apply = function () {
   const L = Visual65.level, B = Visual64;
   B.B = L >= 2 ? W * H * 1.1 : 1e12;
-  const want = L >= 4 ? .62 : L >= 3 ? .8 : 1;
+  const want = Visual65.noRes ? 1 : L >= 4 ? .62 : L >= 3 ? .8 : 1;
   if ((window.DYN || 1) !== want) { window.DYN = want; try { resize(); } catch (e) { } }
 };
 {
@@ -15245,8 +15247,9 @@ Visual65.apply = function () {
     if (Visual65.cool > 0) { Visual65.cool--; return; }
     const W_ = Visual65.win; W_.push(d); if (W_.length < 70) return;
     const avg = W_.reduce((a, b) => a + b, 0) / W_.length; W_.length = 0;
+    if (Visual65.chk) { const c = Visual65.chk; Visual65.chk = null; if (avg > c * .92 && (window.DYN || 1) < 1) { Visual65.noRes = true; Visual65.apply(); return; } } // baixar a resolucao nao ajudou: volta e para de tentar
     const lim = [19.5, 19.5, 22, 26][Math.min(3, Visual65.level)];
-    if (avg > lim && Visual65.level < Visual65.MAX) { if (++Visual65.bad >= 2) { Visual65.bad = 0; Visual65.level++; Visual65.cool = 150; Visual65.log.push([Math.round(avg), Visual65.level]); Visual65.apply(); } } else Visual65.bad = 0;
+    if (avg > lim && Visual65.level < Visual65.MAX) { if (++Visual65.bad >= 2) { Visual65.bad = 0; Visual65.level++; Visual65.cool = 150; if (Visual65.level >= 3 && !Visual65.noRes) Visual65.chk = avg; Visual65.log.push([Math.round(avg), Visual65.level]); Visual65.apply(); } } else Visual65.bad = 0;
   });
   const ss = Game.startStage; Game.startStage = function (i, o) { if (Visual65.level > 0) { Visual65.level--; Visual65.apply(); } Visual65.win.length = 0; Visual65.bad = 0; Visual65.cool = 480; return ss.call(this, i, o); };
 }
@@ -15521,6 +15524,86 @@ const h68 = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s 
     if (typeof Visual67 !== 'undefined' && Visual67.pad() && UI.focus(id) && !(o && o.disabled) && QL() >= 1) { const k = .5 + .5 * Math.sin(World.t * 7); ctx.save(); ctx.strokeStyle = '#ffe9a8'; ctx.globalAlpha = .6 + .4 * k; ctx.lineWidth = 3; ctx.beginPath(); ctx.roundRect(x - 5 - k * 2, y - 5 - k * 2, w + 10 + k * 4, h + 10 + k * 4, Math.min(24, h / 2 + 5)); ctx.stroke(); ctx.globalCompositeOperation = 'lighter'; drawGlow(x + w / 2, y + h / 2, Math.max(w, h) * .8, '#ffe9a8', .12 + k * .08); ctx.restore(); }
     return r;
   };
+}
+
+;
+/* ==== visual69.js ==== */
+'use strict';
+// ---------- 69: linha do tempo da derrota, cartas na vitoria, silhuetas de inimigos por setor, emblema do setor, titulo com progresso, interface grande ----------
+const Visual69 = { hist: [] };
+const ok69 = c => typeof c === 'string' && /^#[0-9a-f]{6}$/i.test(c);
+
+// ---------- 2. historico dos ultimos golpes (linha do tempo na tela de derrota) ----------
+{
+  const hp = hurtPlayer;
+  hurtPlayer = function (d) {
+    const p = G.player, b0 = p ? p.hp : 0, r = hp(d);
+    if (p && p.hp < b0) { Visual69.hist.push({ t: World.t, d: b0 - p.hp, who: Visual68.killer || 'Golpe' }); if (Visual69.hist.length > 12) Visual69.hist.shift(); }
+    return r;
+  };
+  const ss = Game.startStage; Game.startStage = function (i, o) { Visual69.hist.length = 0; return ss.call(this, i, o); };
+  const ov = Screens.over;
+  Screens.over = function () {
+    const r = ov.call(this); if (QL() < 1 || !Visual69.hist.length) return r;
+    const end = Visual69.hist[Visual69.hist.length - 1].t, H10 = Visual69.hist.filter(h => end - h.t <= 10); if (!H10.length) return r;
+    const x0 = 912, y0 = 480, w = 264; ctx.save();
+    txt('ÚLTIMOS 10 SEGUNDOS', x0 + w / 2, y0 - 26, 12, '#8a7fb0', 'center', 800);
+    ctx.fillStyle = 'rgba(14,6,40,.85)'; ctx.strokeStyle = 'rgba(190,160,255,.4)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(x0, y0, w, 18, 9); ctx.fill(); ctx.stroke();
+    H10.forEach(h => { const k = 1 - (end - h.t) / 10, x = x0 + 8 + k * (w - 16); ctx.fillStyle = h === H10[H10.length - 1] ? '#ff4a6e' : '#ff9a6a'; ctx.beginPath(); ctx.arc(x, y0 + 9, 4 + h.d * 1.5, 0, TAU); ctx.fill(); });
+    H10.slice(-3).reverse().forEach((h, i) => txt('-' + h.d + ' vida  •  ' + h.who + '  •  ' + (end - h.t < .1 ? 'fim' : (end - h.t).toFixed(1) + 's antes'), x0 + w / 2, y0 + 28 + i * 20, 13, i ? '#cdb8ff' : '#ffd0da', 'center', 700));
+    ctx.restore(); return r;
+  };
+}
+
+// ---------- 3 e 5. vitoria: cartas usadas + emblema do setor com brilho na cor da fase ----------
+{
+  const cl = Screens.clear;
+  Screens.clear = function () {
+    const r = cl.call(this); if (QL() < 1 || !G.stage) return r; const c = ok69(G.stage.tint) ? G.stage.tint : '#ffb340', t = World.t;
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(W / 2, 330, 520, c, .1 + .03 * Math.sin(t * 2)); ctx.restore();
+    // emblema do setor (canto superior esquerdo)
+    ctx.save(); ctx.translate(96, 98); const g = ctx.createRadialGradient(-18, -18, 6, 0, 0, 52); g.addColorStop(0, '#ffffff'); g.addColorStop(.4, c); g.addColorStop(1, '#1a0840'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, 44, 0, TAU); ctx.fill(); ctx.strokeStyle = '#e2d4ff'; ctx.lineWidth = 3; ctx.stroke();
+    ctx.rotate(-.35); ctx.strokeStyle = 'rgba(226,212,255,.7)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(0, 0, 70, 18, 0, 0, TAU); ctx.stroke(); ctx.restore();
+    txt('FASE ' + (G.stageIdx + 1), 96, 156, 14, c, 'center', 900);
+    // cartas usadas
+    const L = typeof Visual59 !== 'undefined' ? Visual59.list() : []; if (L.length) { const n = Math.min(8, L.length), x0 = 1070, y0 = 230; txt('CARTAS USADAS', x0 + 100, y0 - 26, 12, '#8a7fb0', 'center', 800);
+      L.slice(0, n).forEach(({ id, n: cc, u }, i) => { const x = x0 + (i % 3) * 66 + 33, yy = y0 + ((i / 3) | 0) * 66, col = ok69((RARITY[u.r] || {}).c) ? RARITY[u.r].c : '#b98cff'; ctx.save(); ctx.fillStyle = 'rgba(14,6,40,.85)'; ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(x - 28, yy, 56, 56, 12); ctx.fill(); ctx.stroke(); try { Visual2.upIcon(id, x, yy + 28, 14, col, false); } catch (e) { } if (cc > 1) txt('x' + cc, x + 24, yy + 38, 12, col, 'right', 900); ctx.restore(); }); }
+    return r;
+  };
+}
+
+// ---------- 4. silhuetas dos inimigos comuns mudam por setor ----------
+{
+  const ae = Art.enemy;
+  Art.enemy = function (e) {
+    ae.call(this, e); if (QL() < 1 || !G.stage || e.mini || e.type === 'dummy' || e.type === 'captain' || (e.rad || 0) > 46) return;
+    const v = (G.stage.id || 0) % 5, R = e.rad || 24, c = ok69(G.stage.tint) ? G.stage.tint : (ok69(e.glow) ? e.glow : '#ffb340'), t = World.t;
+    ctx.save(); ctx.translate(e.x, e.y); ctx.strokeStyle = c; ctx.fillStyle = c; ctx.lineWidth = 2.2; ctx.lineCap = 'round'; ctx.globalAlpha = .85;
+    if (v === 0) { for (const s of [-1, 1]) { ctx.beginPath(); ctx.moveTo(s * R * .3, -R * .8); ctx.quadraticCurveTo(s * R * .7, -R * 1.5, s * R * (.9 + Math.sin(t * 4 + s) * .1), -R * 1.5); ctx.stroke(); ctx.beginPath(); ctx.arc(s * R * .9, -R * 1.5, 2.4, 0, TAU); ctx.fill(); } }
+    else if (v === 1) { for (let i = -1; i <= 1; i++) { ctx.beginPath(); ctx.moveTo(i * R * .4 - 3, -R * .8); ctx.lineTo(i * R * .4, -R * (1.3 + (i === 0 ? .25 : 0))); ctx.lineTo(i * R * .4 + 3, -R * .8); ctx.fill(); } }
+    else if (v === 2) { ctx.rotate(t * 1.2 + e.ph); ctx.globalAlpha = .55; ctx.beginPath(); ctx.ellipse(0, 0, R * 1.35, R * .45, 0, 0, TAU); ctx.stroke(); }
+    else if (v === 3) { for (const s of [-1, 1]) { ctx.beginPath(); ctx.moveTo(s * R * .35, -R * .85); ctx.quadraticCurveTo(s * R * 1.05, -R * 1.05, s * R * .8, -R * 1.65); ctx.stroke(); } }
+    else { for (const s of [-1, 1]) { ctx.beginPath(); ctx.moveTo(s * R * .9, -R * .2); ctx.lineTo(s * R * 1.5, R * .15 + Math.sin(t * 6 + s) * 3); ctx.lineTo(s * R * .9, R * .5); ctx.closePath(); ctx.fill(); } }
+    ctx.restore();
+  };
+}
+
+// ---------- 7. titulo: constelacao do progresso (um ponto por setor vencido) e halo dourado se zerou o jogo ----------
+{
+  const ti = Screens.title;
+  Screens.title = function () {
+    const r = ti.call(this); if (QL() < 1) return r; const t = World.t, cl = Save.data.cleared || [], n = STAGES.length;
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    for (let i = 0; i < n; i++) { const x = 760 + i * 46, y = 610 - Math.sin(i / (n - 1) * Math.PI) * 54 + Math.sin(t * 1.4 + i) * 2, on = !!cl[i], c = ok69(STAGES[i].tint) ? STAGES[i].tint : '#ffffff'; if (i) { ctx.globalAlpha = on && cl[i - 1] ? .5 : .12; ctx.strokeStyle = '#e2d4ff'; ctx.lineWidth = 1.5; const px = 760 + (i - 1) * 46, py = 610 - Math.sin((i - 1) / (n - 1) * Math.PI) * 54; ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(x, y); ctx.stroke(); } ctx.globalAlpha = on ? .95 : .25; drawGlow(x, y, on ? 16 : 7, c, on ? .9 : .5); }
+    if (Save.data.trueEnd || Save.data.trueend) { ctx.globalAlpha = .25 + .1 * Math.sin(t * 2); drawGlow(660, 235, 340, '#ffd36a', .6); }
+    ctx.restore(); return r;
+  };
+}
+
+// ---------- 8. interface grande: textos do jogo 20% maiores (opcao em Acessibilidade) ----------
+{
+  const t0 = txt;
+  txt = function (s, x, y, size, color, align, weight, base) { if (Save.data.settings && Save.data.settings.big && size <= 24 && size >= 11) size = Math.round(size * 1.2); return t0(s, x, y, size, color, align, weight, base); };
 }
 
 ;

@@ -32,7 +32,8 @@ const Visual58 = { nb: 0, signs: [] };
   damageEnemy = function (e, dmg, crit, chained) {
     if (!chained && Visual55.lvl() >= 1 && e && !e.dead) {
       let nb = null, bd = 1e9; for (const b of G.pb) { if (b.dead) continue; const d = Math.hypot(b.x - e.x, b.y - e.y); if (d < bd) { bd = d; nb = b; } }
-      if (nb && bd < e.rad + 40) { const c = okc(nb.c) ? nb.c : wc(nb.w), s = sty(nb.w), n = s === 0 ? 4 : s === 1 ? 6 : 3; for (let i = 0; i < n; i++) { const a = s === 2 ? -Math.PI / 2 + rand(-1.2, 1.2) : rand(0, TAU); G.parts.push({ x: nb.x, y: nb.y, vx: Math.cos(a) * rand(80, 260), vy: Math.sin(a) * rand(80, 260), life: .28, max: .28, r: rand(2, 4), c: i % 2 ? c : '#ffffff', drag: 2.5 }); } G.parts.push({ k: 'flash', x: nb.x, y: nb.y, vx: 0, vy: 0, life: .09, max: .09, r: crit ? 36 : 22, c, drag: 1 }); }
+      if (nb && bd < e.rad + 40) { const c = okc(nb.c) ? nb.c : wc(nb.w), s = sty(nb.w), n = s === 0 ? 4 : s === 1 ? 6 : 3; for (let i = 0; i < n; i++) { const a = s === 2 ? -Math.PI / 2 + rand(-1.2, 1.2) : rand(0, TAU); G.parts.push({ x: nb.x, y: nb.y, vx: Math.cos(a) * rand(80, 260), vy: Math.sin(a) * rand(80, 260), life: .28, max: .28, r: rand(2, 4), c: i % 2 ? c : '#ffffff', drag: 2.5 }); } G.parts.push({ k: 'flash', x: nb.x, y: nb.y, vx: 0, vy: 0, life: .09, max: .09, r: crit ? 36 : 22, c, drag: 1 });
+        if (s === 0) G.rings.push({ x: nb.x, y: nb.y, r: 4, max: crit ? 70 : 42, c, life: .5 }); else if (s === 1) { for (let q = 0; q < 2; q++) G.parts.push({ k: 'bolt', x: nb.x, y: nb.y, vx: rand(-160, 160), vy: rand(-160, 160), life: .16, max: .16, r: 3, c, drag: 3 }); } else { G.parts.push({ k: 'spark', x: nb.x, y: nb.y, vx: rand(-60, 60), vy: -rand(200, 360), life: .3, max: .3, r: 3, c: '#ffffff', drag: 2 }); } }
     }
     return de(e, dmg, crit, chained);
   };

@@ -67,10 +67,10 @@ const Screens = {
   sceneBoss(S, t) {
     if (!S.bossObj) { try { const b = new BOSS_CLASSES[G.stage.boss](); b.state = 'fight'; S.bossObj = b; } catch (e) { return; } }
     const b = S.bossObj; b.t = t; b.x = W / 2; b.y = 250; b.flash = 0; b.phase = 0;
-    ctx.save(); ctx.globalAlpha = .55; ctx.translate(W / 2 + Math.sin(t * .3) * 22, 250); ctx.scale(1.6, 1.6); ctx.translate(-b.x, -b.y);
+    ctx.save(); ctx.globalAlpha = .88; ctx.translate(W / 2 + Math.sin(t * .3) * 22, 250); ctx.scale(1.6, 1.6); ctx.translate(-b.x, -b.y);
     try { b.draw(); } catch (e) { /* so cenario */ }
     ctx.restore(); ctx.globalAlpha = 1;
-    ctx.fillStyle = 'rgba(20,6,50,.5)'; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = 'rgba(20,6,50,.26)'; ctx.fillRect(0, 0, W, H);
   },
   // ajusta o tamanho da letra para o texto sempre caber na area disponivel
   fit(text, maxW, availH, sizes) {

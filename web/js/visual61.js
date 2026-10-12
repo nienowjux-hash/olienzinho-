@@ -69,7 +69,7 @@ const h61 = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s 
     bi.call(this); if (G.state !== 'play' || QL() < 2) return; const b = G.boss, p = G.player; ctx.save(); ctx.globalCompositeOperation = 'lighter';
     if (b && b.state === 'fight' && ok61(b.col)) drawGlow(b.x, b.y + 40, 420, b.col, .13 + .04 * Math.sin(World.t * 3));
     if (p && !p.dead) drawGlow(p.x, p.y + 20, 240, '#b98cff', .08);
-    let n = 0; for (const q of G.pb) { if (q.dead || ++n > 12) break; if (ok61(q.c)) drawGlow(q.x, q.y, 80, q.c, .08); }
+    const lite = /cidade|oceano|gelo|cristal|espelho/i.test(G.stage ? G.stage.name : ''); let n = 0; for (const q of G.pb) { if (q.dead || ++n > (lite ? 10 : 12)) break; if (ok61(q.c)) drawGlow(q.x, q.y, lite ? 130 : 80, q.c, lite ? .12 : .08); }
     ctx.restore();
   };
 }

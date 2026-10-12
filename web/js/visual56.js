@@ -26,7 +26,7 @@ Visual56.hudFrame = function (wl, comboH, ab, edge) {
   return Visual56.sprite('hud' + wl + '_' + comboH + '_' + ab + edge, W, H, (g) => {
     g.beginPath(); g.moveTo(8, 6); g.lineTo(8 + wl, 6); g.lineTo(8 + wl - 26, 92); g.lineTo(8, 92); g.closePath(); g.fillStyle = 'rgba(10,3,30,.5)'; g.fill(); g.strokeStyle = 'rgba(200,170,255,.45)'; g.lineWidth = 2; g.stroke(); g.fillStyle = edge; g.globalAlpha = .7; g.fillRect(8, 6, 4, 86); g.globalAlpha = 1;
     const wr = 330; g.beginPath(); g.moveTo(W - 8, 6); g.lineTo(W - 8 - wr, 6); g.lineTo(W - 8 - wr + 22, 6 + comboH); g.lineTo(W - 8, 6 + comboH); g.closePath(); g.fillStyle = 'rgba(10,3,30,.46)'; g.fill(); g.strokeStyle = 'rgba(200,170,255,.4)'; g.stroke(); g.fillStyle = edge; g.globalAlpha = .7; g.fillRect(W - 12, 6, 4, comboH); g.globalAlpha = 1;
-    g.beginPath(); g.roundRect(12, H - 118, 24 + ab * 112, 108, 22); g.fillStyle = 'rgba(10,3,30,.42)'; g.fill(); g.strokeStyle = 'rgba(200,170,255,.38)'; g.stroke();
+    g.beginPath(); g.roundRect(8, H - 72, 18 + ab * 70, 64, 16); g.fillStyle = 'rgba(10,3,30,.42)'; g.fill(); g.strokeStyle = 'rgba(200,170,255,.38)'; g.stroke();
   });
 };
 {

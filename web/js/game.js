@@ -668,6 +668,7 @@ const Game = {
     }
     // habilidades: pulso (Espaço), esquiva (Shift) e especial da arma (Q)
     const wp = WEAPONS[p.weapon];
+    ctx.save(); ctx.translate(0, H); ctx.scale(.62, .62); ctx.translate(0, -H);
     [['PULSO', 'ESPAÇO', p.pulseT, p.pulseCd, '#ffb340'], ['ESQUIVA', 'SHIFT', p.dashCd, p.dashCdMax, '#7fe0ff'], [wp.specName.toUpperCase(), 'Q', p.specCd, p.specCdMax, wp.c], ...Visual13.secHud(p)].forEach(([name, key, cd, mx, col], i) => {
       const cx = 56 + i * 112, cy = H - 66, rdy = cd <= 0, k = rdy ? 1 : 1 - cd / mx;
       G.abPrev = G.abPrev || []; G.abPop = G.abPop || []; if (rdy && G.abPrev[i] === false) G.abPop[i] = World.t; G.abPrev[i] = rdy;
@@ -676,8 +677,8 @@ const Game = {
       ctx.lineWidth = 5; ctx.strokeStyle = rdy ? col : '#6a5aa8'; ctx.beginPath(); ctx.arc(cx, cy, 24, -Math.PI / 2, -Math.PI / 2 + TAU * k); ctx.stroke();
       if (rdy) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(cx, cy, 42, col, .45 + Math.sin(World.t * 6 + i) * .15); ctx.restore(); ctx.globalAlpha = 1; }
       txt(key === 'ESPAÇO' ? 'ESP' : key, cx, cy, key === 'ESPAÇO' ? 15 : 18, rdy ? '#ffffff' : '#8a7fb0', 'center', 900, 'middle');
-      txt(name, cx, cy + 36, 12, rdy ? '#e2d4ff' : '#8a7fb0', 'center', 800);
     });
+    ctx.restore();
     // tutorial
     if (Save.data.runs <= 1 && G.t < 9) { const al = Math.min(1, (9 - G.t) / 1.5) * Math.min(1, G.t / .6); ctx.save(); ctx.globalAlpha = al; ctx.font = `700 18px ${FONT}`; const tt = 'Mova com WASD, setas ou mouse  •  O tiro é automático  •  ESPAÇO pulso  •  SHIFT esquiva  •  Q especial', tw = Math.min(W - 80, ctx.measureText(tt).width + 56); ctx.fillStyle = 'rgba(12,4,34,.78)'; ctx.strokeStyle = 'rgba(190,160,255,.5)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(W / 2 - tw / 2, 150, tw, 40, 20); ctx.fill(); ctx.stroke(); txt(tt, W / 2, 160, 18, '#e2d4ff', 'center', 700); ctx.restore(); }
   },

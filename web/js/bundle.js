@@ -4022,6 +4022,7 @@ const Game = {
     }
     // habilidades: pulso (Espaço), esquiva (Shift) e especial da arma (Q)
     const wp = WEAPONS[p.weapon];
+    ctx.save(); ctx.translate(0, H); ctx.scale(.62, .62); ctx.translate(0, -H);
     [['PULSO', 'ESPAÇO', p.pulseT, p.pulseCd, '#ffb340'], ['ESQUIVA', 'SHIFT', p.dashCd, p.dashCdMax, '#7fe0ff'], [wp.specName.toUpperCase(), 'Q', p.specCd, p.specCdMax, wp.c], ...Visual13.secHud(p)].forEach(([name, key, cd, mx, col], i) => {
       const cx = 56 + i * 112, cy = H - 66, rdy = cd <= 0, k = rdy ? 1 : 1 - cd / mx;
       G.abPrev = G.abPrev || []; G.abPop = G.abPop || []; if (rdy && G.abPrev[i] === false) G.abPop[i] = World.t; G.abPrev[i] = rdy;
@@ -4030,8 +4031,8 @@ const Game = {
       ctx.lineWidth = 5; ctx.strokeStyle = rdy ? col : '#6a5aa8'; ctx.beginPath(); ctx.arc(cx, cy, 24, -Math.PI / 2, -Math.PI / 2 + TAU * k); ctx.stroke();
       if (rdy) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(cx, cy, 42, col, .45 + Math.sin(World.t * 6 + i) * .15); ctx.restore(); ctx.globalAlpha = 1; }
       txt(key === 'ESPAÇO' ? 'ESP' : key, cx, cy, key === 'ESPAÇO' ? 15 : 18, rdy ? '#ffffff' : '#8a7fb0', 'center', 900, 'middle');
-      txt(name, cx, cy + 36, 12, rdy ? '#e2d4ff' : '#8a7fb0', 'center', 800);
     });
+    ctx.restore();
     // tutorial
     if (Save.data.runs <= 1 && G.t < 9) { const al = Math.min(1, (9 - G.t) / 1.5) * Math.min(1, G.t / .6); ctx.save(); ctx.globalAlpha = al; ctx.font = `700 18px ${FONT}`; const tt = 'Mova com WASD, setas ou mouse  •  O tiro é automático  •  ESPAÇO pulso  •  SHIFT esquiva  •  Q especial', tw = Math.min(W - 80, ctx.measureText(tt).width + 56); ctx.fillStyle = 'rgba(12,4,34,.78)'; ctx.strokeStyle = 'rgba(190,160,255,.5)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(W / 2 - tw / 2, 150, tw, 40, 20); ctx.fill(); ctx.stroke(); txt(tt, W / 2, 160, 18, '#e2d4ff', 'center', 700); ctx.restore(); }
   },
@@ -14053,7 +14054,7 @@ Visual16.impact = function (x, y, crit) {
   Game.drawHud = function () {
     const r = dh.call(this); const p = G.player; if (!p || QL() < 1) return r; const wp = WEAPONS[p.weapon]; if (!wp) return r;
     const list = [[p.pulseT, p.pulseCd, '#ffb340'], [p.dashCd, p.dashCdMax, '#7fe0ff'], [p.specCd, p.specCdMax, wp.c]]; ctx.save(); ctx.globalCompositeOperation = 'lighter';
-    list.forEach(([cd, mx, col], i) => { if (!(cd > 0 && cd < 1.1 && mx > 1.2) || !hx54(col)) return; const k = 1 - cd / 1.1; ctx.globalAlpha = .25 + k * .55; ctx.strokeStyle = col; ctx.lineWidth = 3 + k * 2; ctx.beginPath(); ctx.arc(56 + i * 112, H - 66, 32 + Math.sin(World.t * 14) * 2 + k * 4, 0, TAU); ctx.stroke(); });
+    ctx.translate(0, H); ctx.scale(.62, .62); ctx.translate(0, -H); list.forEach(([cd, mx, col], i) => { if (!(cd > 0 && cd < 1.1 && mx > 1.2) || !hx54(col)) return; const k = 1 - cd / 1.1; ctx.globalAlpha = .25 + k * .55; ctx.strokeStyle = col; ctx.lineWidth = 3 + k * 2; ctx.beginPath(); ctx.arc(56 + i * 112, H - 66, 32 + Math.sin(World.t * 14) * 2 + k * 4, 0, TAU); ctx.stroke(); });
     ctx.restore(); return r;
   };
 }
@@ -14174,7 +14175,7 @@ Visual56.hudFrame = function (wl, comboH, ab, edge) {
   return Visual56.sprite('hud' + wl + '_' + comboH + '_' + ab + edge, W, H, (g) => {
     g.beginPath(); g.moveTo(8, 6); g.lineTo(8 + wl, 6); g.lineTo(8 + wl - 26, 92); g.lineTo(8, 92); g.closePath(); g.fillStyle = 'rgba(10,3,30,.5)'; g.fill(); g.strokeStyle = 'rgba(200,170,255,.45)'; g.lineWidth = 2; g.stroke(); g.fillStyle = edge; g.globalAlpha = .7; g.fillRect(8, 6, 4, 86); g.globalAlpha = 1;
     const wr = 330; g.beginPath(); g.moveTo(W - 8, 6); g.lineTo(W - 8 - wr, 6); g.lineTo(W - 8 - wr + 22, 6 + comboH); g.lineTo(W - 8, 6 + comboH); g.closePath(); g.fillStyle = 'rgba(10,3,30,.46)'; g.fill(); g.strokeStyle = 'rgba(200,170,255,.4)'; g.stroke(); g.fillStyle = edge; g.globalAlpha = .7; g.fillRect(W - 12, 6, 4, comboH); g.globalAlpha = 1;
-    g.beginPath(); g.roundRect(12, H - 118, 24 + ab * 112, 108, 22); g.fillStyle = 'rgba(10,3,30,.42)'; g.fill(); g.strokeStyle = 'rgba(200,170,255,.38)'; g.stroke();
+    g.beginPath(); g.roundRect(8, H - 72, 18 + ab * 70, 64, 16); g.fillStyle = 'rgba(10,3,30,.42)'; g.fill(); g.strokeStyle = 'rgba(200,170,255,.38)'; g.stroke();
   });
 };
 {
@@ -14914,6 +14915,7 @@ const h62 = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s 
     const xw = W * clamp(G.xp / G.xpNeed, 0, 1);
     if (xw > 4) { ctx.save(); ctx.beginPath(); ctx.rect(0, 0, xw, 8); ctx.clip(); ctx.globalCompositeOperation = 'lighter'; const gx = ((t * 260) % (W + 200)) - 100, g = ctx.createLinearGradient(gx - 60, 0, gx + 60, 0); g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(.5, 'rgba(255,255,255,.55)'); g.addColorStop(1, 'rgba(255,255,255,0)'); ctx.fillStyle = g; ctx.fillRect(0, 0, xw, 8); ctx.restore(); }
     ctx.fillStyle = 'rgba(255,255,255,.18)'; ctx.fillRect(0, 0, W, 3);
+    ctx.translate(0, H); ctx.scale(.62, .62); ctx.translate(0, -H);
     const wp = WEAPONS[p.weapon]; if (wp) [[p.pulseT, p.pulseCd, '#ffb340'], [p.dashCd, p.dashCdMax, '#7fe0ff'], [p.specCd, p.specCdMax, wp.c]].forEach(([cd, mx, col], i) => {
       if (cd > 0 || !ok62(col)) return; const cx = 56 + i * 112, cy = H - 66; ctx.globalCompositeOperation = 'lighter';
       for (let k = 0; k < 3; k++) { const a = t * 2.2 + k * 2.094 + i; drawGlow(cx + Math.cos(a) * 30, cy + Math.sin(a) * 30, 5, col, .9); }

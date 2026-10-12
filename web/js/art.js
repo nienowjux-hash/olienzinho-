@@ -51,6 +51,7 @@ const Art = {
         const sd = mood === 'worry' ? -1 : 1; ctx.fillStyle = P.g1; ctx.beginPath(); ctx.moveTo(-U * .14, ey - U * .14); ctx.lineTo(U * .14, ey - U * .14); ctx.lineTo(U * .14, ey - U * (sd > 0 ? .02 : .09)); ctx.lineTo(-U * .14, ey - U * (sd > 0 ? .09 : .02)); ctx.closePath(); ctx.fill();
       }
     }
+    if (typeof Visual45 !== 'undefined' && QL() >= 1) Visual45.shipDetails(o, U, P, X, Y, body, ey);
     // escudo
     if (o.shield) {
       ctx.globalAlpha = .55 + .2 * Math.sin(o.t * 6);

@@ -221,10 +221,10 @@ Screens.settings = function () {
   if (UI.button('outl', 550, 536, 180, 38, s.outline ? 'CONTORNO: SIM' : 'CONTORNO: NÃO', { size: 12, color: s.outline ? '#9a63ff' : undefined })) { s.outline = !s.outline; Save.save(); }
   if (UI.button('assist', 740, 536, 180, 38, s.assist ? 'ASSISTIDO: SIM' : 'ASSISTIDO: NÃO', { size: 12, color: s.assist ? '#9a63ff' : undefined })) { s.assist = !s.assist; Save.save(); }
   const sure = G.confirmReset;
-  if (UI.button('reset', 360, 632, 270, 40, sure ? 'TEM CERTEZA? CLIQUE DE NOVO' : 'APAGAR PROGRESSO', { size: 14, color: '#c2185b' })) {
+  if (UI.button('reset', 360, 632, 190, 40, sure ? 'CONFIRMAR?' : 'APAGAR TUDO', { size: 13, color: '#c2185b' })) {
     if (sure) { Save.reset(); G.confirmReset = false; Snd.setVolumes(Save.data.settings.sfx, Save.data.settings.music); G.sel = 0; } else G.confirmReset = true;
   }
-  if (UI.button('back', 648, 632, 272, 40, 'VOLTAR', { size: 18 }) || Input.pressed('escape')) {
+  if (UI.button('back', 794, 632, 126, 40, 'VOLTAR', { size: 16 }) || Input.pressed('escape')) {
     G.confirmReset = false; Snd.play('uiBack');
     if (G.setBack === 'pause') G.state = 'pause'; else Game.goTitle();
   }

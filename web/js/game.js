@@ -228,6 +228,9 @@ const Game = {
       for (; i < avail.length; i++) { r -= RARITY[avail[i].r].w; if (r <= 0) break; }
       picks.push(avail.splice(Math.min(i, avail.length - 1), 1)[0]);
     }
+    // jogadores muito evoluidos esgotam as melhorias: sempre sobram 3 opcoes simples
+    const FB = [{ id: 'bonus', name: 'Chuva de Pontos', r: 'comum', max: 999, desc: '+3000 pontos na hora.' }, { id: 'carga', name: 'Carga Total', r: 'comum', max: 999, desc: 'O especial fica pronto agora.' }, { id: 'frenesi', name: 'Frenesi', r: 'comum', max: 999, desc: 'Atira muito mais rápido por 10 segundos.' }];
+    for (const f of FB) if (picks.length < 3 && !picks.includes(f)) picks.push(f);
     G.options = picks; G.state = 'levelup';
   },
 
@@ -238,6 +241,9 @@ const Game = {
     if (u.id === 'hp') p.hp = Math.min(p.maxHp, p.hp + 1);
     if (u.id === 'heal') p.hp = Math.min(p.maxHp, p.hp + 2);
     if (u.id === 'shield' && G.upCounts.shield === 1) p.shieldReady = true;
+    if (u.id === 'bonus') { G.score += 3000; popup(p.x, p.y - 60, '+3000', '#ffe9a8', 28); }
+    if (u.id === 'carga') { p.specCd = 0; popup(p.x, p.y - 60, 'ESPECIAL PRONTO', '#7fe0ff', 24); }
+    if (u.id === 'frenesi') { p.buffs = p.buffs || {}; p.buffs.rapid = 10; popup(p.x, p.y - 60, 'FRENESI!', '#ff8a5f', 28); }
     Snd.play('upgrade');
     G.state = 'play';
     if (G.pendingLevels > 0) this.openLevelUp();

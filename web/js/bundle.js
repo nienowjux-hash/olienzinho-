@@ -13885,7 +13885,7 @@ Visual52.shakeOff = function () {
   Screens.clear = function () {
     cl.call(this); if (QL() < 1 || !G.stats) return; const st = G.stats, b = [];
     if (st.hits === 0) b.push(['SEM DANO', '#7fe0a0']); if (st.maxCombo >= 25) b.push(['COMBO ' + st.maxCombo, '#ffb340']); if (st.minis >= 1) b.push([st.minis + ' MINICHEFE' + (st.minis > 1 ? 'S' : ''), '#ff8a5f']); if (G.bossDone && st.bossHit === 0) b.push(['CHEFE INTOCADO', '#ff7ac8']);
-    const t = World.t; b.forEach(([lab, c], i) => { const x = 40, y = 190 + i * 54, k = easeOut(clamp((t - (G.clearAt || 0) - .6 - i * .25) / .4, 0, 1)); ctx.save(); ctx.globalAlpha = k; ctx.translate(-(1 - k) * 80, 0); UI.panel(x, y, 232, 42, { r: 21, fill: 'rgba(14,6,40,.82)', stroke: c }); ctx.fillStyle = c; ctx.beginPath(); ctx.arc(x + 22, y + 21, 7, 0, TAU); ctx.fill(); txt(lab, x + 40, y + 11, 17, '#fff', 'left', 900); ctx.restore(); });
+    const t = World.t; b.forEach(([lab, c], i) => { const x = 8, y = 200 + i * 52, k = easeOut(clamp((t - (G.clearAt || 0) - .6 - i * .25) / .4, 0, 1)); ctx.save(); ctx.globalAlpha = k; ctx.translate(-(1 - k) * 80, 0); UI.panel(x, y, 208, 40, { r: 20, fill: 'rgba(14,6,40,.82)', stroke: c }); ctx.fillStyle = c; ctx.beginPath(); ctx.arc(x + 20, y + 20, 6, 0, TAU); ctx.fill(); txt(lab, x + 34, y + 11, 15, '#fff', 'left', 900); ctx.restore(); });
   };
 }
 

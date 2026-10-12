@@ -7,19 +7,19 @@ const sv = (k, d) => (Save.data[k] || (Save.data[k] = d));
 Visual24.update = function (dt) {
   const p = G.player; if (!p || p.dead || G.state !== 'play' || G.cut || G.finisher) return;
   p.parryCd = Math.max(0, (p.parryCd || 0) - dt); p.parryT = Math.max(0, (p.parryT || 0) - dt);
-  if (Input.pressed('f') && p.parryCd <= 0) { p.parryT = .22; p.parryCd = 1.3; p.parryHit = 0; shockwave(p.x, p.y, 100, '#7fe0ff'); Snd.play('shield'); Visual16.tip('parry', 'Rebater (F)', 'Aperte F quando um tiro estiver bem perto: ele volta contra o inimigo. Se acertar, recarrega mais rápido.'); }
+  if (Input.pressed('f') && p.parryCd <= 0) { p.parryT = .22; p.parryCd = 4.5; p.parryHit = 0; shockwave(p.x, p.y, 100, '#7fe0ff'); Snd.play('shield'); Visual16.tip('parry', 'Rebater (F)', 'Aperte F quando um tiro estiver bem perto: ele volta contra o inimigo. Se acertar, recarrega mais rápido.'); }
   if (p.parryT > 0) {
     for (const q of G.eb) if (!q.dead && Math.hypot(q.x - p.x, q.y - p.y) < 80) {
       q.dead = true; p.parryHit++; const tg = nearestTarget(p.x, p.y - 30), a = tg ? Math.atan2(tg.y - q.y, tg.x - q.x) : -Math.PI / 2;
       G.pb.push({ x: q.x, y: q.y, vx: Math.cos(a) * 820, vy: Math.sin(a) * 820, dmg: p.dmg * 2.2, crit: false, pierce: 1, hits: [], c: '#7fe0ff', r: 8, life: 1.6 });
       sparks(q.x, q.y, '#7fe0ff', 6, 260); G.score += 40; if (p.parryHit <= 3) popup(q.x, q.y - 20, 'REBATEU!', '#7fe0ff', 20);
     }
-    if (p.parryHit > 0 && !p._pf) { p._pf = true; p.parryCd = .45; G.hitstop = Math.max(G.hitstop || 0, .06); flashScreen(.1); Snd.play('hit', { pan: Snd.panX(p.x) }); }
+    if (p.parryHit > 0 && !p._pf) { p._pf = true; p.parryCd = 2.8; G.hitstop = Math.max(G.hitstop || 0, .06); flashScreen(.1); Snd.play('hit', { pan: Snd.panX(p.x) }); }
   } else p._pf = false;
 };
 {
   const vd = Visual13.draw;
-  Visual13.draw = function () { vd.call(this); const p = G.player; if (p && p.parryT > 0) { const k = p.parryT / .22; ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = '#7fe0ff'; ctx.globalAlpha = .9 * k; ctx.lineWidth = 5; ctx.beginPath(); ctx.arc(p.x, p.y, 80 * (1.1 - k * .25), 0, TAU); ctx.stroke(); drawGlow(p.x, p.y, 100, '#7fe0ff', .35 * k); ctx.restore(); } };
+  Visual13.draw = function () { vd.call(this); const p = G.player; if (p && !p.dead && p.parryCd > 0) { ctx.save(); ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(p.x - 18, p.y + 42, 36, 5); ctx.fillStyle = '#7fe0ff'; ctx.fillRect(p.x - 18, p.y + 42, 36 * (1 - clamp(p.parryCd / 4.5, 0, 1)), 5); ctx.restore(); } if (p && p.parryT > 0) { const k = p.parryT / .22; ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = '#7fe0ff'; ctx.globalAlpha = .9 * k; ctx.lineWidth = 5; ctx.beginPath(); ctx.arc(p.x, p.y, 80 * (1.1 - k * .25), 0, TAU); ctx.stroke(); drawGlow(p.x, p.y, 100, '#7fe0ff', .35 * k); ctx.restore(); } };
 }
 
 // ---------- mutadores ----------

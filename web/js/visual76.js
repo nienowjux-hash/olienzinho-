@@ -8,7 +8,7 @@ const ok76 = c => typeof c === 'string' && /^#[0-9a-f]{6}$/i.test(c);
 {
   const en = Art.enemy;
   Art.enemy = function (e) {
-    if (QL() >= 1 && !e.dead) { ctx.save(); ctx.fillStyle = 'rgba(2,0,14,.32)'; ctx.beginPath(); ctx.ellipse(e.x + 10, e.y + 16, (e.rad || 22) * .9, (e.rad || 22) * .5, 0, 0, TAU); ctx.fill(); ctx.restore(); }
+    if (QL() >= 1 && !e.dead && G.enemies.length <= 30) { ctx.save(); ctx.fillStyle = 'rgba(2,0,14,.32)'; ctx.beginPath(); ctx.ellipse(e.x + 10, e.y + 16, (e.rad || 22) * .9, (e.rad || 22) * .5, 0, 0, TAU); ctx.fill(); ctx.restore(); }
     return en.call(this, e);
   };
   const ke = killEnemy;
@@ -24,7 +24,7 @@ const ok76 = c => typeof c === 'string' && /^#[0-9a-f]{6}$/i.test(c);
 {
   const pb = Art.pbullet;
   Art.pbullet = function (b) {
-    if (QL() >= 1 && b.vx !== undefined && b.kind !== 'cannon' && b.kind !== 'bomb') {
+    if (QL() >= 1 && G.pb.length <= 140 && b.vx !== undefined && b.kind !== 'cannon' && b.kind !== 'bomb') {
       const sp = Math.hypot(b.vx, b.vy) || 1, L = Math.min(46, sp * .06), c = ok76(b.c) ? b.c : '#b98cff';
       ctx.save(); ctx.globalCompositeOperation = 'lighter'; const g = ctx.createLinearGradient(b.x, b.y, b.x - b.vx / sp * L, b.y - b.vy / sp * L); g.addColorStop(0, c); g.addColorStop(1, c + '00'); ctx.strokeStyle = g; ctx.globalAlpha = .55; ctx.lineWidth = (b.r || 5) * 1.3; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(b.x, b.y); ctx.lineTo(b.x - b.vx / sp * L, b.y - b.vy / sp * L); ctx.stroke(); ctx.restore();
     }

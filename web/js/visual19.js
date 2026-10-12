@@ -123,17 +123,17 @@ setTimeout(Visual19.warm, 1500);
 
 // ---------- Novo Jogo+: chefes remixados com golpes da Parte 3 ----------
 {
-  const hal = (cx, cy) => { const n = 24, gap = Math.floor(rand(0, n)); for (let i = 0; i < n; i++) { if (((i - gap + n) % n) < 3) continue; const a = i / n * TAU; ebullet(cx + Math.cos(a) * 340, cy + Math.sin(a) * 340, a + Math.PI, 130, { r: 6, life: 5 }); } };
+  const hal = (cx, cy) => { const n = 24, gap = Math.floor(rand(0, n)); for (let i = 0; i < n; i++) { if (((i - gap + n) % n) < 3) continue; const a = i / n * TAU; ebullet(cx + Math.cos(a) * 340, cy + Math.sin(a) * 340, a + Math.PI, 130, { c: '#5ae8ff', r: 6, life: 5 }); } };
   const REMIX = [
     () => { const p = G.player; popup(p.x, p.y - 70, 'REMIX: HALO', '#ffe9a8', 22); hal(p.x, p.y); },
-    () => { popup(W / 2, 230, 'REMIX: MARÉ', '#9fefff', 22); const gx = rand(150, W - 150); for (let i = 0; i < 20; i++) { const x = 30 + i * 62; if (Math.abs(x - gx) < 90) continue; ebullet(x, 60, Math.PI / 2, 150, { r: 8 }); } },
+    () => { popup(W / 2, 230, 'REMIX: MARÉ', '#9fefff', 22); const gx = rand(150, W - 150); for (let i = 0; i < 20; i++) { const x = 30 + i * 62; if (Math.abs(x - gx) < 90) continue; ebullet(x, 60, Math.PI / 2, 150, { c: '#5ae8ff', r: 8 }); } },
     () => { popup(W / 2, 230, 'REMIX: ECO', '#e8d0ff', 22); const past = []; for (let i = 0; i < 6; i++) { const tt = World.t - 2 + i * .3, s = P3.hist.find(h => h[0] >= tt); if (s) past.push(s[1]); } past.forEach((x, i) => P3.at(.5 + i * .3, () => Events.hazardRect(x, H / 2, 56, H, .85, .25, '#e8d0ff', 'bolt'))); },
-    () => { popup(W / 2, 230, 'REMIX: CHUVA', '#ff8a5f', 22); for (let i = 0; i < 14; i++) P3.at(i * .12, () => ebullet(rand(60, W - 60), -10, Math.PI / 2, 270, { r: 6 })); },
+    () => { popup(W / 2, 230, 'REMIX: CHUVA', '#ff8a5f', 22); for (let i = 0; i < 14; i++) P3.at(i * .12, () => ebullet(rand(60, W - 60), -10, Math.PI / 2, 270, { c: '#5ae8ff', r: 6 })); },
   ];
   const ba = Boss.prototype.update;
   Boss.prototype.update = function (dt) {
     ba.call(this, dt);
-    if (Save.data.ngpOn && this.state === 'fight' && !(this.stun > 0) && !(this.chargeT > 0) && G.player && !G.player.dead && !G.practice) { this._rx = (this._rx ?? 14) - dt; if (this._rx <= 0) { this._rx = Math.max(8, 15 - this.phase * 2); this._ri = ((this._ri ?? ((G.stageIdx || 0) * 2)) + 1) % REMIX.length; REMIX[this._ri](); } } // cada chefe comeca por um golpe diferente, so depois dos 14 s, e nao repete em seguida
+    if (Save.data.ngpOn && this.state === 'fight' && !(this.stun > 0) && !(this.chargeT > 0) && G.player && !G.player.dead && !G.practice) { this._rx = (this._rx ?? 14) - dt; if (this._rx <= 0) { this._rx = Math.max(8, 15 - this.phase * 2); this._ri = ((this._ri ?? ((G.stageIdx || 0) * 2)) + 1) % REMIX.length; const ri = this._ri; if (typeof Visual73 !== 'undefined') Visual73.remix(ri, () => REMIX[ri]()); else REMIX[ri](); } } // cada chefe comeca por um golpe diferente, so depois dos 14 s, e nao repete em seguida
   };
 }
 

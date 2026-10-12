@@ -136,7 +136,7 @@ const ok60 = c => typeof c === 'string' && /^#[0-9a-f]{6}$/i.test(c);
     const s = G.state; if (Visual60.last === null) Visual60.last = s;
     if (s !== Visual60.last) { const a = Visual60.last; Visual60.last = s; if (!(skip.includes(a) && skip.includes(s)) && QL() >= 1 && s !== 'cine') Visual60.tr = { t: 0 }; }
     const T = Visual60.tr; if (!T) return; T.t += 1 / 60; const u = T.t / .5; if (u >= 1) { Visual60.tr = null; return; }
-    ctx.setTransform(K, 0, 0, K, 0, 0); ctx.save(); ctx.globalAlpha = (1 - u) * .65; ctx.fillStyle = '#0a0320'; ctx.fillRect(0, 0, W, H);
+    ctx.setTransform(K, 0, 0, K, 0, 0); ctx.save(); ctx.globalAlpha = (1 - u) * .65; ctx.fillStyle = '#0a0320'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = Math.pow(1 - u, 3) * .35; ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
     ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 1 - u; ctx.lineCap = 'round';
     for (let i = 0; i < 16; i++) { const y = (i * 53 + 20) % H, x = -300 + (u * 1.3 + i * .02) * (W + 600), L = 160 + (i % 4) * 60; ctx.strokeStyle = i % 3 ? 'rgba(190,160,255,.7)' : 'rgba(255,233,168,.8)'; ctx.lineWidth = 2 + i % 3; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - L, y); ctx.stroke(); }
     ctx.restore();

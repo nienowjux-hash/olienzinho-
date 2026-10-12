@@ -15170,7 +15170,7 @@ const h63 = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s 
   hookRender(rn => function () {
     rn(); const s = G.state; if (QL() < 1 || s === 'cine' || s === 'photo') return; ctx.setTransform(K, 0, 0, K, 0, 0); ctx.save(); ctx.globalCompositeOperation = 'lighter';
     for (let i = Visual63.rip.length - 1; i >= 0; i--) { const q = Visual63.rip[i]; q.t += 1 / 60; if (q.t > .45) { Visual63.rip.splice(i, 1); continue; } if (s === 'play' && !q.touch) continue; ctx.globalAlpha = (1 - q.t / .45) * .8; ctx.strokeStyle = '#ffe9a8'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(q.x, q.y, 8 + q.t * 90, 0, TAU); ctx.stroke(); }
-    if (!touch && s !== 'play') {
+    if (!touch && s !== 'play' && !(typeof Visual67 !== 'undefined' && Visual67.pad())) {
       const m = Input.mouse, T = Visual63.cur; T.push([m.x, m.y]); if (T.length > 9) T.shift(); cv.style.cursor = 'none';
       for (let i = 0; i < T.length; i++) { const k = i / T.length; ctx.globalAlpha = k * .5; drawGlow(T[i][0], T[i][1], 4 + k * 8, '#cdb8ff', .8); }
       ctx.globalAlpha = 1; ctx.fillStyle = '#ffffff'; ctx.shadowColor = '#b98cff'; ctx.shadowBlur = 10; ctx.beginPath(); for (let i = 0; i < 8; i++) { const a = i / 8 * TAU - Math.PI / 2, r = i % 2 ? 4 : 11; ctx.lineTo(m.x + Math.cos(a) * r, m.y + Math.sin(a) * r); } ctx.closePath(); ctx.fill();
@@ -15298,10 +15298,10 @@ Visual37.controls = function (X, Wd) {
   const MX = X + 400; txt('BOTÕES DO JOGO', MX, 250, 17, '#ffb340', 'left', 900);
   const keys = Object.keys(PDEF);
   keys.forEach((k, i) => {
-    const y = 278 + i * 46, cur = pd[k] || PDEF[k][1], waiting = Visual66.wait === k;
-    txt(PDEF[k][0], MX, y + 11, 18, '#fff', 'left', 800);
+    const y = 276 + i * 40, cur = pd[k] || PDEF[k][1], waiting = Visual66.wait === k;
+    txt(PDEF[k][0], MX, y + 8, 18, '#fff', 'left', 800);
     const lab = waiting ? 'APERTE UM BOTÃO…' : Visual66.glyph(kind, cur);
-    if (UI.button('pdb' + k, MX + 170, y, 190, 38, lab, { size: 15, color: waiting ? '#ffb340' : '#9a63ff' })) { Visual66.wait = waiting ? null : k; Snd.play('uiSelect'); G.padPrev = {}; }
+    if (UI.button('pdb' + k, MX + 170, y, 190, 34, lab, { size: 15, color: waiting ? '#ffb340' : '#9a63ff' })) { Visual66.wait = waiting ? null : k; Snd.play('uiSelect'); G.padPrev = {}; }
   });
   if (Visual66.wait && g) {
     const prev = G.padPrev || (G.padPrev = {}); let hit = -1; for (let n = 0; n < 8; n++) { const on = bt(n); if (on && !prev[n] && G.padPrevInit) hit = n; prev[n] = on; } G.padPrevInit = true;
@@ -15315,6 +15315,76 @@ Visual37.controls = function (X, Wd) {
   if (UI.button('prst', X + 660, 500, 200, 36, 'BOTÕES PADRÃO', { size: 14 })) { Save.data.pad = {}; Save.save(); Visual66.wait = null; }
   if (UI.button('kbd', X + 440, 544, 420, 36, 'TECLAS DO TECLADO ▸', { size: 14 })) { Snd.play('uiSelect'); G.state = 'access'; }
 };
+
+;
+/* ==== visual67.js ==== */
+'use strict';
+// ---------- 67: o jogo reconhece sozinho se voce esta usando controle ou teclado: dicas, cursor e abas mudam junto ----------
+const Visual67 = { dev: 'kb', mx: 0, my: 0, acc: 0, tabHit: 0 };
+Visual67.pad = () => Visual67.dev === 'pad' && Visual66.list().length > 0;
+Visual67.kind = () => { const p = Visual66.list()[0]; return p ? p.kind : 'xbox'; };
+Visual67.ACT = { ESP: 'pulse', 'ESPAÇO': 'pulse', SHIFT: 'dash', Q: 'special', F: 'parry', R: 'sec' };
+Visual67.glyph = act => { const k = (Save.data.pad || {})[act] || PDEF[act][1]; return Visual66.glyph(Visual67.kind(), k); };
+Visual67.conf = () => Visual66.glyph(Visual67.kind(), 'a');
+Visual67.back = () => Visual66.glyph(Visual67.kind(), 'b');
+Visual67.swap = function (s) {
+  if (typeof s !== 'string' || s.length > 160) return s;
+  if (s.length <= 6 && Visual67.ACT[s]) return Visual67.glyph(Visual67.ACT[s]);
+  if (!/ENTER|ESC|ESPAÇO|SHIFT|WASD|\bQ\b|\bR\b|ESP\b/.test(s)) return s;
+  return s.replace('Mova com WASD, setas ou mouse', 'Mova com o analógico esquerdo').replace(/\bENTER\b/g, Visual67.conf()).replace(/\bESC\b/g, Visual67.back())
+    .replace(/\bESPAÇO\b|\bESP\b/g, Visual67.glyph('pulse')).replace(/\bSHIFT\b/g, Visual67.glyph('dash')).replace(/\bQ\b/g, Visual67.glyph('special')).replace(/\bR\b/g, Visual67.glyph('sec'));
+};
+{
+  const t0 = txt;
+  txt = function (s, x, y, size, color, align, weight, base) { return t0(Visual67.pad() ? Visual67.swap(s) : s, x, y, size, color, align, weight, base); };
+}
+
+// teclado ou mouse: volta para o modo teclado
+addEventListener('keydown', () => { Visual67.dev = 'kb'; });
+addEventListener('pointerdown', e => { if (e.pointerType !== 'touch') Visual67.dev = 'kb'; });
+addEventListener('pointermove', e => { const dx = e.clientX - Visual67.mx, dy = e.clientY - Visual67.my; Visual67.mx = e.clientX; Visual67.my = e.clientY; Visual67.acc += Math.hypot(dx, dy); if (Visual67.acc > 120) { Visual67.dev = 'kb'; Visual67.acc = 0; } });
+// controle: qualquer botao ou analogico muda para o modo controle e libera as abas (LB / RB)
+{
+  const pp = Visual6.pollPads, prev = {};
+  Visual6.pollPads = function () {
+    const r = pp.apply(this, arguments); const l = (navigator.getGamepads && navigator.getGamepads()) || [];
+    for (const g of l) if (g && g.connected) {
+      let act = false; for (let i = 0; i < g.buttons.length; i++) if (g.buttons[i] && g.buttons[i].pressed) { act = true; break; }
+      if (!act) for (let i = 0; i < 4 && i < g.axes.length; i++) if (Math.abs(g.axes[i]) > .55) { act = true; break; }
+      if (act) { if (Visual67.dev !== 'pad') { Visual67.dev = 'pad'; Visual67.acc = 0; } }
+      const lb = !!(g.buttons[4] && g.buttons[4].pressed), rb = !!(g.buttons[5] && g.buttons[5].pressed), k = g.index;
+      if (G.state !== 'play' && !Visual66.wait) { if (lb && !(prev[k] && prev[k].lb)) Input.hit.tabl = true; if (rb && !(prev[k] && prev[k].rb)) Input.hit.tabr = true; }
+      prev[k] = { lb, rb };
+    }
+    return r;
+  };
+}
+// abas: LB / RB no controle (ou PageUp / PageDown no teclado)
+Visual67.step = (list, cur, d) => list[(list.indexOf(cur) + d + list.length) % list.length];
+Visual67.tabDir = () => (Input.pressed('tabl') || Input.pressed('pageup')) ? -1 : (Input.pressed('tabr') || Input.pressed('pagedown')) ? 1 : 0;
+Visual67.hint = function (xL, xR, y) { if (!Visual67.pad()) return; const a = Visual66.glyph(Visual67.kind(), 'lb'), b = Visual66.glyph(Visual67.kind(), 'rb'); ctx.save(); ctx.font = `900 14px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; for (const [x, lab] of [[xL, a], [xR, b]]) { ctx.fillStyle = 'rgba(20,8,60,.9)'; ctx.strokeStyle = '#cdb8ff'; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(x - 24, y - 14, 48, 28, 10); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#fff'; ctx.fillText(lab, x, y + 1); } ctx.restore(); };
+{
+  const st = Screens.settings;
+  Screens.settings = function () {
+    const d = Visual67.tabDir(); if (d && !Visual66.wait) { G.stab = Visual67.step(Visual37.STABS.map(q => q[0]), G.stab || 'aud', d); Snd.play('uiSelect'); }
+    const r = st.call(this); Visual67.hint(40, W - 40, 98); return r;
+  };
+  const hg = Screens.hangar;
+  Screens.hangar = function () {
+    const d = Visual67.tabDir(); if (d) { G.htab = Visual67.step(Visual34.tabs.map(q => q[0]), G.htab || 'arm', d); Snd.play('uiSelect'); }
+    const r = hg.call(this); Visual67.hint(40, W - 40, 101); return r;
+  };
+  const ac = Screens.achievements;
+  Screens.achievements = function () {
+    const d = Visual67.tabDir(); if (d) { G.afil = Visual67.step(['all', 'done', 'todo'], G.afil || 'all', d); Snd.play('uiSelect'); }
+    return ac.call(this);
+  };
+}
+// cursor: some quando se joga com controle
+{
+  const pad = () => Visual67.pad();
+  hookRender(rn => function () { rn(); if (pad() && G.state !== 'play') cv.style.cursor = 'none'; });
+}
 
 ;
 /* ==== devbot.js ==== */

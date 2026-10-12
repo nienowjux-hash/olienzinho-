@@ -142,7 +142,7 @@ const h63 = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s 
   hookRender(rn => function () {
     rn(); const s = G.state; if (QL() < 1 || s === 'cine' || s === 'photo') return; ctx.setTransform(K, 0, 0, K, 0, 0); ctx.save(); ctx.globalCompositeOperation = 'lighter';
     for (let i = Visual63.rip.length - 1; i >= 0; i--) { const q = Visual63.rip[i]; q.t += 1 / 60; if (q.t > .45) { Visual63.rip.splice(i, 1); continue; } if (s === 'play' && !q.touch) continue; ctx.globalAlpha = (1 - q.t / .45) * .8; ctx.strokeStyle = '#ffe9a8'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(q.x, q.y, 8 + q.t * 90, 0, TAU); ctx.stroke(); }
-    if (!touch && s !== 'play') {
+    if (!touch && s !== 'play' && !(typeof Visual67 !== 'undefined' && Visual67.pad())) {
       const m = Input.mouse, T = Visual63.cur; T.push([m.x, m.y]); if (T.length > 9) T.shift(); cv.style.cursor = 'none';
       for (let i = 0; i < T.length; i++) { const k = i / T.length; ctx.globalAlpha = k * .5; drawGlow(T[i][0], T[i][1], 4 + k * 8, '#cdb8ff', .8); }
       ctx.globalAlpha = 1; ctx.fillStyle = '#ffffff'; ctx.shadowColor = '#b98cff'; ctx.shadowBlur = 10; ctx.beginPath(); for (let i = 0; i < 8; i++) { const a = i / 8 * TAU - Math.PI / 2, r = i % 2 ? 4 : 11; ctx.lineTo(m.x + Math.cos(a) * r, m.y + Math.sin(a) * r); } ctx.closePath(); ctx.fill();

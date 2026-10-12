@@ -55,10 +55,10 @@ Visual37.controls = function (X, Wd) {
   const MX = X + 400; txt('BOTÕES DO JOGO', MX, 250, 17, '#ffb340', 'left', 900);
   const keys = Object.keys(PDEF);
   keys.forEach((k, i) => {
-    const y = 278 + i * 46, cur = pd[k] || PDEF[k][1], waiting = Visual66.wait === k;
-    txt(PDEF[k][0], MX, y + 11, 18, '#fff', 'left', 800);
+    const y = 276 + i * 40, cur = pd[k] || PDEF[k][1], waiting = Visual66.wait === k;
+    txt(PDEF[k][0], MX, y + 8, 18, '#fff', 'left', 800);
     const lab = waiting ? 'APERTE UM BOTÃO…' : Visual66.glyph(kind, cur);
-    if (UI.button('pdb' + k, MX + 170, y, 190, 38, lab, { size: 15, color: waiting ? '#ffb340' : '#9a63ff' })) { Visual66.wait = waiting ? null : k; Snd.play('uiSelect'); G.padPrev = {}; }
+    if (UI.button('pdb' + k, MX + 170, y, 190, 34, lab, { size: 15, color: waiting ? '#ffb340' : '#9a63ff' })) { Visual66.wait = waiting ? null : k; Snd.play('uiSelect'); G.padPrev = {}; }
   });
   if (Visual66.wait && g) {
     const prev = G.padPrev || (G.padPrev = {}); let hit = -1; for (let n = 0; n < 8; n++) { const on = bt(n); if (on && !prev[n] && G.padPrevInit) hit = n; prev[n] = on; } G.padPrevInit = true;

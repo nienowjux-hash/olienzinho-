@@ -85,8 +85,7 @@ Screens.access = function () {
   txt('FILTRO DE COR', 230, 484, 20, '#ffb340', 'left', 900); if (UI.button('cb', 420, 476, 220, 40, CB[s.cb || 0], { size: 16, color: s.cb ? '#9a63ff' : undefined })) { s.cb = ((s.cb || 0) + 1) % 4; Save.save(); Visual25.applyCB(); }
   txt('Teste qual filtro deixa os tiros mais fáceis de enxergar para você.', 660, 484, 14, '#8a7fb0', 'left', 700);
   if (UI.button('rumb', 230, 530, 260, 40, s.rumble === false ? 'VIBRAÇÃO: NÃO' : 'VIBRAÇÃO: SIM', { size: 16, color: s.rumble === false ? undefined : '#9a63ff' })) { s.rumble = s.rumble === false ? true : false; Save.save(); }
-  { const PB = [['a', 'A'], ['b', 'B'], ['x', 'X'], ['y', 'Y'], ['lb', 'LB'], ['rb', 'RB'], ['lt', 'LT'], ['rt', 'RT']], PD = { pulse: ['Pulso', 'a'], special: ['Especial', 'x'], dash: ['Esquiva', 'lb'], parry: ['Rebater', 'b'], sec: ['Secundária', 'lt'] }, pd = Save.data.pad = Save.data.pad || {};
-    txt('CONTROLE', 230, 584, 18, '#ffb340', 'left', 900); Object.keys(PD).forEach((k, i) => { const cur = pd[k] || PD[k][1], lab = (PB.find(q => q[0] === cur) || PB[0])[1]; if (UI.button('pd' + k, 330 + i * 150, 574, 142, 34, PD[k][0] + ': ' + lab, { size: 12 })) { const ix = PB.findIndex(q => q[0] === cur); pd[k] = PB[(ix + 1) % PB.length][0]; Save.save(); Snd.play('uiSelect'); } }); }
+  txt('Botões do controle: aba CONTROLES em Opções.', 330, 584, 14, '#8a7fb0', 'left', 700);
   if (UI.button('back', W / 2 - 160, 620, 320, 50, 'VOLTAR', { size: 22 }) || (Input.hit.escape && !G.rebind)) { Snd.play('uiBack'); G.rebind = null; G.state = 'settings'; }
   Screens.thinFrame();
 };

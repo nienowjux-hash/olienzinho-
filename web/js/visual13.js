@@ -140,7 +140,7 @@ Screens.hangarGuard = function (g) {
   rows.forEach(([a, b], i) => { const y = 232 + i * 62; ctx.fillStyle = i < 2 ? G0.c : '#7fe0a0'; ctx.beginPath(); ctx.arc(110, y + 12, 6, 0, TAU); ctx.fill(); txt(a, 130, y, 21, '#fff', 'left', 800); UI.wrap(b, 130, y + 26, 490, 20, 15, '#cdb8ff'); });
   UI.panel(700, 92, 520, 430, { r: 24 }); ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(960, 300, 230, G0.c, .4); ctx.restore();
   Art.guardian(960, 300 + Math.sin(t * 1.6) * 8, { guard: WEAPONS[G0.w] ? 'g_' + g : 'g_C', vx: Math.sin(t * .8) * 80, t, scale: 1.9, lookx: clamp((Input.mouse.x - 960) / 400, -1, 1), looky: clamp((Input.mouse.y - 300) / 400, -1, 1), blinkT: Screens.blinkAt(t) });
-  txt(G0.name, 960, 440, 30, '#fff', 'center'); txt('liberado ao derrotar o chefe do setor', 960, 482, 16, '#7fe0a0', 'center', 800);
+  txt(G0.name, 960, 440, 30, '#fff', 'center'); txt('liberado ao zerar as 10 fases', 960, 482, 16, '#7fe0a0', 'center', 800);
   if (UI.button('back', W / 2 - 160, 600, 320, 56, 'VOLTAR', { size: 24 }) || Input.pressed('escape')) { Snd.play('uiBack'); Game.goSelect(); }
 };
 {
@@ -153,8 +153,8 @@ Screens.hangarGuard = function (g) {
     if (UI.button('pilot', 70, 36, 220, 40, 'PILOTO: ' + nm + ' ▸', { size: 14 })) { let n = (idx + 1) % PILOTS.length, k = 0; while (!Visual13.pilotOk(PILOTS[n]) && k++ < 8) n = (n + 1) % PILOTS.length; ld.char = PILOTS[n]; Save.save(); Snd.play('uiSelect'); }
     { const lk = []; if (!Save.data.cleared[5]) lk.push('Orbi: derrote o Vazio (fase 6)'); if (!Save.data.cleared[9]) lk.push('Guardiões: zere as 10 fases'); if (lk.length) txt('🔒 ' + lk.join('  •  '), 70, 82, 13, '#ffcf6b', 'left', 800); }
     const sc = ld.sec || 'none', ids = Object.keys(SECS);
-    if (UI.button('sec', 780, 36, 210, 40, 'SECUNDÁRIA: ' + SECS[sc].name.split(' ')[0], { size: 13, color: sc !== 'none' ? '#9a63ff' : undefined })) { ld.sec = ids[(ids.indexOf(sc) + 1) % ids.length]; Save.save(); Snd.play('uiSelect'); }
-    if (sc !== 'none') txt('R: ' + SECS[sc].desc, 890, 82, 13, SECS[sc].c, 'center', 800); else txt('Escolha uma arma secundária (tecla R)', 890, 82, 13, '#8a7fb0', 'center', 700);
+    if (UI.button('sec', 770, 40, 170, 34, 'SEC: ' + SECS[sc].name.split(' ')[0], { size: 12, color: sc !== 'none' ? '#9a63ff' : undefined })) { ld.sec = ids[(ids.indexOf(sc) + 1) % ids.length]; Save.save(); Snd.play('uiSelect'); }
+    UI.wrap(sc !== 'none' ? 'R: ' + SECS[sc].desc : 'Escolha uma arma secundária (tecla R)', 770, 80, 170, 15, 12, sc !== 'none' ? SECS[sc].c : '#8a7fb0');
   };
 }
 { const os = Visual8.onStart; Visual8.onStart = function () { os.call(this); Visual13.mines = []; G.barrier = null; G.mark = 0; if (G.player) G.player.secCd = 0; }; }

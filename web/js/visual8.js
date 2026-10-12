@@ -244,8 +244,8 @@ Visual8.onStart = function () {
   const ha = Screens.hangar;
   Screens.hangar = function () {
     ha.call(this); const ld = Save.data.loadout, st = ld.style || 0;
-    if (UI.button('style', 1000, 36, 240, 40, 'ESTILO: ' + STYLES[st].name, { size: 15, color: st ? '#9a63ff' : undefined })) { ld.style = (st + 1) % STYLES.length; Save.save(); Snd.play('uiSelect'); }
-    txt(STYLES[st].desc, 1240, 82, 13, '#cdb8ff', 'right', 700);
+    if (UI.button('style', 950, 40, 170, 34, 'ESTILO: ' + STYLES[st].name, { size: 12, color: st ? '#9a63ff' : undefined })) { ld.style = (st + 1) % STYLES.length; Save.save(); Snd.play('uiSelect'); }
+    UI.wrap(STYLES[st].desc, 950, 80, 170, 15, 12, '#cdb8ff');
   };
 }
 

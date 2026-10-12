@@ -96,6 +96,6 @@ Mirror.prototype.draw = function () {
   Visual3.bossDraw = function (b) {
     if (!b || QL() < 2 || b.state === 'intro') return bd.call(this, b);
     ctx.save(); const rad = b.rad || 100; ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = 'rgba(0,0,0,.2)'; ctx.beginPath(); ctx.ellipse(b.x + 14, b.y + rad * .95, rad * 1.05, rad * .24, 0, 0, TAU); ctx.fill(); ctx.restore();
-    ctx.save(); ctx.shadowColor = 'rgba(8,0,22,.8)'; ctx.shadowBlur = 7 * K; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0; bd.call(this, b); ctx.restore();
+    return bd.call(this, b);   // sem shadowBlur: custava ate 60 fps nos chefes com muitas formas
   };
 }

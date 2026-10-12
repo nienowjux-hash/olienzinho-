@@ -1,12 +1,13 @@
 'use strict';
 // ---------- cutscenes em video dentro do jogo (arquivos em /video, gerados a partir da propria arte do jogo) ----------
 const Visual18 = { vids: {}, ids: ['v_prologue', 'v_finale1', 'v_door', 'v_rift', 'v_end', 'v_act2', 'v_void'] };
-Visual18.get = function (id) {
+Visual18.get = function (id, lazy) {
   let v = Visual18.vids[id];
-  if (!v) { v = document.createElement('video'); v.preload = 'auto'; v.muted = true; v.playsInline = true; v.onerror = () => { v.bad = true; }; v.src = 'video/' + id + ((QL() === 0 || (Save.data.settings.res || 1) < 1) ? '_720' : '') + '.mp4'; Visual18.vids[id] = v; }
+  if (!v) { v = document.createElement('video'); v.preload = lazy ? 'metadata' : 'auto'; v.muted = true; v.playsInline = true; v.onerror = () => { v.bad = true; }; v.src = 'video/' + id + ((QL() === 0 || (Save.data.settings.res || 1) < 1) ? '_720' : '') + '.mp4'; Visual18.vids[id] = v; }
+  if (!lazy && v.preload !== 'auto') { v.preload = 'auto'; try { v.load(); } catch (e) { } }
   return v;
 };
-setTimeout(() => { try { for (const id of Visual18.ids) Visual18.get(id); } catch (e) { } }, 6000);
+setTimeout(() => { try { for (const id of Visual18.ids) Visual18.get(id, true); } catch (e) { } }, 6000);   // so os metadados: o video inteiro so baixa quando for tocar
 Visual18.next = function (S) { S.vOn = false; S.i++; S.t = 0; S.lastShown = 0; S.doneAt = null; S.fx = false; if (S.i >= S.pages.length) Game.endStory(); };
 Visual18.page = function (S, pg) {
   const now = World.t, v = Visual18.get(pg.video);

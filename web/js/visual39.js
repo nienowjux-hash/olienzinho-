@@ -88,17 +88,7 @@ Visual39.drawPop = function (o) {
   ctx.fillStyle = o.c; ctx.fillText(o.text, 0, 0); ctx.restore();
 };
 
-// ---------- bloom opcional ----------
-setTimeout(() => {
-  const small = document.createElement('canvas'); small.width = 480; small.height = 270; const sc = small.getContext('2d');
-  const rd = render;
-  render = function () {
-    rd();
-    const s = Save.data.settings; if (!s || !s.ultra || QL() < 2 || !['play', 'pause', 'levelup'].includes(G.state)) return;
-    sc.filter = 'blur(3px) brightness(.7) contrast(1.6)'; sc.drawImage(cv, 0, 0, 480, 270); sc.filter = 'none';
-    ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = .2; ctx.imageSmoothingEnabled = true; ctx.drawImage(small, 0, 0, cv.width, cv.height); ctx.restore();
-  };
-}, 0);
+// (o brilho de bloom ja existe no motor principal; o Modo Ultra nao repete o filtro)
 
 // ---------- enquadramento automatico (F8) e cartao de inicio de fase ----------
 addEventListener('keydown', e => { if (e.key === 'F8') { e.preventDefault(); Visual39.photo = !Visual39.photo; Visual7.msg = Visual39.photo ? 'ENQUADRAMENTO AUTOMÁTICO (F8 sai)' : 'ENQUADRAMENTO DESLIGADO'; Visual7.shotT = 2.2; } });

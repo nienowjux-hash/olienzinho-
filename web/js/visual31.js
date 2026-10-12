@@ -37,8 +37,8 @@ const COMP = { none: ['NENHUM', '#8a7fb0'], C: ['COLMEIA', '#ffb340'], P: ['PÉT
   const sp = Screens.pilots;
   Screens.pilots = function () {
     sp.call(this); const cur = sv31('comp', {}); const c = cur.id && cur.id !== 'none' && guardsOn().includes(cur.id) ? cur.id : 'none';
-    if (UI.button('compb', W / 2 + 180, 604, 400, 50, 'COMPANHEIRO: ' + COMP[c][0], { size: 18, color: c !== 'none' ? COMP[c][1] : undefined })) { const l = ['none', ...guardsOn()]; cur.id = l[(l.indexOf(c) + 1) % l.length]; Save.save(); Snd.play('uiSelect'); }
-    txt('Um guardião ajuda você nas fases', W / 2 + 380, 580, 14, '#8a7fb0', 'center', 700);
+    if (UI.button('compb', W / 2 + 180, 612, 400, 44, 'COMPANHEIRO: ' + COMP[c][0], { size: 18, color: c !== 'none' ? COMP[c][1] : undefined })) { const l = ['none', ...guardsOn()]; cur.id = l[(l.indexOf(c) + 1) % l.length]; Save.save(); Snd.play('uiSelect'); }
+    txt('Um guardião ajuda você nas fases', W / 2 + 380, 590, 14, '#8a7fb0', 'center', 700);
   };
 }
 Visual31.compUpdate = function (dt) {

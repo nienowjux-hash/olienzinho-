@@ -153,6 +153,7 @@ Visual2.upIcon = function (id, x, y, s, c, f) {
   const L = (...a) => { ctx.beginPath(); for (let i = 0; i < a.length; i += 2) i ? ctx.lineTo(a[i], a[i + 1]) : ctx.moveTo(a[i], a[i + 1]); ctx.stroke(); };
   const star = (r, n = 5) => { ctx.beginPath(); for (let i = 0; i < n * 2; i++) { const rr = i % 2 ? r * .45 : r, a = i * Math.PI / n - Math.PI / 2; ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); } ctx.closePath(); ctx.fill(); };
   const ring = (r) => { ctx.beginPath(); ctx.arc(0, 0, r, 0, TAU); ctx.stroke(); };
+  if (Visual2.newIcon && Visual2.newIcon(id, c, t)) { ctx.restore(); return; }
   switch (id) {
     case 'dmg': ctx.beginPath(); ctx.roundRect(-7, -24, 14, 36, 7); ctx.fill(); L(-14, 20, 14, 20); break;
     case 'rate': L(6, -26, -10, 4, 2, 4, -6, 26); break;

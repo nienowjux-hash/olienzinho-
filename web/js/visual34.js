@@ -1,10 +1,10 @@
 'use strict';
 // ---------- Hangar com abas: ARMAS, NAVE, PILOTO e OFICINA ----------
-const Visual34 = { tabs: [['arm', 'ARMAS'], ['nav', 'NAVE'], ['pil', 'PILOTO'], ['ofi', 'OFICINA']] };
+const Visual34 = { tabs: [['arm', 'ARMAS'], ['nav', 'NAVE'], ['pil', 'PILOTO'], ['ofi', 'OFICINA'], ['tes', 'TESTE']] };
 const hx = () => Save.data.loadout;
 const tabBar = () => {
-  G.htab = G.htab || 'arm'; const w = 230;
-  Visual34.tabs.forEach(([id, lab], i) => { if (UI.button('ht' + id, W / 2 - (w * 4 + 30) / 2 + i * (w + 10), 82, w, 38, lab, { size: 17, color: G.htab === id ? '#9a63ff' : undefined })) { G.htab = id; Snd.play('uiSelect'); } });
+  G.htab = G.htab || 'arm'; const N = Visual34.tabs.length, w = Math.floor((1020 - (N - 1) * 10) / N);
+  Visual34.tabs.forEach(([id, lab], i) => { if (UI.button('ht' + id, W / 2 - (w * N + (N - 1) * 10) / 2 + i * (w + 10), 82, w, 38, lab, { size: 17, color: G.htab === id ? '#9a63ff' : undefined })) { G.htab = id; Snd.play('uiSelect'); } });
 };
 const back = () => { if (UI.button('back', W / 2 - 160, 640, 320, 48, 'VOLTAR', { size: 22 }) || Input.pressed('escape')) { Snd.play('uiBack'); Game.goSelect(); } };
 
@@ -110,7 +110,7 @@ Screens.hangar = function () {
   if (!['olien', 'orbi', 'C', 'P', 'E', 'S'].includes(ld.char || 'olien')) ld.char = 'olien';
   txt('HANGAR', W / 2, 20, 42, '#fff', 'center'); txt(Screens.stars(), W - 40, 30, 30, '#ffcf6b', 'right');
   back();   // o botao de voltar vem primeiro: mesmo que algo falhe, o jogador consegue sair
-  try { tabBar(); const tab = G.htab || 'arm'; if (tab === 'arm') Visual34.armas(); else if (tab === 'nav') Visual34.nave(); else if (tab === 'pil') Visual34.piloto(); else Visual34.oficina(); }
+  try { tabBar(); const tab = G.htab || 'arm'; if (tab === 'arm') Visual34.armas(); else if (tab === 'nav') Visual34.nave(); else if (tab === 'pil') Visual34.piloto(); else if (tab === 'tes' && Visual34.teste) Visual34.teste(); else Visual34.oficina(); }
   catch (e) { Visual34.err = e; ctx.restore && 0; ctx.setTransform(K, 0, 0, K, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; txt('Algo deu errado nesta aba. Troque de aba ou volte.', W / 2, 300, 22, '#ffb3a0', 'center', 800); txt(String(e && e.message).slice(0, 110) + ' | ' + String((e && e.stack || '').split(String.fromCharCode(10))[1] || '').trim().slice(-90), W / 2, 340, 13, '#cdb8ff', 'center', 700); }
   Screens.thinFrame();
 };

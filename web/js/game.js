@@ -428,7 +428,7 @@ const Game = {
   drawPlay() {
     const p = G.player, cx = p ? p.x - W / 2 : 0;
     ctx.save();
-    if (G.shake > 0) ctx.translate(rand(-1, 1) * G.shake * .55, rand(-1, 1) * G.shake * .55);
+    if (G.shake > 0) { const so = typeof Visual52 !== 'undefined' ? Visual52.shakeOff() : [rand(-1, 1) * G.shake * .55, rand(-1, 1) * G.shake * .55]; ctx.translate(so[0], so[1]); }
     if (typeof Visual37 !== 'undefined' && Math.abs(Visual37.tilt) > .0008) { ctx.translate(W / 2, H / 2); ctx.rotate(Visual37.tilt); ctx.scale(1.012, 1.012); ctx.translate(-W / 2, -H / 2); }
     if (!G.furyCut) G.zoom = (G.zoom || 0) * .92; if (G.zoom <= .002) G.zoomCx = null; if (G.zoom > .001) { const zx = G.zoomCx ?? W / 2, zy = G.zoomCy ?? H / 2; ctx.translate(zx, zy); ctx.scale(1 + G.zoom, 1 + G.zoom); ctx.translate(-zx, -zy); }
     World.draw(cx); Visual15.veil(); Visual.biome(); Visual4.fog(); Visual15.weather(); Visual2.lights();

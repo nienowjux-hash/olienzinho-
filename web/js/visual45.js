@@ -9,9 +9,9 @@ Visual45.shipDetails = function (o, U, P, X, Y, body, ey) {
   const t = o.t || 0;
   // contorno escuro do corpo e das aletas
   ctx.save(); ctx.strokeStyle = 'rgba(18,5,34,.7)'; ctx.lineWidth = U * .028; ctx.lineJoin = 'round'; body(); ctx.stroke();
-  for (const s of [-1, 1]) { ctx.beginPath(); ctx.moveTo(X(s * .15), Y(.78)); ctx.lineTo(X(s * .44), Y(.25)); ctx.lineTo(X(s * .15), Y(.30)); ctx.stroke(); }
+  const BW = P.bw || 1, FS = P.fs || 1; for (const s of [-1, 1]) { ctx.beginPath(); ctx.moveTo(X(s * .15 * BW), Y(.78)); ctx.lineTo(X(s * .44 * FS), Y(.25 - (FS - 1) * .12)); ctx.lineTo(X(s * .15 * BW), Y(.30)); ctx.stroke(); }
   // luz de borda nas aletas e no nariz
-  ctx.strokeStyle = 'rgba(255,255,255,.5)'; ctx.lineWidth = U * .014; ctx.lineCap = 'round'; for (const s of [-1, 1]) { ctx.beginPath(); ctx.moveTo(X(s * .17), Y(.76)); ctx.lineTo(X(s * .42), Y(.28)); ctx.stroke(); }
+  ctx.strokeStyle = 'rgba(255,255,255,.5)'; ctx.lineWidth = U * .014; ctx.lineCap = 'round'; for (const s of [-1, 1]) { ctx.beginPath(); ctx.moveTo(X(s * .17 * BW), Y(.76)); ctx.lineTo(X(s * .42 * FS), Y(.28 - (FS - 1) * .12)); ctx.stroke(); }
   ctx.beginPath(); ctx.moveTo(X(-.16), Y(1.08)); ctx.bezierCurveTo(X(-.14), Y(1.28), X(-.06), Y(1.38), X(-.01), Y(1.42)); ctx.stroke();
   // painel e rebites
   ctx.save(); body(); ctx.clip(); ctx.strokeStyle = 'rgba(20,6,40,.35)'; ctx.lineWidth = U * .012; ctx.beginPath(); ctx.moveTo(X(-.2), Y(.46)); ctx.lineTo(X(.2), Y(.46)); ctx.moveTo(X(-.2), Y(.68)); ctx.lineTo(X(.2), Y(.68)); ctx.stroke();

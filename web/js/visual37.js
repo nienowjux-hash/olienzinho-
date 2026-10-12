@@ -43,8 +43,9 @@ Screens.settings = function () {
   } else if (G.stab === 'acc') {
     tg('calm', 0, 'Menos tremor', 'calm', 'Reduz o tremor de tela e os clarões.'); tg('outl', 1, 'Contorno nos tiros', 'outline', 'Contorno branco para enxergar melhor.');
     tg('contr', 2, 'Alto contraste', 'contrast', 'Tiros inimigos mais destacados.'); tg('assist2', 3, 'Modo assistido', 'assist', 'Escudo contra tiros muito próximos.');
-    if (UI.button('sacc', X, 372, 420, 52, 'TECLAS, LEGENDAS E CONTROLE ▸', { size: 17 })) { Snd.play('uiSelect'); G.state = 'access'; }
-    txt('Filtro de cor, vibração, tremor e legendas ficam lá.', X + 440, 390, 15, '#8a7fb0', 'left', 700);
+    tg('soft', 4, 'Brilhos suaves', 'softGlow', 'Metade da intensidade dos brilhos.');
+    if (UI.button('sacc', X, 470, 420, 52, 'TECLAS, LEGENDAS E CONTROLE ▸', { size: 17 })) { Snd.play('uiSelect'); G.state = 'access'; }
+    txt('Filtro de cor, vibração, tremor e legendas ficam lá.', X + 440, 488, 15, '#8a7fb0', 'left', 700);
   } else {
     UI.wrap('Seu progresso fica salvo neste navegador. Exporte para guardar uma cópia ou levar para outro lugar.', X, 150, Wd, 22, 17, '#cdb8ff');
     if (UI.button('sexp', X, 230, 410, 56, 'EXPORTAR SAVE', { size: 20 })) Visual25.exportSave(); if (UI.button('simp', X + 450, 230, 410, 56, 'IMPORTAR SAVE', { size: 20 })) Visual25.importSave();

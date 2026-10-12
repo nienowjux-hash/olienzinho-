@@ -4,7 +4,7 @@ const Art = {
   // Olienzinho. o = { vx, t, lookx, looky, blinkT, inv, shield, boost, scale }
   ship(x, y, o) {
     if (o.orbi) return this.orbi(x, y, o);
-    const U = 112 * (o.scale || 1), P = o.pal || SKIN_DEFAULT;
+    const U = 112 * (o.scale || 1), P = o.pal || SKIN_DEFAULT, BW = P.bw || 1, FS = P.fs || 1, NS = P.nose || 1;
     ctx.save(); ctx.translate(x, y); ctx.rotate(clamp((o.vx || 0) / 520, -1, 1) * 0.24); ctx.scale(o.sx || 1, o.sy || 1);
     if (o.inv > 0 && Math.floor(o.inv * 14) % 2 === 0) ctx.globalAlpha = .4;
     const X = v => v * U, Y = v => -(v - .75) * U;
@@ -19,14 +19,14 @@ const Art = {
     ctx.quadraticCurveTo(X(.13), Y(.2 - fl * .55), X(.1), Y(.22)); ctx.closePath(); ctx.fill(); ctx.restore();
     // aletas
     for (const s of [-1, 1]) {
-      ctx.fillStyle = P.fin; ctx.beginPath(); ctx.moveTo(X(s * .15), Y(.78)); ctx.lineTo(X(s * .44), Y(.25)); ctx.lineTo(X(s * .15), Y(.30)); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = P.fin; ctx.beginPath(); ctx.moveTo(X(s * .15 * BW), Y(.78)); ctx.lineTo(X(s * .44 * FS), Y(.25 - (FS - 1) * .12)); ctx.lineTo(X(s * .15 * BW), Y(.30)); ctx.closePath(); ctx.fill();
       ctx.fillStyle = 'rgba(255,255,255,.12)'; ctx.beginPath(); ctx.moveTo(X(s * .15), Y(.78)); ctx.lineTo(X(s * .3), Y(.52)); ctx.lineTo(X(s * .15), Y(.5)); ctx.closePath(); ctx.fill();
     }
     ctx.fillStyle = P.nozzle; ctx.beginPath(); ctx.roundRect(X(-.085), Y(.27), X(.17), U * .1, 4); ctx.fill();
     const body = () => {
-      ctx.beginPath(); ctx.moveTo(X(-.17), Y(.25)); ctx.lineTo(X(-.2), Y(.8));
-      ctx.bezierCurveTo(X(-.2), Y(1.15), X(-.08), Y(1.38), 0, Y(1.45));
-      ctx.bezierCurveTo(X(.08), Y(1.38), X(.2), Y(1.15), X(.2), Y(.8)); ctx.lineTo(X(.17), Y(.25)); ctx.closePath();
+      ctx.beginPath(); ctx.moveTo(X(-.17 * BW), Y(.25)); ctx.lineTo(X(-.2 * BW), Y(.8));
+      ctx.bezierCurveTo(X(-.2 * BW), Y(1.15), X(-.08 * BW), Y(1.38 + (NS - 1) * .3), 0, Y(1.45 + (NS - 1) * .45));
+      ctx.bezierCurveTo(X(.08 * BW), Y(1.38 + (NS - 1) * .3), X(.2 * BW), Y(1.15), X(.2 * BW), Y(.8)); ctx.lineTo(X(.17 * BW), Y(.25)); ctx.closePath();
     };
     const bg = ctx.createLinearGradient(X(-.2), 0, X(.2), 0);
     bg.addColorStop(0, P.g0); bg.addColorStop(.35, P.g1); bg.addColorStop(1, P.g2);

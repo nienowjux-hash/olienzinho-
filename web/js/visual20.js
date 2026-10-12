@@ -93,21 +93,21 @@ Object.assign(SECS, {
 // ---------- dificuldade livre ----------
 DIFF.push({ name: 'LIVRE', desc: 'Você escolhe: vida dos inimigos, velocidade dos tiros e a sua vida. Toque em AJUSTAR.', hp: 1, bul: 1, php: 0, score: 1, coin: 1 });
 Visual20.cust = () => stk('settings', {}).cust || (Save.data.settings.cust = { hp: 1, bul: 1, php: 0 });
-Visual20.applyCust = function () { const c = Visual20.cust(), d = DIFF[DIFF.length - 1]; d.hp = c.hp; d.bul = c.bul; d.php = c.php; d.score = +(1 + (c.hp - 1) * .5 + (c.bul - 1) * .6 - c.php * .08).toFixed(2); d.coin = +(1 + (c.hp - 1) * .4 + (c.bul - 1) * .4 - c.php * .06).toFixed(2); if (d.score < .3) d.score = .3; if (d.coin < .3) d.coin = .3; };
+Visual20.applyCust = function () { const c = Visual20.cust(), d = DIFF[4]; d.hp = c.hp; d.bul = c.bul; d.php = c.php; d.score = +(1 + (c.hp - 1) * .5 + (c.bul - 1) * .6 - c.php * .08).toFixed(2); d.coin = +(1 + (c.hp - 1) * .4 + (c.bul - 1) * .4 - c.php * .06).toFixed(2); if (d.score < .3) d.score = .3; if (d.coin < .3) d.coin = .3; };
 Visual20.applyCust();
 Screens.custom = function () {
   const c = Visual20.cust(); UI.panel(300, 90, 680, 520); txt('DIFICULDADE LIVRE', W / 2, 108, 38, '#fff', 'center');
   const row = (label, y, val, lo, hi, key, fmt) => { txt(label + '  ' + fmt(val), 360, y, 21, '#e2d4ff'); const n = UI.slider('cu' + key, 360, y + 40, 560, (val - lo) / (hi - lo)); const v = lo + n * (hi - lo); return key === 'php' ? Math.round(v) : Math.round(v * 20) / 20; };
   const hp = row('VIDA DOS INIMIGOS', 190, c.hp, .5, 2.5, 'hp', v => '×' + v.toFixed(2)), bul = row('VELOCIDADE DOS TIROS', 300, c.bul, .6, 1.6, 'bul', v => '×' + v.toFixed(2)), php = row('SUA VIDA', 410, c.php, -3, 4, 'php', v => (v > 0 ? '+' : '') + v);
   if (hp !== c.hp || bul !== c.bul || php !== c.php) { c.hp = hp; c.bul = bul; c.php = php; Visual20.applyCust(); Save.save(); }
-  const d = DIFF[DIFF.length - 1]; txt('Pontos ×' + d.score.toFixed(2) + '   •   Estrelas ×' + d.coin.toFixed(2), W / 2, 500, 20, '#ffcf6b', 'center', 800);
+  const d = DIFF[4]; txt('Pontos ×' + d.score.toFixed(2) + '   •   Estrelas ×' + d.coin.toFixed(2), W / 2, 500, 20, '#ffcf6b', 'center', 800);
   if (UI.button('cuReset', 360, 536, 270, 44, 'PADRÃO', { size: 18 })) { Object.assign(c, { hp: 1, bul: 1, php: 0 }); Visual20.applyCust(); Save.save(); }
   if (UI.button('back', 648, 536, 272, 44, 'VOLTAR', { size: 20 }) || Input.pressed('escape')) { Snd.play('uiBack'); G.state = G.customBack || 'settings'; G.customBack = null; }
 };
 {
   const st = Screens.settings;
   Screens.settings = function () {
-    st.call(this); if ((Save.data.settings.diff ?? 1) === DIFF.length - 1 && UI.button('custAdj', 780, 266, 140, 30, 'AJUSTAR ▸', { size: 14 })) { Snd.play('uiSelect'); G.state = 'custom'; }
+    st.call(this); if ((Save.data.settings.diff ?? 1) === 4 && UI.button('custAdj', 780, 266, 140, 30, 'AJUSTAR ▸', { size: 14 })) { Snd.play('uiSelect'); G.state = 'custom'; }
   };
 }
 

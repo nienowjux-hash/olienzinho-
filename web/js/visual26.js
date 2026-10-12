@@ -64,7 +64,7 @@ Screens.playsetup = function () {
   txt('DIFICULDADE', 220, 174, 22, '#ffb340', 'left', 900); const n = DIFF.length, bw = (840 - (n - 1) * 10) / n;
   DIFF.forEach((d, i) => { const sel = (s.diff ?? 1) === i; if (UI.button('psd' + i, 220 + i * (bw + 10), 214, bw, 54, (sel ? '✓ ' : '') + d.name, { size: 18, color: sel ? '#9a63ff' : undefined })) { s.diff = i; Save.save(); } });
   UI.wrap(DIFF[s.diff ?? 1].desc, 220, 284, 760, 24, 18, '#e2d4ff');
-  if ((s.diff ?? 1) === DIFF.length - 1 && UI.button('psadj', 900, 170, 160, 34, 'AJUSTAR ▸', { size: 15 })) { G.customBack = 'playsetup'; Snd.play('uiSelect'); G.state = 'custom'; }
+  if ((s.diff ?? 1) === 4 && UI.button('psadj', 900, 170, 160, 34, 'AJUSTAR ▸', { size: 15 })) { G.customBack = 'playsetup'; Snd.play('uiSelect'); G.state = 'custom'; }
   txt('JOGO NOVO+', 220, 350, 22, '#ffb340', 'left', 900);
   const ok = !!Save.data.won, on = ok && !!Save.data.ngpOn;
   if (UI.button('psng', 220, 388, 420, 58, ok ? (on ? '✓ JOGO NOVO+: LIGADO' : 'JOGO NOVO+: DESLIGADO') : '🔒 JOGO NOVO+: BLOQUEADO', { size: 20, color: on ? '#ff9a3c' : undefined, disabled: !ok }) || (ok && Input.pressed('n'))) { Save.data.ngpOn = !Save.data.ngpOn; Save.save(); Snd.play('uiSelect'); }

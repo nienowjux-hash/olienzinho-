@@ -62,8 +62,8 @@ Visual6.update = function (dt) {
   else if (i.ax || i.ay) { const m = Math.hypot(i.ax, i.ay); p.vx += (i.ax / m * p.speed - p.vx) * Math.min(1, 10 * dt); p.vy += (i.ay / m * p.speed - p.vy) * Math.min(1, 10 * dt); p.x += p.vx * dt; p.y += p.vy * dt; }
   else { p.vx *= 1 - Math.min(1, 6 * dt); p.vy *= 1 - Math.min(1, 6 * dt); p.x += p.vx * dt; p.y += p.vy * dt; }
   p.x = clamp(p.x, 50, W - 50); p.y = clamp(p.y, 90, H - 70);
-  p.fireT -= dt; if (p.fireT <= 0) { WEAPONS.orbi.fire(p); p.fireT = p.fireDelay * WEAPONS.orbi.delay / (p.buffs.rapid > 0 ? 1.6 : 1); }
-  if (i.special && p.specCd <= 0) { p.specCd = p.specCdMax; SPECIALS.gravity(p); Snd.play('specialFire', { w: 'orbi' }); shake(6); p.inv = Math.max(p.inv, .4); }
+  p.fireT -= dt; if (p.fireT <= 0) { const W2 = WEAPONS[p.weapon] || WEAPONS.orbi; W2.fire(p); p.fireT = p.fireDelay * W2.delay / (p.buffs.rapid > 0 ? 1.6 : 1); }
+  if (i.special && p.specCd <= 0) { p.specCd = p.specCdMax; SPECIALS[(WEAPONS[p.weapon] || WEAPONS.orbi).special](p); Snd.play('specialFire', { w: p.weapon }); shake(6); p.inv = Math.max(p.inv, .4); }
   if (Math.random() < dt * 26) G.parts.push({ x: p.x + rand(-6, 6), y: p.y + 26, vx: rand(-20, 20), vy: rand(80, 160), life: .4, max: .4, r: rand(3, 6), c: '#bff0ff', drag: 1.4 });
 };
 Visual6.hurtP2 = function (d) {
@@ -78,7 +78,7 @@ Visual6.hurtP2 = function (d) {
 Visual6.drawP2 = function () {
   const p1 = G.player, p = G.p2; if (!p) return;
   if (!p.dead) {
-    ctx.save(); ctx.globalAlpha = 1; Art.orbi(p.x, p.y + Math.sin(p.t * 3) * 2.5, { vx: p.vx, t: p.t, scale: SHIP_S, lookx: clamp(p.vx / 300, -1, 1), looky: -.4, blinkT: 0, inv: p.inv, sx: 1 - Math.abs(p.vx) / 500 * .14, sy: 1 });
+    ctx.save(); ctx.globalAlpha = 1; if (p.weapon && p.weapon.startsWith('g_')) Art.guardian(p.x, p.y + Math.sin(p.t * 3) * 2.5, { guard: p.weapon, vx: p.vx, t: p.t, scale: SHIP_S * 1.1, lookx: clamp(p.vx / 300, -1, 1), looky: -.4, blinkT: 0, inv: p.inv }); else Art.orbi(p.x, p.y + Math.sin(p.t * 3) * 2.5, { vx: p.vx, t: p.t, scale: SHIP_S, lookx: clamp(p.vx / 300, -1, 1), looky: -.4, blinkT: 0, inv: p.inv, sx: 1 - Math.abs(p.vx) / 500 * .14, sy: 1 });
     ctx.restore(); txt('P2', p.x, p.y - 56, 13, '#7fe0ff', 'center', 900);
   }
   if (p1 && !p1.dead) txt('P1', p1.x, p1.y - 56, 13, '#e2d4ff', 'center', 900);

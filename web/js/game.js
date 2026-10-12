@@ -627,14 +627,15 @@ const Game = {
     if (p.hp !== G.hpPrev) { G.hpPulse = 1; G.hpIdx = Math.min(p.hp, G.hpPrev); G.hpPrev = p.hp; }
     G.hpPulse = Math.max(0, G.hpPulse - dtH * 3);
     const low = p.hp <= Math.max(1, p.maxHp * .25);
-    const hsp = Math.min(38, 520 / Math.max(1, p.maxHp));
-    for (let i = 0; i < p.maxHp; i++) {
+    const compact = p.maxHp > 5, hsp = compact ? 0 : Math.min(38, 520 / Math.max(1, p.maxHp));
+    if (compact) { const sc = 1 + G.hpPulse * .4; ctx.save(); ctx.translate(40, 66); ctx.scale(sc, sc * (low ? 1 + Math.sin(World.t * 9) * .12 : 1)); ctx.beginPath(); ctx.moveTo(0, 12); ctx.bezierCurveTo(-19, -1, -13, -16, 0, -7); ctx.bezierCurveTo(13, -16, 19, -1, 0, 12); ctx.closePath(); ctx.fillStyle = low ? '#ff3b5f' : '#ff5f8f'; ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,.75)'; ctx.lineWidth = 1.6; ctx.stroke(); ctx.restore(); txt(p.hp + ' / ' + p.maxHp, 66, 56, 24, low ? '#ff8aa0' : '#ffe2ec', 'left', 900); }
+    else for (let i = 0; i < p.maxHp; i++) {
       const sc = i === G.hpIdx ? 1 + G.hpPulse * .6 : 1, cxh = 24 + i * hsp + 15;
       ctx.save(); ctx.translate(cxh, 66); ctx.scale(sc, sc * (low && i < p.hp ? 1 + Math.sin(World.t * 9) * .12 : 1));
       ctx.beginPath(); ctx.moveTo(0, 12); ctx.bezierCurveTo(-19, -1, -13, -16, 0, -7); ctx.bezierCurveTo(13, -16, 19, -1, 0, 12); ctx.closePath();
       if (i < p.hp) { ctx.fillStyle = low ? '#ff3b5f' : '#ff5f8f'; ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,.75)'; ctx.lineWidth = 1.6; ctx.stroke(); ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.beginPath(); ctx.ellipse(-7, -6, 4, 2.4, -.6, 0, TAU); ctx.fill(); } else { ctx.fillStyle = 'rgba(255,255,255,.07)'; ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,.28)'; ctx.lineWidth = 1.4; ctx.stroke(); } ctx.restore();
     }
-    if (p.shieldReady) { ctx.strokeStyle = '#7fe0ff'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(24 + p.maxHp * hsp + 10, 66, 9, 0, 7); ctx.stroke(); }
+    if (p.shieldReady) { ctx.strokeStyle = '#7fe0ff'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(compact ? 190 : 24 + p.maxHp * hsp + 10, 66, 9, 0, 7); ctx.stroke(); }
     // direita
     G.scoreShown += (G.score - G.scoreShown) * Math.min(1, 10 * dtH); if (Math.abs(G.score - G.scoreShown) < 1) G.scoreShown = G.score;
     if (G.score !== G.scorePrev) { G.scorePop = 1; G.scorePrev = G.score; } G.scorePop = Math.max(0, G.scorePop - dtH * 4);
@@ -643,9 +644,9 @@ const Game = {
     if (G.combo >= 3) {
       if (G.combo !== G.comboLast) { G.comboLast = G.combo; G.comboAt = World.t; }
       const pop = 1 + .4 * Math.max(0, 1 - (World.t - (G.comboAt || 0)) * 5), cc = G.combo >= 50 ? '#ff7ac8' : G.combo >= 25 ? '#ffb340' : G.combo >= 10 ? '#ffe9a8' : '#e2d4ff';
-      ctx.save(); ctx.translate(W - 24, 84); ctx.scale(pop, pop); ctx.shadowColor = cc; ctx.shadowBlur = G.combo >= 10 ? 14 : 0; txt('COMBO ' + G.combo, 0, 0, 22, cc, 'right'); ctx.restore();
-      txt('x' + (1 + Math.min(G.combo, 60) * .03).toFixed(1) + ' pontos', W - 24, 110, 14, '#cdb8ff', 'right', 700);
-      ctx.fillStyle = 'rgba(255,255,255,.15)'; ctx.fillRect(W - 24 - 120, 130, 120, 4); ctx.fillStyle = cc; ctx.fillRect(W - 24 - 120 * clamp(G.comboT / 2.2, 0, 1), 130, 120 * clamp(G.comboT / 2.2, 0, 1), 4);
+      ctx.save(); ctx.translate(W - 24, 84); ctx.scale(pop, pop); ctx.shadowColor = cc; ctx.shadowBlur = G.combo >= 10 ? 14 : 0; txt('COMBO ' + G.combo, 0, 0, 19, cc, 'right'); ctx.restore();
+      txt('x' + (1 + Math.min(G.combo, 60) * .03).toFixed(1) + ' pontos', W - 24, 102, 13, '#cdb8ff', 'right', 700);
+      ctx.fillStyle = 'rgba(255,255,255,.15)'; ctx.fillRect(W - 24 - 120, 118, 120, 3); ctx.fillStyle = cc; ctx.fillRect(W - 24 - 120 * clamp(G.comboT / 2.2, 0, 1), 118, 120 * clamp(G.comboT / 2.2, 0, 1), 3);
     }
     // progresso / chefe
     if (G.boss && G.boss.state !== 'intro') {

@@ -32,7 +32,7 @@ Visual56.hudFrame = function (wl, comboH, ab, edge) {
 {
   const dh = Game.drawHud;
   Game.drawHud = function () {
-    const p = G.player; if (p && QL() >= 1) { const hsp = Math.min(38, 520 / Math.max(1, p.maxHp)), wl = Math.round(clamp(30 + p.maxHp * hsp + 34, 250, 590)), ab = 3 + (typeof Visual13 !== 'undefined' && Visual13.secHud ? Visual13.secHud(p).length : 0); const edge = hx56(G.stage && G.stage.tint) ? G.stage.tint : '#b98cff'; ctx.save(); Visual56.drawSprite(Visual56.hudFrame(wl, G.combo >= 3 ? 148 : 72, ab, edge), 0, 0); ctx.restore(); }
+    const p = G.player; if (p && QL() >= 1) { const mh = p.maxHp > 5 ? 0 : p.maxHp, hsp = Math.min(38, 520 / Math.max(1, p.maxHp)), wl = p.maxHp > 5 ? 250 : Math.round(clamp(30 + mh * hsp + 34, 250, 590)), ab = 3 + (typeof Visual13 !== 'undefined' && Visual13.secHud ? Visual13.secHud(p).length : 0); const edge = hx56(G.stage && G.stage.tint) ? G.stage.tint : '#b98cff'; ctx.save(); Visual56.drawSprite(Visual56.hudFrame(wl, G.combo >= 3 ? 130 : 72, ab, edge), 0, 0); ctx.restore(); }
     return dh.call(this);
   };
 }

@@ -2,7 +2,7 @@ name: Publicar o jogo (GitHub Pages)
 on:
   push:
     branches: [main]
-    paths: ['web/**', '.github/workflows/pages.yml']
+    paths: ['web/**', 'tools/build_bundle.py', '.github/workflows/pages.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -20,6 +20,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
+      - name: Juntar os scripts em um so
+        run: python3 tools/build_bundle.py
       - uses: actions/upload-pages-artifact@v3
         with:
           path: web

@@ -66,9 +66,6 @@ Visual16.impact = function (x, y, crit) {
     ov.call(this); if (QL() < 1 || G.state !== 'play' || !G.stage) return;
     if (Visual54.warm > .02) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = Visual54.warm * .3; ctx.fillStyle = '#ff9a3a'; ctx.fillRect(0, 0, W, H); ctx.restore(); }
     if (!G.boss && !G.bossPending && G.stage.duration < 1e8) { const k = clamp(G.t / G.stage.duration, 0, 1), c0 = [58, 122, 255], c1 = hx54(G.stage.tint) ? [parseInt(G.stage.tint.slice(1, 3), 16), parseInt(G.stage.tint.slice(3, 5), 16), parseInt(G.stage.tint.slice(5, 7), 16)] : [180, 140, 255], c2 = [255, 90, 58], m = k < .6 ? k / .6 : (k - .6) / .4, A = k < .6 ? c0 : c1, B = k < .6 ? c1 : c2; ctx.save(); ctx.globalCompositeOperation = 'soft-light'; ctx.globalAlpha = .06 + (k > .6 ? (k - .6) * .12 : 0); ctx.fillStyle = `rgb(${Math.round(A[0] + (B[0] - A[0]) * m)},${Math.round(A[1] + (B[1] - A[1]) * m)},${Math.round(A[2] + (B[2] - A[2]) * m)})`; ctx.fillRect(0, 0, W, H); ctx.restore(); }
-    // cantoneiras decorativas por setor
-    const c = hx54(G.stage.tint) ? G.stage.tint : '#b98cff', n = (G.stage.id % 3) + 1; ctx.save(); ctx.strokeStyle = c; ctx.fillStyle = c; ctx.globalAlpha = .32; ctx.lineWidth = 3; ctx.lineCap = 'round';
-    for (const [x, y, sx, sy] of [[14, 14, 1, 1], [W - 14, 14, -1, 1], [14, H - 14, 1, -1], [W - 14, H - 14, -1, -1]]) { ctx.beginPath(); ctx.moveTo(x, y + sy * 46); ctx.lineTo(x, y); ctx.lineTo(x + sx * 46, y); ctx.stroke(); for (let i = 0; i < n; i++) { ctx.beginPath(); ctx.arc(x + sx * (14 + i * 11), y + sy * (14 + i * 11), 2.6, 0, TAU); ctx.fill(); } } ctx.restore();
   };
 }
 

@@ -26,26 +26,6 @@ const hx51 = c => typeof c === 'string' && c.length === 7 && c[0] === '#';
   };
 }
 
-// ---------- HUD com moldura de cabine ----------
-{
-  const dh = Game.drawHud;
-  Game.drawHud = function () {
-    const p = G.player; if (p && QL() >= 1) {
-      const hsp = Math.min(38, 520 / Math.max(1, p.maxHp)), wl = clamp(30 + p.maxHp * hsp + 34, 250, 590), ab = 3 + (typeof Visual13 !== 'undefined' && Visual13.secHud ? Visual13.secHud(p).length : 0);
-      ctx.save(); const edge = hx51(G.stage && G.stage.tint) ? G.stage.tint : '#b98cff';
-      // esquerda: vida e nivel (borda direita cortada em angulo)
-      ctx.beginPath(); ctx.moveTo(8, 6); ctx.lineTo(8 + wl, 6); ctx.lineTo(8 + wl - 26, 92); ctx.lineTo(8, 92); ctx.closePath(); ctx.fillStyle = 'rgba(10,3,30,.5)'; ctx.fill(); ctx.strokeStyle = 'rgba(200,170,255,.45)'; ctx.lineWidth = 2; ctx.stroke();
-      ctx.fillStyle = edge; ctx.globalAlpha = .7; ctx.fillRect(8, 6, 4, 86); ctx.globalAlpha = 1;
-      // direita: pontos e estrelas
-      const comboH = G.combo >= 3 ? 148 : 72, wr = 330; ctx.beginPath(); ctx.moveTo(W - 8, 6); ctx.lineTo(W - 8 - wr, 6); ctx.lineTo(W - 8 - wr + 22, 6 + comboH); ctx.lineTo(W - 8, 6 + comboH); ctx.closePath(); ctx.fillStyle = 'rgba(10,3,30,.46)'; ctx.fill(); ctx.strokeStyle = 'rgba(200,170,255,.4)'; ctx.stroke(); ctx.fillStyle = edge; ctx.globalAlpha = .7; ctx.fillRect(W - 12, 6, 4, comboH); ctx.globalAlpha = 1;
-      // base: doca das habilidades
-      ctx.beginPath(); ctx.roundRect(12, H - 118, 24 + ab * 112, 108, 22); ctx.fillStyle = 'rgba(10,3,30,.42)'; ctx.fill(); ctx.strokeStyle = 'rgba(200,170,255,.38)'; ctx.stroke();
-      ctx.restore();
-    }
-    return dh.call(this);
-  };
-}
-
 // ---------- fundos animados nos menus ----------
 {
   const wd = World.draw;

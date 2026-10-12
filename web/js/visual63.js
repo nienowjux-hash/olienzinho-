@@ -80,9 +80,9 @@ const h63 = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s 
       const p = G.player; if (QL() < 1 || !p || this.state === 'dying' || G.state !== 'play' || G.furyCut) return d.call(this);
       const t = World.t, lean = clamp((p.x - this.x) / W, -1, 1) * .05, br = 1 + .014 * Math.sin(t * 2.2) + (this.flash > 0 ? .03 : 0), blink = (t % 5.6) < .14 ? .955 : 1, r = this.ratio;
       if (r < .5 && !this._startle && this.state === 'fight') { this._startle = true; shockwave(this.x, this.y, 260, '#ffffff'); popup(this.x, this.y - (this.rad || 100) - 30, '!', '#ffe9a8', 40); }
-      if (this.flash > 0) { this._rx = rand(-2.5, 2.5); this._ry = rand(-1.5, 1.5); } else { this._rx = (this._rx || 0) * .6; this._ry = (this._ry || 0) * .6; }
+      if (this.flash > 0) { this._shkx = rand(-2.5, 2.5); this._shky = rand(-1.5, 1.5); } else { this._shkx = (this._shkx || 0) * .6; this._shky = (this._shky || 0) * .6; }
       if (r < .25 && this.state === 'fight') { ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawGlow(this.x, this.y, (this.rad || 100) * 2.4, '#ff3a2a', .12 + .1 * Math.max(0, Math.sin(t * 8)) ** 4); ctx.restore(); }
-      ctx.save(); ctx.translate(this.x + (this._rx || 0), this.y + (this._ry || 0)); ctx.rotate(lean); ctx.scale(br, br * (this.flash > 0 ? .97 : 1) * blink); ctx.translate(-this.x, -this.y); d.call(this); ctx.restore();
+      ctx.save(); ctx.translate(this.x + (this._shkx || 0), this.y + (this._shky || 0)); ctx.rotate(lean); ctx.scale(br, br * (this.flash > 0 ? .97 : 1) * blink); ctx.translate(-this.x, -this.y); d.call(this); ctx.restore();
     };
   }
 }

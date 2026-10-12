@@ -133,7 +133,7 @@ setTimeout(Visual19.warm, 1500);
   const ba = Boss.prototype.update;
   Boss.prototype.update = function (dt) {
     ba.call(this, dt);
-    if (Save.data.ngpOn && this.state === 'fight' && !(this.stun > 0) && G.player && !G.player.dead && !G.practice) { this._rx = (this._rx ?? 5) - dt; if (this._rx <= 0) { this._rx = Math.max(5, 9.5 - this.phase * 1.4); pick(REMIX)(); } }
+    if (Save.data.ngpOn && this.state === 'fight' && !(this.stun > 0) && !(this.chargeT > 0) && G.player && !G.player.dead && !G.practice) { this._rx = (this._rx ?? 14) - dt; if (this._rx <= 0) { this._rx = Math.max(8, 15 - this.phase * 2); this._ri = ((this._ri ?? ((G.stageIdx || 0) * 2)) + 1) % REMIX.length; REMIX[this._ri](); } } // cada chefe comeca por um golpe diferente, so depois dos 14 s, e nao repete em seguida
   };
 }
 

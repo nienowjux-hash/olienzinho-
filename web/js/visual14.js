@@ -177,10 +177,11 @@ Screens.modes = function () {
     { id: 'orb', name: 'ORBI', c: '#7fe0ff', l: 'Melhore as habilidades do Orbi com estrelas.', foot: 'Nível ' + ['shot', 'grav', 'shield'].reduce((n, k) => n + Visual16.orbiLv(k), 0) + ' / 13', go: () => { G.state = 'orbi'; } },
     { id: 'rec', name: 'RECORDES', c: '#ffd36a', l: 'Sua melhor pontuação em cada fase e o piloto usado.', foot: Object.keys(Save.data.rec || {}).length + ' / ' + STAGES.length + ' fases', go: () => { G.state = 'records'; } },
     Save.data.cleared[9] ? { id: 'tour', name: 'TORNEIO FINAL', c: '#ff8a5f', l: 'Os chefes das fases 7 a 10 em sequência, em ordem aleatória.', foot: Save.data.tour && Save.data.tour.best ? 'Melhor: ' + Math.floor(Save.data.tour.best / 60) + ':' + String(Math.floor(Save.data.tour.best % 60)).padStart(2, '0') : 'Recompensa: ★ 150', go: () => Visual5.startRush([6, 7, 8].sort(() => Math.random() - .5).concat([9])) } : null,
-    { id: 'gal', name: 'GALERIA', c: '#c8a0ff', l: 'Reveja os vídeos da história.', foot: Object.keys(Save.data.vseen || {}).length + ' / 7 vistos', go: () => { G.state = 'gallery'; } },
+    { id: 'gal', name: 'GALERIA', c: '#c8a0ff', l: 'Reveja os vídeos da história.', foot: Object.keys(Save.data.vseen || {}).length + ' / ' + Visual20.CLIPS.length + ' vistos', go: () => { G.state = 'gallery'; } },
     { id: 'mut', name: 'MUTADORES', c: '#ff8a5f', l: 'Regras extras para jogar mais difícil e ganhar mais estrelas.', foot: Object.keys(Save.data.mut || {}).filter(k => Save.data.mut[k]).length + ' ativos', go: () => { G.state = 'mutators'; } },
     { id: 'sta', name: 'ESTATÍSTICAS', c: '#9fe8ff', l: 'Tempo jogado, derrotas, arma favorita e mais.', foot: 'Seu histórico', go: () => { G.state = 'stats'; } },
     { id: 'exp', name: 'EXPEDIÇÃO', c: '#ff8a5f', l: 'Uma rota roguelite: batalhas, lojas, eventos e chefes. Se morrer, acabou.', foot: 'Melhor: ' + ((Save.data.exp||{}).best||0) + ' / 8 etapas', go: () => Visual32.start() },
+    { id: 'drk', name: 'RANKING DO DIA', c: '#7fe0ff', l: 'Compare o Desafio do Dia com amigos usando um código.', foot: 'Hoje: ' + Extras.dailyBest() + ' pts', go: () => { G.state = 'dailyrank'; } },
     { id: 'twr', name: 'TORRE INFINITA', c: '#ff4a6e', l: 'Chefes em sequência sem fim. Cada andar deixa o chefe mais forte.', foot: 'Melhor andar: ' + ((Save.data.tower || {}).best || 0), go: () => Visual35.start() },
     { id: 'tr', name: 'TREINO', c: '#7fe0a0', l: 'Arena livre: armas, skins e inimigos.', foot: 'sem pressão :)', go: () => Game.startTraining() },
   ].filter(Boolean);

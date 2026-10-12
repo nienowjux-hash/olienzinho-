@@ -13,7 +13,7 @@ WEAPONS.boomerang = {
   },
 };
 WEAPONS.chain = {
-  name: 'Raio Voltaico', desc: 'Raio que salta de inimigo em inimigo.', c: '#9fe8ff', price: 700, delay: 1.1,
+  name: 'Raio Voltaico', desc: 'Raio que salta de inimigo em inimigo.', c: '#9fe8ff', price: 700, delay: .95,
   special: 'storm', specName: 'Tempestade', specDesc: 'Raios caem sobre todos os inimigos por 2 segundos.',
   fire(p) { Visual11.zapFrom(p); },
 };
@@ -21,7 +21,7 @@ WEAPONS.flame = {
   name: 'Lança-Chamas', desc: 'Jato de fogo curto que queima os inimigos.', c: '#ff8a30', price: 800, delay: .5,
   special: 'nova', specName: 'Onda Ardente', specDesc: 'Um anel de fogo se espalha em todas as direções.',
   fire(p) {
-    for (let i = 0; i < 3 + (p.shots - 1); i++) mkBullet(p, p.x + rand(-12, 12), p.y - 34, -Math.PI / 2 + rand(-.24, .24), rand(520, 680), .62, { kind: 'flame', life: .52, l0: .52, pierce: 99, r: 15, c: '#ff8a30' });
+    for (let i = 0; i < 3 + (p.shots - 1); i++) mkBullet(p, p.x + rand(-12, 12), p.y - 34, -Math.PI / 2 + rand(-.24, .24), rand(520, 680), .62, { kind: 'flame', life: .62, l0: .62, pierce: 99, r: 16, c: '#ff8a30' });
     if (Math.random() < .5) Snd.play('laser', { pan: Snd.panX(p.x) * .5 });
   },
 };

@@ -105,6 +105,7 @@ Visual34.oficina = function () {
 };
 
 Screens.hangar = function () {
+  if (typeof Visual31 !== 'undefined' && Visual31.ensure) Visual31.ensure();
   const ld = hx(); if (!WEAPONS[ld.weapon] || !Save.data.owned.weapons[ld.weapon]) { ld.weapon = 'violet'; Save.save(); }
   if (!['olien', 'orbi', 'C', 'P', 'E', 'S'].includes(ld.char || 'olien')) ld.char = 'olien';
   txt('HANGAR', W / 2, 20, 42, '#fff', 'center'); txt(Screens.stars(), W - 40, 30, 30, '#ffcf6b', 'right');

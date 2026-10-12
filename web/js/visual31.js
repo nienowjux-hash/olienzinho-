@@ -13,7 +13,8 @@ Visual31.register = function (a, b) {
     fire(p) { const d = p.dmg; p.dmg = d * .62; try { A.fire(p); B.fire(p); } finally { p.dmg = d; } } };
   WEAPON_ORDER.push(id); Save.data.owned.weapons[id] = true; return id;
 };
-setTimeout(() => { try { for (const [a, b] of sv31('fusions', [])) if (WEAPONS[a] && WEAPONS[b]) Visual31.register(a, b); } catch (e) { } }, 0);
+Visual31.ensure = function () { try { for (const [a, b] of sv31('fusions', [])) if (WEAPONS[a] && WEAPONS[b] && !WEAPONS['fz_' + a + '_' + b]) Visual31.register(a, b); } catch (e) { } };
+setTimeout(() => Visual31.ensure(), 0); addEventListener('load', () => Visual31.ensure());
 {
   const wg = Screens.weaponGlyph; Screens.weaponGlyph = function (id, x, y, c, t) { if (id.startsWith('fz_')) { const f = WEAPONS[id].fz; wg.call(this, f[0], x - 16, y - 8, WEAPONS[f[0]].c, t); wg.call(this, f[1], x + 16, y + 8, WEAPONS[f[1]].c, t); return; } return wg.call(this, id, x, y, c, t); };
 }
@@ -128,7 +129,7 @@ const mul32 = a => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^
 const hashS = s => { let h = 2166136261; for (const c of String(s)) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; };
 Visual31.seed = () => (Save.data.seed || '').toUpperCase();
 {
-  const ss = Game.startStage; Game.startStage = function (i, o) { const r = ss.call(this, i, o); Visual31.srng = Visual31.seed() ? mul32(hashS(Visual31.seed() + ':' + i)) : null; Visual31.hs = null; G.obj = null; G.objT = null; G.comp = null; return r; };
+  const ss = Game.startStage; Game.startStage = function (i, o) { Visual31.ensure(); const r = ss.call(this, i, o); Visual31.srng = Visual31.seed() ? mul32(hashS(Visual31.seed() + ':' + i)) : null; Visual31.hs = null; G.obj = null; G.objT = null; G.comp = null; return r; };
   const gd = Game.director; Game.director = function (dt) { if (!Visual31.srng) return gd.call(this, dt); const m = Math.random; Math.random = Visual31.srng; try { return gd.call(this, dt); } finally { Math.random = m; } };
 }
 

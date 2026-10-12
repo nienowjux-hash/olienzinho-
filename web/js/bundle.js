@@ -16088,7 +16088,7 @@ const h74 = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s 
   Visual15.hudDraw = function () {
     hd.call(this); const b = G.boss; if (!b || b.state !== 'fight' || G.state !== 'play' || QL() < 1 || !b.tele) return; let m = 0, mk = ''; for (const k in b.tele) if (b.tele[k] > m) { m = b.tele[k]; mk = k; } if (m < .35) return;
     const R = (b.rad || 90) * (2.2 - m * 1.1); ctx.save(); ctx.strokeStyle = 'rgba(255,214,120,' + (.3 + m * .6) + ')'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(b.x, b.y, R, 0, TAU); ctx.stroke();
-    if (m > .6) { ctx.globalAlpha = (m - .6) * 2.5; ctx.font = `900 16px ${FONT}`; ctx.textAlign = 'center'; ctx.fillStyle = '#ffe9a8'; ctx.fillText((typeof Visual75 !== 'undefined' && Visual75.LBL[mk]) || 'CUIDADO!', b.x, b.y + (b.rad || 90) + 36); } ctx.restore();
+    ctx.restore();
   };
 }
 
@@ -16222,7 +16222,14 @@ Visual2.newIcon = function (id, c, t) {
   const bg = document.createElement('canvas'); bg.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none'; const g = bg.getContext('2d'); document.body.insertBefore(bg, document.body.firstChild); document.getElementById('c').style.position = 'relative'; document.getElementById('c').style.zIndex = '1';
   let last = 0; const draw = (now) => { requestAnimationFrame(draw); if (now - last < 66) return; last = now; const w = innerWidth, h = innerHeight; if (bg.width !== w || bg.height !== h) { bg.width = w; bg.height = h; }
     const asp = w / h; g.clearRect(0, 0, w, h); if (Math.abs(asp - 16 / 9) < .08 || (typeof G !== 'undefined' && G.state === 'cine')) return; g.fillStyle = '#fff';
-    for (let i = 0; i < 90; i++) { const d = .3 + (i % 3) * .35, x = ((h75(i) * w - now * .003 * d * 6) % w + w) % w, y = h75(i + 50) * h, a = .25 + .5 * Math.abs(Math.sin(now * .001 * d + i)); g.globalAlpha = a * .7; g.fillRect(x, y, 1 + d * 1.2, 1 + d * 1.2); } g.globalAlpha = 1; };
+    for (let i = 0; i < 90; i++) { const d = .3 + (i % 3) * .35, x = ((h75(i) * w - now * .003 * d * 6) % w + w) % w, y = h75(i + 50) * h, a = .25 + .5 * Math.abs(Math.sin(now * .001 * d + i)); g.globalAlpha = a * .7; g.fillRect(x, y, 1 + d * 1.2, 1 + d * 1.2); } g.globalAlpha = 1;
+    const cw = Math.min(w, h * 16 / 9), m = (w - cw) / 2, p = (typeof G !== 'undefined') && G.player; if (m >= 120 && G.state === 'play' && p) {
+      const bx = (x, y, wd, k, c) => { g.fillStyle = 'rgba(255,255,255,.12)'; g.fillRect(x, y, wd, 10); g.fillStyle = c; g.fillRect(x, y, wd * Math.max(0, Math.min(1, k)), 10); };
+      const tx = (s, x, y, sz, c) => { g.font = '800 ' + sz + 'px sans-serif'; g.fillStyle = c; g.textAlign = 'center'; g.fillText(s, x, y); };
+      const lx = m / 2, rx = w - m / 2, bw = Math.min(110, m - 40), u = Math.max(.8, h / 720);
+      g.globalAlpha = .85; tx('PONTOS', lx, h * .3, 13 * u, '#b8a8e8'); tx(String(Math.floor(G.score || 0)), lx, h * .3 + 30 * u, 26 * u, '#fff'); tx('COMBO', lx, h * .5, 13 * u, '#b8a8e8'); tx('x' + (G.combo || 0), lx, h * .5 + 30 * u, 26 * u, '#ffd36a');
+      tx('NÍVEL ' + (G.level || 1), rx, h * .3, 13 * u, '#b8a8e8'); bx(rx - bw / 2, h * .3 + 12 * u, bw, (G.xp || 0) / (G.xpNeed || 1), '#7fe0ff'); tx('VIDA', rx, h * .5, 13 * u, '#b8a8e8'); bx(rx - bw / 2, h * .5 + 12 * u, bw, p.hp / (p.maxHp || 1), '#ff6a8a'); g.globalAlpha = 1;
+    } };
   requestAnimationFrame(draw);
 }
 
@@ -16297,6 +16304,14 @@ Visual2.newIcon = function (id, c, t) {
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; const x = ((t * 60) % (W + 600)) - 300, g = ctx.createLinearGradient(x - 120, 0, x + 120, 0); g.addColorStop(0, 'rgba(255,233,168,0)'); g.addColorStop(.5, 'rgba(255,233,168,.07)'); g.addColorStop(1, 'rgba(255,233,168,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(x - 120, 0); ctx.lineTo(x + 120, 0); ctx.lineTo(x + 60, H); ctx.lineTo(x - 180, H); ctx.closePath(); ctx.fill();
     ctx.globalCompositeOperation = 'source-over'; ctx.strokeStyle = 'rgba(255,214,120,.35)'; ctx.lineWidth = 1.5; ctx.strokeRect(22, 70, W - 44, H - 140); ctx.restore(); return r;
   };
+}
+
+// ---------- chaves do painel F3 ligadas ao desenho ----------
+{
+  const dg = drawGlow;
+  drawGlow = function (x, y, r, c, a = 1) { if (r >= 90 && Save.data.settings.fxBig === false) return; return dg(x, y, r, c, a); };
+  const up = Game.updatePlay;
+  Game.updatePlay = function (dt) { const n = G.parts.length, r = up.call(this, dt); if (Save.data.settings.fxHalf && G.parts.length > n) { let k = 0; for (let i = n; i < G.parts.length; i++) if ((k++ & 1)) G.parts[i] = null; G.parts = G.parts.filter(Boolean); } return r; };
 }
 
 ;

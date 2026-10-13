@@ -52,11 +52,11 @@ Visual8.recap = function () {
 };
 Visual8.recapDraw = function (t, r) {
   const rc = r && r.recap; if (!rc || !rc.last) return;
-  const x = 910, y = 270, w = 330, k = easeOut(clamp((t - 1.6) / .5, 0, 1)); ctx.save(); ctx.globalAlpha = k; ctx.translate((1 - k) * 40, 0);
-  UI.panel(x, y, w, 250, { r: 20 }); txt('O QUE TE ACERTOU', x + 24, y + 18, 14, '#ffb340', 'left', 900);
+  const x = 910, y = 246, w = 330, k = easeOut(clamp((t - 1.6) / .5, 0, 1)); ctx.save(); ctx.globalAlpha = k; ctx.translate((1 - k) * 40, 0);
+  UI.panel(x, y, w, 220, { r: 20 }); txt('O QUE TE ACERTOU', x + 24, y + 18, 14, '#ffb340', 'left', 900);
   txt('Último golpe:', x + 24, y + 46, 13, '#8a7fb0', 'left', 700); UI.wrap(rc.last.name, x + 24, y + 64, w - 48, 24, 19, '#fff');
   rc.top.forEach((e, i) => { txt(e.n + '×  ' + e.name, x + 24, y + 112 + i * 22, 14, i ? '#cdb8ff' : '#ffcf6b', 'left', 700); });
-  if (rc.last.tip) { ctx.fillStyle = 'rgba(255,179,64,.1)'; ctx.beginPath(); ctx.roundRect(x + 14, y + 178, w - 28, 62, 12); ctx.fill(); UI.wrap('Dica: ' + rc.last.tip, x + 24, y + 184, w - 48, 17, 13, '#ffe9a8'); }
+  if (rc.last.tip) { ctx.fillStyle = 'rgba(255,179,64,.1)'; ctx.beginPath(); ctx.roundRect(x + 14, y + 158, w - 28, 54, 12); ctx.fill(); UI.wrap('Dica: ' + rc.last.tip, x + 24, y + 163, w - 48, 17, 13, '#ffe9a8'); }
   ctx.restore();
 };
 

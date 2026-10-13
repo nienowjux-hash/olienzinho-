@@ -45,7 +45,7 @@ const rum77 = (ms, s, w, gap = 90) => { const n = performance.now(); if (n - Vis
     if (Visual77.os !== 'over') { Visual77.over0 = World.t; const p = G.player; Visual77.ox = p ? p.x : W / 2; Visual77.oy = p ? p.y : H / 2; } Visual77.os = 'over';
     const r = ov.apply(this, arguments); const u = World.t - Visual77.over0;
     if (QL() >= 1 && u < 1.6) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; for (let i = 0; i < 40; i++) { const a = i * 2.399, sp = 80 + (i * 37 % 200), d = u * sp; ctx.globalAlpha = Math.max(0, 1 - u / 1.6) * .8; drawGlow(Visual77.ox + Math.cos(a) * d, Visual77.oy + Math.sin(a) * d + u * u * 40, 7 + (i % 4) * 2, i % 3 ? '#b98cff' : '#ffe9a8', .9); } ctx.restore(); }
-    if (!G.endless && G.stats && G.result) { const t = Math.floor(G.t || 0); txt('Você durou ' + Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0') + '  •  Maior combo x' + G.stats.maxCombo + '  •  Nível ' + (G.result.level || G.level), W / 2, 448, 17, '#cdb8ff', 'center', 700); }
+    if (!G.endless && G.stats && G.result) { const t = Math.floor(G.t || 0); txt('Você durou ' + Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0') + '  •  Maior combo x' + G.stats.maxCombo + '  •  Nível ' + (G.result.level || G.level), W / 2, 542, 17, '#cdb8ff', 'center', 700); }
     return r;
   };
   const rs = Game.updatePlay; Game.updatePlay = function () { if (G.state !== 'over') Visual77.os = G.state; return rs.apply(this, arguments); };

@@ -5961,7 +5961,7 @@ Screens.over = function () {
   ctx.globalAlpha = clamp((t - .9) / .6, 0, 1); txt(sub, W / 2, 196, 22, '#cdb8ff', 'center', 700); txt(end ? '' : '— Orbi', W / 2, 226, 15, '#7fe0ff', 'center', 800); ctx.globalAlpha = 1;
   // placar com entradas escalonadas
   const rows = end ? [[G.rush ? 'Chefes derrotados' : (G.secret || G.practice) ? 'Fase de fúria' : 'Onda alcançada', String(r.wave)], ['Pontuação', r.score + ' pts'], ['Inimigos derrotados', String(r.kills)], ['Estrelas guardadas', '★ ' + r.coins]] : [['Pontuação', r.score + ' pts'], ['Inimigos derrotados', String(r.kills)], ['Nível alcançado', String(r.level)], ['Estrelas guardadas', '★ ' + r.coins]];
-  const px = 400, py = 270; UI.panel(px, py, 480, 70 + rows.length * 44, { r: 22 });
+  const px = 400, py = 280; UI.panel(px, py, 480, 70 + rows.length * 44, { r: 22 });
   rows.forEach(([a, b], i) => { const k = easeOut(clamp((t - 1.3 - i * .15) / .4, 0, 1)); ctx.globalAlpha = k; txt(a, px + 36 - (1 - k) * 40, py + 28 + i * 44, 21, '#cdb8ff', 'left', 700); txt(b, px + 444, py + 26 + i * 44, 25, i === rows.length - 1 ? '#ffcf6b' : '#fff', 'right'); });
   ctx.globalAlpha = 1;
   Visual8.recapDraw(t, r);
@@ -7325,11 +7325,11 @@ Visual8.recap = function () {
 };
 Visual8.recapDraw = function (t, r) {
   const rc = r && r.recap; if (!rc || !rc.last) return;
-  const x = 910, y = 270, w = 330, k = easeOut(clamp((t - 1.6) / .5, 0, 1)); ctx.save(); ctx.globalAlpha = k; ctx.translate((1 - k) * 40, 0);
-  UI.panel(x, y, w, 250, { r: 20 }); txt('O QUE TE ACERTOU', x + 24, y + 18, 14, '#ffb340', 'left', 900);
+  const x = 910, y = 246, w = 330, k = easeOut(clamp((t - 1.6) / .5, 0, 1)); ctx.save(); ctx.globalAlpha = k; ctx.translate((1 - k) * 40, 0);
+  UI.panel(x, y, w, 220, { r: 20 }); txt('O QUE TE ACERTOU', x + 24, y + 18, 14, '#ffb340', 'left', 900);
   txt('Último golpe:', x + 24, y + 46, 13, '#8a7fb0', 'left', 700); UI.wrap(rc.last.name, x + 24, y + 64, w - 48, 24, 19, '#fff');
   rc.top.forEach((e, i) => { txt(e.n + '×  ' + e.name, x + 24, y + 112 + i * 22, 14, i ? '#cdb8ff' : '#ffcf6b', 'left', 700); });
-  if (rc.last.tip) { ctx.fillStyle = 'rgba(255,179,64,.1)'; ctx.beginPath(); ctx.roundRect(x + 14, y + 178, w - 28, 62, 12); ctx.fill(); UI.wrap('Dica: ' + rc.last.tip, x + 24, y + 184, w - 48, 17, 13, '#ffe9a8'); }
+  if (rc.last.tip) { ctx.fillStyle = 'rgba(255,179,64,.1)'; ctx.beginPath(); ctx.roundRect(x + 14, y + 158, w - 28, 54, 12); ctx.fill(); UI.wrap('Dica: ' + rc.last.tip, x + 24, y + 163, w - 48, 17, 13, '#ffe9a8'); }
   ctx.restore();
 };
 
@@ -15499,12 +15499,12 @@ const h68 = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s 
   };
   const strip = (x0, y) => { // grade de cartas ao lado do placar
     const L = typeof Visual59 !== 'undefined' ? Visual59.list() : []; if (!L.length) return; const n = Math.min(8, L.length);
-    ctx.save(); ctx.globalAlpha = .95; txt('CARTAS USADAS', x0 + 130, y - 24, 12, '#8a7fb0', 'center', 800);
-    L.slice(0, n).forEach(({ id, n: c, u }, i) => { const x = x0 + (i % 4) * 66 + 33, yy = y + ((i / 4) | 0) * 66, col = ok68((RARITY[u.r] || {}).c) ? RARITY[u.r].c : '#b98cff'; ctx.fillStyle = 'rgba(14,6,40,.85)'; ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(x - 28, yy, 56, 56, 12); ctx.fill(); ctx.stroke(); try { Visual2.upIcon(id, x, yy + 28, 14, col, false); } catch (e) { } if (c > 1) txt('x' + c, x + 24, yy + 38, 12, col, 'right', 900); });
+    ctx.save(); ctx.globalAlpha = .95; txt('CARTAS USADAS', x0 + 4, y - 18, 12, '#8a7fb0', 'left', 800);
+    L.slice(0, n).forEach(({ id, n: c, u }, i) => { const x = x0 + i * 41 + 20, yy = y, col = ok68((RARITY[u.r] || {}).c) ? RARITY[u.r].c : '#b98cff'; ctx.fillStyle = 'rgba(14,6,40,.85)'; ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(x - 19, yy, 38, 38, 9); ctx.fill(); ctx.stroke(); try { Visual2.upIcon(id, x, yy + 19, 10, col, false); } catch (e) { } if (c > 1) txt('x' + c, x + 18, yy + 25, 10, col, 'right', 900); });
     ctx.restore();
   };
   const ov = Screens.over;
-  Screens.over = function () { const r = ov.call(this); if (QL() >= 1) { if (Visual68.killer) { ctx.save(); ctx.fillStyle = 'rgba(14,4,36,.78)'; ctx.strokeStyle = '#ff7a9a'; ctx.lineWidth = 2; const w = 340; ctx.beginPath(); ctx.roundRect(W / 2 - w / 2, 244, w, 28, 14); ctx.fill(); ctx.stroke(); txt('Derrotado por: ' + Visual68.killer, W / 2, 249, 15, '#ffd0da', 'center', 800); ctx.restore(); } strip(912, 310); } return r; };
+  Screens.over = function () { const r = ov.call(this); if (QL() >= 1) { if (Visual68.killer) { ctx.save(); ctx.fillStyle = 'rgba(14,4,36,.78)'; ctx.strokeStyle = '#ff7a9a'; ctx.lineWidth = 2; const w = 340; ctx.beginPath(); ctx.roundRect(W / 2 - w / 2, 244, w, 28, 14); ctx.fill(); ctx.stroke(); txt('Derrotado por: ' + Visual68.killer, W / 2, 249, 15, '#ffd0da', 'center', 800); ctx.restore(); } strip(910, 494); } return r; };
   const ss = Game.startStage; Game.startStage = function (i, o) { Visual68.killer = ''; return ss.call(this, i, o); };
 }
 
@@ -15556,8 +15556,8 @@ const ok69 = c => typeof c === 'string' && /^#[0-9a-f]{6}$/i.test(c);
   Screens.over = function () {
     const r = ov.call(this); if (QL() < 1 || !Visual69.hist.length) return r;
     const end = Visual69.hist[Visual69.hist.length - 1].t, H10 = Visual69.hist.filter(h => end - h.t <= 10); if (!H10.length) return r;
-    const x0 = 912, y0 = 480, w = 264; ctx.save();
-    txt('ÚLTIMOS 10 SEGUNDOS', x0 + w / 2, y0 - 26, 12, '#8a7fb0', 'center', 800);
+    const x0 = 910, y0 = 564, w = 330; ctx.save();
+    txt('ÚLTIMOS 10 SEGUNDOS', x0 + 4, y0 - 18, 12, '#8a7fb0', 'left', 800);
     ctx.fillStyle = 'rgba(14,6,40,.85)'; ctx.strokeStyle = 'rgba(190,160,255,.4)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(x0, y0, w, 18, 9); ctx.fill(); ctx.stroke();
     H10.forEach(h => { const k = 1 - (end - h.t) / 10, x = x0 + 8 + k * (w - 16); ctx.fillStyle = h === H10[H10.length - 1] ? '#ff4a6e' : '#ff9a6a'; ctx.beginPath(); ctx.arc(x, y0 + 9, 4 + h.d * 1.5, 0, TAU); ctx.fill(); });
     H10.slice(-3).reverse().forEach((h, i) => txt('-' + h.d + ' vida  •  ' + h.who + '  •  ' + (end - h.t < .1 ? 'fim' : (end - h.t).toFixed(1) + 's antes'), x0 + w / 2, y0 + 28 + i * 20, 13, i ? '#cdb8ff' : '#ffd0da', 'center', 700));
@@ -16489,7 +16489,7 @@ const rum77 = (ms, s, w, gap = 90) => { const n = performance.now(); if (n - Vis
     if (Visual77.os !== 'over') { Visual77.over0 = World.t; const p = G.player; Visual77.ox = p ? p.x : W / 2; Visual77.oy = p ? p.y : H / 2; } Visual77.os = 'over';
     const r = ov.apply(this, arguments); const u = World.t - Visual77.over0;
     if (QL() >= 1 && u < 1.6) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; for (let i = 0; i < 40; i++) { const a = i * 2.399, sp = 80 + (i * 37 % 200), d = u * sp; ctx.globalAlpha = Math.max(0, 1 - u / 1.6) * .8; drawGlow(Visual77.ox + Math.cos(a) * d, Visual77.oy + Math.sin(a) * d + u * u * 40, 7 + (i % 4) * 2, i % 3 ? '#b98cff' : '#ffe9a8', .9); } ctx.restore(); }
-    if (!G.endless && G.stats && G.result) { const t = Math.floor(G.t || 0); txt('Você durou ' + Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0') + '  •  Maior combo x' + G.stats.maxCombo + '  •  Nível ' + (G.result.level || G.level), W / 2, 448, 17, '#cdb8ff', 'center', 700); }
+    if (!G.endless && G.stats && G.result) { const t = Math.floor(G.t || 0); txt('Você durou ' + Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0') + '  •  Maior combo x' + G.stats.maxCombo + '  •  Nível ' + (G.result.level || G.level), W / 2, 542, 17, '#cdb8ff', 'center', 700); }
     return r;
   };
   const rs = Game.updatePlay; Game.updatePlay = function () { if (G.state !== 'over') Visual77.os = G.state; return rs.apply(this, arguments); };

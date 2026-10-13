@@ -58,12 +58,12 @@ const h68 = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s 
   };
   const strip = (x0, y) => { // grade de cartas ao lado do placar
     const L = typeof Visual59 !== 'undefined' ? Visual59.list() : []; if (!L.length) return; const n = Math.min(8, L.length);
-    ctx.save(); ctx.globalAlpha = .95; txt('CARTAS USADAS', x0 + 130, y - 24, 12, '#8a7fb0', 'center', 800);
-    L.slice(0, n).forEach(({ id, n: c, u }, i) => { const x = x0 + (i % 4) * 66 + 33, yy = y + ((i / 4) | 0) * 66, col = ok68((RARITY[u.r] || {}).c) ? RARITY[u.r].c : '#b98cff'; ctx.fillStyle = 'rgba(14,6,40,.85)'; ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(x - 28, yy, 56, 56, 12); ctx.fill(); ctx.stroke(); try { Visual2.upIcon(id, x, yy + 28, 14, col, false); } catch (e) { } if (c > 1) txt('x' + c, x + 24, yy + 38, 12, col, 'right', 900); });
+    ctx.save(); ctx.globalAlpha = .95; txt('CARTAS USADAS', x0 + 4, y - 18, 12, '#8a7fb0', 'left', 800);
+    L.slice(0, n).forEach(({ id, n: c, u }, i) => { const x = x0 + i * 41 + 20, yy = y, col = ok68((RARITY[u.r] || {}).c) ? RARITY[u.r].c : '#b98cff'; ctx.fillStyle = 'rgba(14,6,40,.85)'; ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(x - 19, yy, 38, 38, 9); ctx.fill(); ctx.stroke(); try { Visual2.upIcon(id, x, yy + 19, 10, col, false); } catch (e) { } if (c > 1) txt('x' + c, x + 18, yy + 25, 10, col, 'right', 900); });
     ctx.restore();
   };
   const ov = Screens.over;
-  Screens.over = function () { const r = ov.call(this); if (QL() >= 1) { if (Visual68.killer) { ctx.save(); ctx.fillStyle = 'rgba(14,4,36,.78)'; ctx.strokeStyle = '#ff7a9a'; ctx.lineWidth = 2; const w = 340; ctx.beginPath(); ctx.roundRect(W / 2 - w / 2, 244, w, 28, 14); ctx.fill(); ctx.stroke(); txt('Derrotado por: ' + Visual68.killer, W / 2, 249, 15, '#ffd0da', 'center', 800); ctx.restore(); } strip(912, 310); } return r; };
+  Screens.over = function () { const r = ov.call(this); if (QL() >= 1) { if (Visual68.killer) { ctx.save(); ctx.fillStyle = 'rgba(14,4,36,.78)'; ctx.strokeStyle = '#ff7a9a'; ctx.lineWidth = 2; const w = 340; ctx.beginPath(); ctx.roundRect(W / 2 - w / 2, 244, w, 28, 14); ctx.fill(); ctx.stroke(); txt('Derrotado por: ' + Visual68.killer, W / 2, 249, 15, '#ffd0da', 'center', 800); ctx.restore(); } strip(910, 494); } return r; };
   const ss = Game.startStage; Game.startStage = function (i, o) { Visual68.killer = ''; return ss.call(this, i, o); };
 }
 

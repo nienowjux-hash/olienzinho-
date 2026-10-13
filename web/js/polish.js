@@ -72,7 +72,7 @@ Screens.over = function () {
   ctx.globalAlpha = clamp((t - .9) / .6, 0, 1); txt(sub, W / 2, 196, 22, '#cdb8ff', 'center', 700); txt(end ? '' : '— Orbi', W / 2, 226, 15, '#7fe0ff', 'center', 800); ctx.globalAlpha = 1;
   // placar com entradas escalonadas
   const rows = end ? [[G.rush ? 'Chefes derrotados' : (G.secret || G.practice) ? 'Fase de fúria' : 'Onda alcançada', String(r.wave)], ['Pontuação', r.score + ' pts'], ['Inimigos derrotados', String(r.kills)], ['Estrelas guardadas', '★ ' + r.coins]] : [['Pontuação', r.score + ' pts'], ['Inimigos derrotados', String(r.kills)], ['Nível alcançado', String(r.level)], ['Estrelas guardadas', '★ ' + r.coins]];
-  const px = 400, py = 270; UI.panel(px, py, 480, 70 + rows.length * 44, { r: 22 });
+  const px = 400, py = 280; UI.panel(px, py, 480, 70 + rows.length * 44, { r: 22 });
   rows.forEach(([a, b], i) => { const k = easeOut(clamp((t - 1.3 - i * .15) / .4, 0, 1)); ctx.globalAlpha = k; txt(a, px + 36 - (1 - k) * 40, py + 28 + i * 44, 21, '#cdb8ff', 'left', 700); txt(b, px + 444, py + 26 + i * 44, 25, i === rows.length - 1 ? '#ffcf6b' : '#fff', 'right'); });
   ctx.globalAlpha = 1;
   Visual8.recapDraw(t, r);

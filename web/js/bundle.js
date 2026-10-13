@@ -7325,11 +7325,11 @@ Visual8.recap = function () {
 };
 Visual8.recapDraw = function (t, r) {
   const rc = r && r.recap; if (!rc || !rc.last) return;
-  const x = 910, y = 246, w = 330, k = easeOut(clamp((t - 1.6) / .5, 0, 1)); ctx.save(); ctx.globalAlpha = k; ctx.translate((1 - k) * 40, 0);
-  UI.panel(x, y, w, 220, { r: 20 }); txt('O QUE TE ACERTOU', x + 24, y + 18, 14, '#ffb340', 'left', 900);
+  const x = 910, y = 232, w = 330, k = easeOut(clamp((t - 1.6) / .5, 0, 1)); ctx.save(); ctx.globalAlpha = k; ctx.translate((1 - k) * 40, 0);
+  UI.panel(x, y, w, 244, { r: 20 }); txt('O QUE TE ACERTOU', x + 24, y + 18, 14, '#ffb340', 'left', 900);
   txt('Último golpe:', x + 24, y + 46, 13, '#8a7fb0', 'left', 700); UI.wrap(rc.last.name, x + 24, y + 64, w - 48, 24, 19, '#fff');
-  rc.top.forEach((e, i) => { txt(e.n + '×  ' + e.name, x + 24, y + 112 + i * 22, 14, i ? '#cdb8ff' : '#ffcf6b', 'left', 700); });
-  if (rc.last.tip) { ctx.fillStyle = 'rgba(255,179,64,.1)'; ctx.beginPath(); ctx.roundRect(x + 14, y + 158, w - 28, 54, 12); ctx.fill(); UI.wrap('Dica: ' + rc.last.tip, x + 24, y + 163, w - 48, 17, 13, '#ffe9a8'); }
+  rc.top.forEach((e, i) => { txt(e.n + '×  ' + e.name, x + 24, y + 118 + i * 22, 14, i ? '#cdb8ff' : '#ffcf6b', 'left', 700); });
+  if (rc.last.tip) { ctx.fillStyle = 'rgba(255,179,64,.1)'; ctx.beginPath(); ctx.roundRect(x + 14, y + 182, w - 28, 54, 12); ctx.fill(); UI.wrap('Dica: ' + rc.last.tip, x + 24, y + 187, w - 48, 17, 13, '#ffe9a8'); }
   ctx.restore();
 };
 
@@ -15504,7 +15504,7 @@ const h68 = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s 
     ctx.restore();
   };
   const ov = Screens.over;
-  Screens.over = function () { const r = ov.call(this); if (QL() >= 1) { if (Visual68.killer) { ctx.save(); ctx.fillStyle = 'rgba(14,4,36,.78)'; ctx.strokeStyle = '#ff7a9a'; ctx.lineWidth = 2; const w = 340; ctx.beginPath(); ctx.roundRect(W / 2 - w / 2, 244, w, 28, 14); ctx.fill(); ctx.stroke(); txt('Derrotado por: ' + Visual68.killer, W / 2, 249, 15, '#ffd0da', 'center', 800); ctx.restore(); } strip(910, 494); } return r; };
+  Screens.over = function () { const r = ov.call(this); if (QL() >= 1) { if (Visual68.killer) { ctx.save(); ctx.fillStyle = 'rgba(14,4,36,.78)'; ctx.strokeStyle = '#ff7a9a'; ctx.lineWidth = 2; const w = 340; ctx.beginPath(); ctx.roundRect(W / 2 - w / 2, 244, w, 28, 14); ctx.fill(); ctx.stroke(); txt('Derrotado por: ' + Visual68.killer, W / 2, 249, 15, '#ffd0da', 'center', 800); ctx.restore(); } strip(910, 506); } return r; };
   const ss = Game.startStage; Game.startStage = function (i, o) { Visual68.killer = ''; return ss.call(this, i, o); };
 }
 
@@ -15556,7 +15556,7 @@ const ok69 = c => typeof c === 'string' && /^#[0-9a-f]{6}$/i.test(c);
   Screens.over = function () {
     const r = ov.call(this); if (QL() < 1 || !Visual69.hist.length) return r;
     const end = Visual69.hist[Visual69.hist.length - 1].t, H10 = Visual69.hist.filter(h => end - h.t <= 10); if (!H10.length) return r;
-    const x0 = 910, y0 = 564, w = 330; ctx.save();
+    const x0 = 910, y0 = 572, w = 330; ctx.save();
     txt('ÚLTIMOS 10 SEGUNDOS', x0 + 4, y0 - 18, 12, '#8a7fb0', 'left', 800);
     ctx.fillStyle = 'rgba(14,6,40,.85)'; ctx.strokeStyle = 'rgba(190,160,255,.4)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(x0, y0, w, 18, 9); ctx.fill(); ctx.stroke();
     H10.forEach(h => { const k = 1 - (end - h.t) / 10, x = x0 + 8 + k * (w - 16); ctx.fillStyle = h === H10[H10.length - 1] ? '#ff4a6e' : '#ff9a6a'; ctx.beginPath(); ctx.arc(x, y0 + 9, 4 + h.d * 1.5, 0, TAU); ctx.fill(); });

@@ -16,7 +16,7 @@ const ok69 = c => typeof c === 'string' && /^#[0-9a-f]{6}$/i.test(c);
   Screens.over = function () {
     const r = ov.call(this); if (QL() < 1 || !Visual69.hist.length) return r;
     const end = Visual69.hist[Visual69.hist.length - 1].t, H10 = Visual69.hist.filter(h => end - h.t <= 10); if (!H10.length) return r;
-    const x0 = 910, y0 = 564, w = 330; ctx.save();
+    const x0 = 910, y0 = 572, w = 330; ctx.save();
     txt('ÚLTIMOS 10 SEGUNDOS', x0 + 4, y0 - 18, 12, '#8a7fb0', 'left', 800);
     ctx.fillStyle = 'rgba(14,6,40,.85)'; ctx.strokeStyle = 'rgba(190,160,255,.4)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(x0, y0, w, 18, 9); ctx.fill(); ctx.stroke();
     H10.forEach(h => { const k = 1 - (end - h.t) / 10, x = x0 + 8 + k * (w - 16); ctx.fillStyle = h === H10[H10.length - 1] ? '#ff4a6e' : '#ff9a6a'; ctx.beginPath(); ctx.arc(x, y0 + 9, 4 + h.d * 1.5, 0, TAU); ctx.fill(); });

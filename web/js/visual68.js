@@ -63,7 +63,7 @@ const h68 = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s 
     ctx.restore();
   };
   const ov = Screens.over;
-  Screens.over = function () { const r = ov.call(this); if (QL() >= 1) { if (Visual68.killer) { ctx.save(); ctx.fillStyle = 'rgba(14,4,36,.78)'; ctx.strokeStyle = '#ff7a9a'; ctx.lineWidth = 2; const w = 340; ctx.beginPath(); ctx.roundRect(W / 2 - w / 2, 244, w, 28, 14); ctx.fill(); ctx.stroke(); txt('Derrotado por: ' + Visual68.killer, W / 2, 249, 15, '#ffd0da', 'center', 800); ctx.restore(); } strip(910, 494); } return r; };
+  Screens.over = function () { const r = ov.call(this); if (QL() >= 1) { if (Visual68.killer) { ctx.save(); ctx.fillStyle = 'rgba(14,4,36,.78)'; ctx.strokeStyle = '#ff7a9a'; ctx.lineWidth = 2; const w = 340; ctx.beginPath(); ctx.roundRect(W / 2 - w / 2, 244, w, 28, 14); ctx.fill(); ctx.stroke(); txt('Derrotado por: ' + Visual68.killer, W / 2, 249, 15, '#ffd0da', 'center', 800); ctx.restore(); } strip(910, 506); } return r; };
   const ss = Game.startStage; Game.startStage = function (i, o) { Visual68.killer = ''; return ss.call(this, i, o); };
 }
 

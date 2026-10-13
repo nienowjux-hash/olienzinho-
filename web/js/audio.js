@@ -115,6 +115,7 @@ const Snd = (() => {
   // ---------- efeitos ----------
   const SFX = {
     laser(o) { const t = now(); voice('sine', 520, 500, t, .12, .03, { pan: o.pan }); noiseV(t, .1, .02, { type: 'bandpass', f0: 3000, pan: o.pan }); },
+    motif(o) { const t = now(), k = (o.k || 0) % 10, root = 50 + k * 2, sc = [[0, 3, 7, 12], [0, 2, 7, 9], [0, 5, 7, 10], [0, 4, 7, 11], [0, 3, 5, 10]][k % 5]; sc.forEach((n, i) => voice('triangle', mtof(root + n + 12), mtof(root + n + 12), t + i * .26, .7, .028, { pan: 0, rev: .5 })); },
     cannon(o) {
       const t = now(), p = o.pan;
       voice('sine', 130, 40, t, .32, .34, { pan: p }); voice('sawtooth', 200, 60, t, .16, .08, { lp: 600, pan: p });

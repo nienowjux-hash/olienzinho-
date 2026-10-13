@@ -95,7 +95,7 @@ const wk = () => { const d = Save.data; if (!d.wk || d.wk.week !== wkKey()) d.wk
       if (got) txt('RECEBIDO', 960, y + 44, 22, '#7fe0a0', 'center', 900); else if (UI.button('wk' + key, 860, y + 24, 200, 60, done ? '★ ' + rw + ' RECEBER' : '★ ' + rw, { size: 18, disabled: !done })) { w.got.push(key); d.coins += rw; Save.save(); Snd.play('coin', {}); }
     });
     if (UI.button('wkb', 60, 590, 220, 40, '◂ DO DIA', { size: 15 })) Visual80.msnWeek = false;
-    if (UI.button('back', W / 2 - 160, 580, 320, 56, 'VOLTAR', { size: 24 }) || Input.pressed('escape')) { Snd.play('uiBack'); Visual80.msnWeek = false; G.state = 'modes'; }
+    if (UI.button('back', W / 2 - 160, 580, 320, 56, 'VOLTAR', { size: 24 }) || Input.pressed('escape')) { Snd.play('uiBack'); Visual80.msnWeek = false; G.state = 'hub'; }
   };
   hookRender(rn => { let last = ''; return function () { rn(); const s = G.state; if (s === last) return; if (s === 'clear' && !G.rush && !G.practice) { wk().clears++; Save.save(); } last = s; }; });
 }

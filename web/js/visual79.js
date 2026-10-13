@@ -117,7 +117,7 @@ const TREE = [
         if (nxt && UI.hit('tr' + br.id, x + 10, y - 4, 320, 66, { sound: 'buy', disabled: !can })) { if (d.coins >= cost) { d.coins -= cost; d.tree[br.id] = n + 1; Save.save(); } }
       });
     });
-    if (UI.button('back', W / 2 - 160, 600, 320, 56, 'VOLTAR', { size: 24 }) || Input.pressed('escape')) { Snd.play('uiBack'); G.state = 'modes'; }
+    if (UI.button('back', W / 2 - 160, 600, 320, 56, 'VOLTAR', { size: 24 }) || Input.pressed('escape')) { Snd.play('uiBack'); G.state = 'hub'; }
   };
 }
 
@@ -133,7 +133,7 @@ const msn = () => { const d = SD(); if (!d.msn || d.msn.day !== dayK()) d.msn = 
       txt(nm, 214, y + 18, 24, '#fff', 'left', 800); ctx.fillStyle = 'rgba(255,255,255,.14)'; ctx.beginPath(); ctx.roundRect(214, y + 62, 520, 14, 7); ctx.fill(); ctx.fillStyle = done ? '#7fe0a0' : '#9a63ff'; ctx.beginPath(); ctx.roundRect(214, y + 62, Math.max(8, 520 * v / goal), 14, 7); ctx.fill(); txt(v + ' / ' + goal, 750, y + 56, 20, '#cdb8ff', 'left', 800);
       if (got) txt('RECEBIDO', 960, y + 44, 22, '#7fe0a0', 'center', 900); else if (UI.button('ms' + key, 860, y + 24, 200, 60, done ? '★ ' + rw + ' RECEBER' : '★ ' + rw, { size: 18, disabled: !done })) { m.got.push(key); d.coins += rw; Save.save(); Snd.play('coin', {}); }
     });
-    if (UI.button('back', W / 2 - 160, 580, 320, 56, 'VOLTAR', { size: 24 }) || Input.pressed('escape')) { Snd.play('uiBack'); G.state = 'modes'; }
+    if (UI.button('back', W / 2 - 160, 580, 320, 56, 'VOLTAR', { size: 24 }) || Input.pressed('escape')) { Snd.play('uiBack'); G.state = 'hub'; }
   };
 }
 
@@ -152,7 +152,7 @@ const msn = () => { const d = SD(); if (!d.msn || d.msn.day !== dayK()) d.msn = 
       if (UI.hit('bt' + i, x, y, 540, 76, { disabled: !open }) && open) { Visual14.startPractice(i, 0); return; }
       UI.panel(x, y, 540, 76, { r: 16 }); txt('FASE ' + (i + 1) + '  ' + st.name, x + 20, y + 14, 20, open ? '#fff' : '#6a5aa8', 'left', 800); txt(open ? (t ? t.toFixed(1) + ' s' : 'sem tempo ainda') : 'bloqueado', x + 20, y + 42, 17, t ? '#ffd36a' : '#8a7fb0', 'left', 700);
     });
-    if (UI.button('back', W / 2 - 160, 600, 320, 56, 'VOLTAR', { size: 24 }) || Input.pressed('escape')) { Snd.play('uiBack'); G.state = 'modes'; }
+    if (UI.button('back', W / 2 - 160, 600, 320, 56, 'VOLTAR', { size: 24 }) || Input.pressed('escape')) { Snd.play('uiBack'); G.state = 'hub'; }
   };
 }
 
@@ -188,7 +188,7 @@ const msn = () => { const d = SD(); if (!d.msn || d.msn.day !== dayK()) d.msn = 
     txt('GUIA DE QUALIDADE', W / 2, 30, 46, '#fff', 'center'); UI.panel(160, 110, 960, 430, { r: 22 });
     const L = [['Qualidade automática', 'Se o jogo pesar, ele baixa efeitos e resolução sozinho. Dá para desligar em Acessibilidade.'], ['Efeitos na tela', 'Limpo mostra só o essencial. Equilibrado é o padrão. Intenso liga tudo em todos os inimigos.'], ['Resolução interna', 'Menor deixa mais leve em PCs fracos; 150% e 200% deixam mais nítido em telas grandes.'], ['Objetos e tela limpa', 'Objetos menores e sem números comuns dão mais espaço na tela.'], ['Painel F3', 'Mostra fps, partículas e tiros. As teclas 1, 2 e 3 ligam e desligam brilhos grandes, eventos de fundo e metade das partículas.']];
     L.forEach(([a, b], i) => { txt(a, 200, 132 + i * 78, 22, '#ffb340', 'left', 900); UI.wrap(b, 200, 164 + i * 78, 880, 22, 17, '#cdb8ff'); });
-    if (UI.button('back', W / 2 - 160, 580, 320, 56, 'VOLTAR', { size: 24 }) || Input.pressed('escape')) { Snd.play('uiBack'); G.state = 'modes'; }
+    if (UI.button('back', W / 2 - 160, 580, 320, 56, 'VOLTAR', { size: 24 }) || Input.pressed('escape')) { Snd.play('uiBack'); G.state = 'hub'; }
   };
   const enc = () => btoa(unescape(encodeURIComponent(localStorage.getItem('olienzinho_save_v1') || JSON.stringify(Save.data))));
   const st = Screens.settings;
@@ -209,7 +209,7 @@ const msn = () => { const d = SD(); if (!d.msn || d.msn.day !== dayK()) d.msn = 
   const md = Screens.modes;
   Screens.modes = function () {
     const r = md.apply(this, arguments);
-    [['tree', 'ÁRVORE', 'tree'], ['msn', 'METAS', 'missions'], ['btm', 'TEMPO CHEFES', 'bosstime'], ['qg', 'QUALIDADE', 'qguide']].forEach(([id, l, s], i) => { if (UI.button('mx' + id, i < 2 ? 56 : 1064, 22 + (i % 2) * 40, 160, 34, l, { size: 13 })) { Snd.play('uiSelect'); G.state = s; } });
+    if (UI.button('mxhub', 56, 22, 190, 40, 'EXTRAS ▸', { size: 15 })) { Snd.play('uiSelect'); G.state = 'hub'; }
     return r;
   };
 }

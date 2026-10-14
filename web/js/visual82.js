@@ -190,7 +190,7 @@ const S82 = () => Save.data.settings || {};
   hookRender(rn => { let last = ''; return function () { rn(); const s = G.state; if (s !== last) { last = s; Visual82.lastFoc = ''; if (NAMES[s]) Visual82.say(NAMES[s]); } if (S82().leitor && s === 'story' && G.story) { const pg = G.story.pages[G.story.i]; if (pg && pg.text && Visual82.lastTxt !== pg.text) { Visual82.lastTxt = pg.text; if (!S82().voz) Visual82.say(pg.text); } } }; });
   const t0 = txt;
   txt = function (s, x, y, size, color, align, weight, base) {
-    const st = S82(), fz = st.fsz ?? ((typeof Visual83 !== 'undefined' && Visual83.on) ? 1 : 0); if (fz && !st.big && size <= 24 && size >= 11) size = Math.round(size * (fz === 2 ? 1.4 : 1.2));
+    const st = S82(), fz = st.fsz ?? ((typeof Visual83 !== 'undefined' && Visual83.on) ? (innerWidth < 950 ? 2 : 1) : 0); if (fz && !st.big && size <= ((typeof Visual83 !== 'undefined' && Visual83.on) ? 30 : 24) && size >= 11) size = Math.round(size * Math.min(fz === 2 ? 1.4 : 1.2, size > 24 ? 1.12 : 9));
     if (st.hcm && (color === '#8a7fb0' || color === '#6a5aa8' || color === '#a090d0')) color = '#e2d8ff';
     return t0(s, x, y, size, color, align, weight, base);
   };

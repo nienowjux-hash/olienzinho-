@@ -49,7 +49,7 @@ const Visual87 = { lvl: -1, pmax: 99999 };
   Screens.display = function () {
     const r = ds.apply(this, arguments); if (!(typeof Visual83 !== 'undefined' && Visual83.on)) return r;
     const s = Save.data.settings, L = Visual87.level(); txt('Desempenho no celular', 196, 540, 18, '#fff', 'left', 900); txt(['Mais leve possível: máxima fluidez', 'Equilíbrio entre imagem e fluidez', 'Mais bonito (pode pesar)'][L], 196, 566, 13, '#cdb8ff', 'left', 700);
-    if (UI.button('d_perf', 800, 540, 280, 40, Visual87.PROF[L].name, { size: 15, color: '#9a63ff' })) { s.mobPerf = (L + 1) % 3; Save.save(); Visual87.force = true; Visual87.apply(); }
+    if (UI.button('d_perf', 800, 540, 280, 40, Visual87.PROF[L].name, { size: 15, color: '#9a63ff' })) { s.mobPerf = (L + 1) % 3; s.mobManual = true; Save.save(); Visual87.force = true; Visual87.apply(); }
     return r;
   };
 }

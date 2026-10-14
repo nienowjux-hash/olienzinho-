@@ -59,7 +59,8 @@ Visual43.wing = () => (G.state === 'cosmetics' && G.ctab === 'wing' && G.cpv) ||
 
 // ---------- modo foto livre (F10): congela a acao, move a camera, aproxima e salva ----------
 addEventListener('keydown', e => {
-  if (e.key === 'F10') { e.preventDefault(); if (G.state === 'play' || G.state === 'pause') { Visual43.prev = G.state; Visual43.ph = { x: 0, y: 0, z: 1, hud: false, help: 5 }; G.hideHud = true; G.state = 'photo'; } else if (G.state === 'photo') Visual43.exit(); }
+  if (e.key === 'F10') { return; }
+  if (false) { e.preventDefault(); if (G.state === 'play' || G.state === 'pause') { Visual43.prev = G.state; Visual43.ph = { x: 0, y: 0, z: 1, hud: false, help: 5 }; G.hideHud = true; G.state = 'photo'; } else if (G.state === 'photo') Visual43.exit(); }
 });
 addEventListener('wheel', e => { if (G.state === 'photo' && Visual43.ph) { Visual43.ph.z = clamp(Visual43.ph.z * (e.deltaY < 0 ? 1.1 : .91), .6, 3); } }, { passive: true });
 Visual43.exit = function () { G.state = Visual43.prev || 'play'; G.hideHud = false; Visual43.ph = null; if (G.state === 'play') G.state = 'pause'; };

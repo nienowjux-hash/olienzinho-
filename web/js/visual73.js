@@ -93,6 +93,6 @@ const ok73 = c => typeof c === 'string' && /^#[0-9a-f]{6}$/i.test(c);
 {
   const ps = Screens.pause;
   Screens.pause = function () {
-    const r = ps.apply(this, arguments); if (UI.button('photoBtn', 60, 552, 380, 44, 'MODO FOTO  (F10)', { size: 17 })) window.dispatchEvent(new KeyboardEvent('keydown', { key: 'F10' })); return r;
+    const r = ps.apply(this, arguments); return r;
   };
 }

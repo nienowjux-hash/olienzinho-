@@ -77,6 +77,7 @@ Visual31.reviveDraw = function () {
 
 // ---------- metas dentro da fase ----------
 Visual31.objStart = function () {
+  return;   // as metas dentro da fase (resgate, farol, orbes) foram removidas a pedido
   const st = G.stage; if (!st || G.endless || G.boss || G.bossPending || G.training || G.practice || G.secret || G.adv || G.weekly || G.exp && G.exp.noObj) return;
   const kinds = ['resgate', 'defender', 'orbes']; const k = pick(kinds), O = G.obj = { k, t: 0, dur: k === 'defender' ? 18 : 22, got: 0, goal: k === 'orbes' ? 5 : 1, done: false };
   if (k === 'resgate') O.ship = { x: rand(200, W - 200), y: -40, vy: 56 };

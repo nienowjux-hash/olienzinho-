@@ -11186,6 +11186,7 @@ Visual31.reviveDraw = function () {
 
 // ---------- metas dentro da fase ----------
 Visual31.objStart = function () {
+  return;   // as metas dentro da fase (resgate, farol, orbes) foram removidas a pedido
   const st = G.stage; if (!st || G.endless || G.boss || G.bossPending || G.training || G.practice || G.secret || G.adv || G.weekly || G.exp && G.exp.noObj) return;
   const kinds = ['resgate', 'defender', 'orbes']; const k = pick(kinds), O = G.obj = { k, t: 0, dur: k === 'defender' ? 18 : 22, got: 0, goal: k === 'orbes' ? 5 : 1, done: false };
   if (k === 'resgate') O.ship = { x: rand(200, W - 200), y: -40, vy: 56 };
@@ -17482,6 +17483,7 @@ const set83 = () => Save.data.settings || {};
   addEventListener('pointerdown', e => {
     if (e.pointerType === 'touch') { if (!T83.touch) T83.touch = true; } else { if (e.pointerType === 'mouse') T83.touch = false; return; }
     if (!T83.on || G.state !== 'play') return;
+    if (G.cut || G.finisher) { Input.mouse.click = true; Input.hit.enter = true; mposSafe(e); e.stopImmediatePropagation(); return; }   // cena de vitoria do chefe: qualquer toque continua
     if (typeof Extras !== 'undefined' && Extras.tut && Extras.tut.wait) { Input.mouse.click = true; Input.hit.enter = true; mposSafe(e); e.stopImmediatePropagation(); return; }
     if (G.routeAsk) { const q = logical(e); if (q.x > 300 && q.x < 980 && q.y > 230 && q.y < 370) return; }
     { const q = logical(e); if (T83.pass && T83.pass.some(r => q.x >= r[0] && q.x <= r[0] + r[2] && q.y >= r[1] && q.y <= r[1] + r[3])) { mposSafe(e); Input.mouse.click = true; e.stopImmediatePropagation(); return; } }

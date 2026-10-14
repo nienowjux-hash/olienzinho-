@@ -109,7 +109,7 @@ const set83 = () => Save.data.settings || {};
   const upl = Game.updatePlay; Game.updatePlay = function (dt) { if (T83.stick) { Input.gpAx = T83.ax || 0; Input.gpAy = T83.ay || 0; } return upl.call(this, dt); };
   hookRender(rn => function () {
     rn(); if (G.state !== 'play' && (T83.stick || Object.keys(T83.pts).length)) { T83.stick = null; T83.ax = 0; T83.ay = 0; Input.gpAx = 0; Input.gpAy = 0; T83.pts = {}; T83.down = {}; }
-    const w = innerWidth, h = innerHeight, d = Math.min(window.devicePixelRatio || 1, 2); if (OVC.width !== Math.round(w * d) || OVC.height !== Math.round(h * d)) { OVC.width = Math.round(w * d); OVC.height = Math.round(h * d); }
+    const w = innerWidth, h = innerHeight, d = Math.min(window.devicePixelRatio || 1, 1.5); if (OVC.width !== Math.round(w * d) || OVC.height !== Math.round(h * d)) { OVC.width = Math.round(w * d); OVC.height = Math.round(h * d); }
     og.setTransform(d, 0, 0, d, 0, 0); const on = T83.on && G.state === 'play' && G.player && !G.cut && !G.hideHud;
     if (!on) { if (drawn) { og.clearRect(0, 0, w, h); drawn = false; } return; } drawn = true; og.clearRect(0, 0, w, h);
     const g = geo(), t = World.t, s = T83.stick, R = stickR(), dn = T83.down || {};

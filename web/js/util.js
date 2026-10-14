@@ -15,7 +15,7 @@ let K = 1;
 const bloom = document.createElement('canvas'), bctx = bloom.getContext('2d');
 function resize() {
   let rs = 1; try { rs = Save.data.settings.res || 1; } catch (e) { }
-  const dpr = Math.min(window.devicePixelRatio || 1, 2) * rs * (window.DYN || 1);
+  const dpr = Math.min(window.devicePixelRatio || 1, 2) * rs * (window.DYN || 1) * (window.DYNB || 1);
   let w = innerWidth, h = innerHeight;
   if (w / h > W / H) w = h * W / H; else h = w * H / W;
   cv.style.width = w + 'px'; cv.style.height = h + 'px';

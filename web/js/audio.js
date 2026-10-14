@@ -34,7 +34,7 @@ const Snd = (() => {
     musMaster = ac.createGain(); musMaster.gain.value = vol.music * MUS_TRIM; musMaster.connect(comp);
     newTrackBus();
     // reverb
-    const conv = ac.createConvolver(); conv.buffer = makeImpulse(2.6, 2.4);
+    const conv = ac.createConvolver(); conv.buffer = window.__sndLite ? makeImpulse(.9, 2.4) : makeImpulse(2.6, 2.4);
     revIn = ac.createGain(); const revOut = ac.createGain(); revOut.gain.value = .5;
     revIn.connect(conv); conv.connect(revOut); revOut.connect(comp);
     // delay (musica)
@@ -58,7 +58,7 @@ const Snd = (() => {
     let out = g;
     if (o.pan) { const p = ac.createStereoPanner(); p.pan.value = Math.max(-1, Math.min(1, o.pan)); g.connect(p); out = p; }
     out.connect(bus);
-    if (o.rev) { const s = ac.createGain(); s.gain.value = o.rev; g.connect(s); s.connect(revIn); }
+    if (o.rev && !window.__sndLite) { const s = ac.createGain(); s.gain.value = o.rev; g.connect(s); s.connect(revIn); }
     if (o.del) { const s = ac.createGain(); s.gain.value = o.del; g.connect(s); s.connect(delIn); }
   }
 

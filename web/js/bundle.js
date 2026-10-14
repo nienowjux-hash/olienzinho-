@@ -3755,7 +3755,7 @@ const Game = {
       p.dashT -= dt; const [ddx, ddy] = p.dashDir; p.vx = ddx * 500; p.vy = ddy * 500;
       p.x = clamp(p.x + ddx * 1500 * dt, 50, W - 50); p.y = clamp(p.y + ddy * 1500 * dt, 90, H - 70);
       p.ghosts.push({ x: p.x, y: p.y, t: .28, vx: p.vx });
-    } else if (gmag > 0 && !(ax || ay)) { p.vx += (gax * p.speed - p.vx) * Math.min(1, 10 * dt); p.vy += (gay * p.speed - p.vy) * Math.min(1, 10 * dt); }
+    } else if (gmag > 0 && !(ax || ay)) { const ka = tsk ? 28 : 10; p.vx += (gax * p.speed - p.vx) * Math.min(1, ka * dt); p.vy += (gay * p.speed - p.vy) * Math.min(1, ka * dt); }
     else if (ax || ay) { const m = Math.hypot(ax, ay); p.vx += (ax / m * p.speed - p.vx) * Math.min(1, 10 * dt); p.vy += (ay / m * p.speed - p.vy) * Math.min(1, 10 * dt); }
     else if (useMouse) { const tx = Input.mouse.x, ty = Input.mouse.y; p.vx += (clamp((tx - p.x) * 9, -p.speed * 1.3, p.speed * 1.3) - p.vx) * Math.min(1, 12 * dt); p.vy += (clamp((ty - p.y) * 9, -p.speed * 1.3, p.speed * 1.3) - p.vy) * Math.min(1, 12 * dt); }
     else { p.vx *= 1 - Math.min(1, 6 * dt); p.vy *= 1 - Math.min(1, 6 * dt); }
@@ -17450,7 +17450,9 @@ const set83 = () => Save.data.settings || {};
 {
   const OVC = document.createElement('canvas'); OVC.style.cssText = 'position:fixed;left:0;top:0;width:100%;height:100%;z-index:6;pointer-events:none'; document.body.appendChild(OVC); const og = OVC.getContext('2d');
   let drawn = false;
-  const geo = () => { const w = innerWidth, h = innerHeight, r = cv.getBoundingClientRect(), u = clamp(Math.min(h / 390, 1.4), .7, 1.4); return { w, h, r, u, bar: Math.min(r.left, w - r.right) }; };
+  let gc = null, gct = 0;
+  const geo = () => { const n = performance.now(); if (gc && n - gct < 400 && gc.w === innerWidth && gc.h === innerHeight) return gc; const w = innerWidth, h = innerHeight, r = cv.getBoundingClientRect(), u = clamp(Math.min(h / 390, 1.4), .7, 1.4); gct = n; return (gc = { w, h, r, u, bar: Math.min(r.left, w - r.right) }); };
+  ['resize', 'orientationchange', 'fullscreenchange'].forEach(ev => addEventListener(ev, () => { gc = null; }));
   T83.geo = geo;
   const BT = () => {
     const p = G.player, wp = p && WEAPONS[p.weapon]; if (!p || !wp) return [];
@@ -17484,7 +17486,7 @@ const set83 = () => Save.data.settings || {};
     { const q = logical(e); if (T83.pass && T83.pass.some(r => q.x >= r[0] && q.x <= r[0] + r[2] && q.y >= r[1] && q.y <= r[1] + r[3])) { mposSafe(e); Input.mouse.click = true; e.stopImmediatePropagation(); return; } }
     const xb = (T83.extra || []).find(q => e.clientX >= q.x - 6 && e.clientX <= q.x + q.w + 6 && e.clientY >= q.y - 6 && e.clientY <= q.y + q.h + 6);
     if (xb) { try { navigator.vibrate && navigator.vibrate(12); } catch (er) { } e.stopImmediatePropagation(); e.preventDefault(); xb.fn(); return; }
-    const b = BT().find(b => Math.hypot(b.x - e.clientX, b.y - e.clientY) < b.r + 10);
+    let b = null, bd = 1e9; for (const q of BT()) { const dd = Math.hypot(q.x - e.clientX, q.y - e.clientY) - q.r; if (dd < 12 && dd < bd) { bd = dd; b = q; } }
     if (b) { Input.hit[b.k] = true; if (!b.pause) Input.keys[b.k] = true; T83.pts[e.pointerId] = { k: b.k, btn: b }; T83.down = T83.down || {}; T83.down[b.k] = 1; try { navigator.vibrate && navigator.vibrate(12); } catch (er) { } }
     else if (e.clientX < innerWidth * .5 && !T83.stick) { T83.stick = { id: e.pointerId, ox: e.clientX, oy: e.clientY, x: e.clientX, y: e.clientY }; T83.pts[e.pointerId] = { stick: 1 }; }
     else T83.pts[e.pointerId] = { none: 1 };
@@ -17493,7 +17495,7 @@ const set83 = () => Save.data.settings || {};
   addEventListener('pointermove', e => {
     if (!owns(e.pointerId)) return; e.stopImmediatePropagation(); const s = T83.stick; if (!s || s.id !== e.pointerId) return; const R = stickR();
     s.x = e.clientX; s.y = e.clientY; let dx = (s.x - s.ox) / R, dy = (s.y - s.oy) / R; const m = Math.hypot(dx, dy); if (m > 1) { s.ox = s.x - dx / m * R; s.oy = s.y - dy / m * R; dx /= m; dy /= m; }
-    const mm = Math.min(1, m), dz = .1, k = mm > dz ? (mm - dz) / (1 - dz) / (mm || 1) : 0; T83.ax = dx * k; T83.ay = dy * k; Input.gpAx = T83.ax; Input.gpAy = T83.ay;
+    const mm = Math.min(1, m / .85), dz = .07, k = mm > dz ? (mm - dz) / (1 - dz) / (m > 1e-6 ? Math.min(1, m) : 1) : 0; T83.ax = dx * k; T83.ay = dy * k; Input.gpAx = T83.ax; Input.gpAy = T83.ay;
   }, true);
   const rel = e => { const o = T83.pts[e.pointerId]; if (!o) return; delete T83.pts[e.pointerId]; if (o.k) { if (!o.btn.pause) Input.keys[o.k] = false; if (T83.down) delete T83.down[o.k]; } if (o.stick) { T83.stick = null; T83.ax = 0; T83.ay = 0; Input.gpAx = 0; Input.gpAy = 0; } e.stopImmediatePropagation(); };
   addEventListener('pointerup', rel, true); addEventListener('pointercancel', rel, true);

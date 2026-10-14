@@ -17403,7 +17403,7 @@ const set83 = () => Save.data.settings || {};
   T83.coarse = !!(window.matchMedia && matchMedia('(pointer:coarse)').matches);
   Object.defineProperty(T83, 'on', { get() { const m = mode(); return m === 1 || (m === 0 && T83.touch); } });
   T83.touch = T83.coarse;
-  T83.standalone = !!(window.matchMedia && (matchMedia('(display-mode: fullscreen)').matches || matchMedia('(display-mode: standalone)').matches || navigator.standalone));
+  T83.standalone = !!(window.matchMedia && (matchMedia('(display-mode: fullscreen)').matches || matchMedia('(display-mode: standalone)').matches || navigator.standalone)) || /OlienzinhoApp/.test(navigator.userAgent); T83.isApp = /OlienzinhoApp/.test(navigator.userAgent); if (T83.isApp) { T83.touch = true; T83.coarse = true; }
 }
 
 // ---------- 1. pagina so para o jogo ----------

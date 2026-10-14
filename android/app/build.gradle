@@ -1,0 +1,35 @@
+plugins { id 'com.android.application' }
+
+def ksPath = System.getenv('OLIEN_KS') ?: ''
+def ksPass = System.getenv('OLIEN_KS_PASS') ?: ''
+
+android {
+    namespace 'com.olien.olienzinho'
+    compileSdk 34
+    defaultConfig {
+        applicationId 'com.olien.olienzinho'
+        minSdk 24
+        targetSdk 34
+        versionCode = Integer.parseInt(System.getenv('OLIEN_VCODE') ?: '1')
+        versionName = (System.getenv('OLIEN_VNAME') ?: '1.0')
+    }
+    signingConfigs {
+        release {
+            if (ksPath) {
+                storeFile file(ksPath)
+                storePassword ksPass
+                keyAlias 'olienzinho'
+                keyPassword ksPass
+            }
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            if (ksPath) { signingConfig signingConfigs.release }
+        }
+    }
+    androidResources { noCompress 'mp4', 'woff2', 'png' }
+    lint { checkReleaseBuilds false; abortOnError false }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+}

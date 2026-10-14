@@ -17347,7 +17347,7 @@ const S82 = () => Save.data.settings || {};
   hookRender(rn => { let last = ''; return function () { rn(); const s = G.state; if (s !== last) { if (s === 'over' && Visual82.buf.length > 30 && G.boss) { Visual82.rp = { buf: Visual82.buf.slice(), boss: G.boss }; } else if (s === 'over') Visual82.rp = null; last = s; } }; });
   const ov = Screens.over;
   Screens.over = function () {
-    const r = ov.apply(this, arguments); if (Visual82.rp && !G.endless && UI.button('rpl', W / 2 - 190, 596, 380, 40, 'REVER OS ÚLTIMOS SEGUNDOS', { size: 15 })) { Visual82.rpI = 0; G.state = 'replay'; } return r;
+    const r = ov.apply(this, arguments); if (Visual82.rp && !G.endless && UI.button('rpl', 28, 544, 316, 26, '▶ VER OS ÚLTIMOS 10 s EM CÂMERA LENTA', { size: 11 })) { Visual82.rpI = 0; G.state = 'replay'; } return r;
   };
   Screens.replay = function () {
     const R = Visual82.rp; if (!R) { G.state = 'over'; return; } World.draw(0); ctx.fillStyle = 'rgba(2,0,12,.35)'; ctx.fillRect(0, 0, W, H);
@@ -17597,6 +17597,35 @@ Screens.fsgate = function () {
   Screens.title = function () {
     const r = ti.apply(this, arguments); if (!T83.standalone && UI.button('tfs2', W - 232, 4, 218, 34, T83.isFs() ? '⛶ SAIR DA TELA CHEIA' : '⛶ TELA CHEIA', { size: 15 })) T83.fs(); return r;
   };
+}
+
+// ---------- faixa "Instalar o jogo" na tela inicial (PC e celular) + tamanho da tela sempre certo ----------
+{
+  const bn = document.createElement('div');
+  bn.id = 'installBar';
+  bn.style.cssText = 'position:fixed;left:50%;bottom:calc(10px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:30;display:none;align-items:center;gap:10px;max-width:92vw;padding:8px 10px 8px 16px;border-radius:999px;background:rgba(22,9,60,.94);border:2px solid #9a63ff;color:#fff;font:800 15px Nunito,sans-serif;box-shadow:0 6px 30px rgba(0,0,0,.5);-webkit-user-select:none;user-select:none';
+  const tx = document.createElement('span'); tx.textContent = 'Instale o jogo: tela cheia, sem barra do navegador';
+  const go = document.createElement('button'); go.textContent = 'INSTALAR'; go.style.cssText = 'cursor:pointer;border:0;border-radius:999px;padding:9px 18px;background:linear-gradient(#a874ff,#6a3aff);color:#fff;font:900 15px Nunito,sans-serif;touch-action:manipulation';
+  const x = document.createElement('button'); x.textContent = '×'; x.setAttribute('aria-label', 'Fechar'); x.style.cssText = 'cursor:pointer;border:0;background:transparent;color:#cdb8ff;font:900 22px Nunito,sans-serif;padding:0 6px;touch-action:manipulation';
+  bn.append(tx, go, x); document.body.appendChild(bn);
+  const KEY = 'olien_inst_hide';
+  const hidden = () => { try { return Date.now() - (+localStorage.getItem(KEY) || 0) < 14 * 864e5; } catch (e) { return false; } };
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  go.addEventListener('click', e => { e.stopPropagation(); if (T83.dp) T83.install(); else if (ios) { alert('No iPhone/iPad: toque no botão Compartilhar (quadrado com seta) e escolha "Adicionar à Tela de Início".'); } else T83.install(); });
+  x.addEventListener('click', e => { e.stopPropagation(); try { localStorage.setItem(KEY, String(Date.now())); } catch (er) { } bn.style.display = 'none'; });
+  bn.addEventListener('pointerdown', e => e.stopPropagation()); bn.addEventListener('pointerup', e => e.stopPropagation());
+  let shown = false;
+  hookRender(rn => function () {
+    rn(); const want = G.state === 'title' && !T83.standalone && (T83.dp || ios) && !hidden() && !T83.isFs();
+    if (want !== shown) { shown = want; bn.style.display = want ? 'flex' : 'none'; }
+  });
+  // confere o tamanho do jogo a cada meio segundo: se a janela mudou (tela cheia, barra do navegador) e o jogo nao acompanhou, ajusta
+  let tick = 0;
+  hookRender(rn => function () {
+    rn(); if (++tick % 30) return; let w = innerWidth, h = innerHeight; if (w / h > W / H) w = h * W / H; else h = w * H / W;
+    if (Math.abs(parseFloat(cv.style.width) - w) > 2 || Math.abs(parseFloat(cv.style.height) - h) > 2) { try { resize(); } catch (e) { } }
+  });
+  [60, 250, 700, 1500].forEach(ms => document.addEventListener('fullscreenchange', () => setTimeout(() => { try { resize(); } catch (e) { } }, ms)));
 }
 
 ;

@@ -165,7 +165,7 @@ const S82 = () => Save.data.settings || {};
   hookRender(rn => { let last = ''; return function () { rn(); const s = G.state; if (s !== last) { if (s === 'over' && Visual82.buf.length > 30 && G.boss) { Visual82.rp = { buf: Visual82.buf.slice(), boss: G.boss }; } else if (s === 'over') Visual82.rp = null; last = s; } }; });
   const ov = Screens.over;
   Screens.over = function () {
-    const r = ov.apply(this, arguments); if (Visual82.rp && !G.endless && UI.button('rpl', W / 2 - 190, 596, 380, 40, 'REVER OS ÚLTIMOS SEGUNDOS', { size: 15 })) { Visual82.rpI = 0; G.state = 'replay'; } return r;
+    const r = ov.apply(this, arguments); if (Visual82.rp && !G.endless && UI.button('rpl', 28, 544, 316, 26, '▶ VER OS ÚLTIMOS 10 s EM CÂMERA LENTA', { size: 11 })) { Visual82.rpI = 0; G.state = 'replay'; } return r;
   };
   Screens.replay = function () {
     const R = Visual82.rp; if (!R) { G.state = 'over'; return; } World.draw(0); ctx.fillStyle = 'rgba(2,0,12,.35)'; ctx.fillRect(0, 0, W, H);

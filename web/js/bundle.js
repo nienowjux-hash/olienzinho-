@@ -17374,7 +17374,7 @@ const S82 = () => Save.data.settings || {};
   hookRender(rn => { let last = ''; return function () { rn(); const s = G.state; if (s !== last) { last = s; Visual82.lastFoc = ''; if (NAMES[s]) Visual82.say(NAMES[s]); } if (S82().leitor && s === 'story' && G.story) { const pg = G.story.pages[G.story.i]; if (pg && pg.text && Visual82.lastTxt !== pg.text) { Visual82.lastTxt = pg.text; if (!S82().voz) Visual82.say(pg.text); } } }; });
   const t0 = txt;
   txt = function (s, x, y, size, color, align, weight, base) {
-    const st = S82(), fz = st.fsz ?? ((typeof Visual83 !== 'undefined' && Visual83.on) ? (innerWidth < 950 ? 2 : 1) : 0); if (fz && !st.big && size <= ((typeof Visual83 !== 'undefined' && Visual83.on) ? 30 : 24) && size >= 11) size = Math.round(size * Math.min(fz === 2 ? 1.4 : 1.2, size > 24 ? 1.12 : 9));
+    const st = S82(), fz = st.fsz ?? ((typeof Visual83 !== 'undefined' && Visual83.on) ? (innerWidth < 950 ? 2 : 1) : 0); if (fz && !st.big && (st.fsz !== undefined || !(typeof Visual83 !== 'undefined' && Visual83.on) || G.state === 'play') && size <= ((typeof Visual83 !== 'undefined' && Visual83.on) ? 30 : 24) && size >= 11) size = Math.round(size * Math.min(fz === 2 ? 1.4 : 1.2, size > 24 ? 1.12 : 9));
     if (st.hcm && (color === '#8a7fb0' || color === '#6a5aa8' || color === '#a090d0')) color = '#e2d8ff';
     return t0(s, x, y, size, color, align, weight, base);
   };
@@ -17459,7 +17459,7 @@ const set83 = () => Save.data.settings || {};
   const BT = () => {
     const p = G.player, wp = p && WEAPONS[p.weapon]; if (!p || !wp) return [];
     const g = geo(), sc = set83().tbtn === 1 ? 1.2 : 1;
-    const R = clamp(g.h * .058, 20, 32) * sc, m = 14;
+    const R = clamp(g.h * .068, 23, 38) * sc, m = 14;
     const spec = { k: 'q', c: wp.c, cd: p.specCd, mx: p.specCdMax, r: R * 1.3 };
     const dash = { k: 'shift', c: '#7fe0ff', cd: p.dashCd, mx: p.dashCdMax, r: R };
     const pulse = { k: ' ', c: '#ffb340', cd: p.pulseT, mx: p.pulseCd, r: R };
@@ -17476,7 +17476,7 @@ const set83 = () => Save.data.settings || {};
     return [pause, spec, dash, pulse, parry].concat(sec ? [sec] : []);
   };
   T83.BT = BT;
-  const stickR = () => clamp(geo().h * .09, 34, 52);
+  const stickR = () => clamp(geo().h * .125, 46, 70);
   const logical = e => { const r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left) / r.width * W, y: (e.clientY - r.top) / r.height * H }; };
   const mposSafe = e => { try { const q = logical(e); Input.mouse.x = q.x; Input.mouse.y = q.y; } catch (er) { } };
   const owns = id => id in T83.pts;
@@ -17498,7 +17498,7 @@ const set83 = () => Save.data.settings || {};
   addEventListener('pointermove', e => {
     if (!owns(e.pointerId)) return; e.stopImmediatePropagation(); const s = T83.stick; if (!s || s.id !== e.pointerId) return; const R = stickR();
     s.x = e.clientX; s.y = e.clientY; let dx = (s.x - s.ox) / R, dy = (s.y - s.oy) / R; const m = Math.hypot(dx, dy); if (m > 1) { s.ox = s.x - dx / m * R; s.oy = s.y - dy / m * R; dx /= m; dy /= m; }
-    const mm = Math.min(1, m / .85), dz = .07, k = mm > dz ? (mm - dz) / (1 - dz) / (m > 1e-6 ? Math.min(1, m) : 1) : 0; T83.ax = dx * k; T83.ay = dy * k; Input.gpAx = T83.ax; Input.gpAy = T83.ay;
+    const mm = Math.min(1, m / .85), dz = .07, k = mm > dz ? Math.pow((mm - dz) / (1 - dz), 1.3) / (m > 1e-6 ? Math.min(1, m) : 1) : 0; T83.ax = dx * k; T83.ay = dy * k; Input.gpAx = T83.ax; Input.gpAy = T83.ay;
   }, true);
   const rel = e => { const o = T83.pts[e.pointerId]; if (!o) return; delete T83.pts[e.pointerId]; if (o.k) { if (!o.btn.pause) Input.keys[o.k] = false; if (T83.down) delete T83.down[o.k]; } if (o.stick) { T83.stick = null; T83.ax = 0; T83.ay = 0; Input.gpAx = 0; Input.gpAy = 0; } e.stopImmediatePropagation(); };
   addEventListener('pointerup', rel, true); addEventListener('pointercancel', rel, true);

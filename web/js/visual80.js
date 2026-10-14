@@ -148,7 +148,7 @@ const wk = () => { const d = Save.data; if (!d.wk || d.wk.week !== wkKey()) d.wk
   const STEPS = [['Mova a nave (setas, WASD ou mouse)', 'move'], ['Esquive: aperte SHIFT', 'dash'], ['Use o pulso: ESPAÇO', 'pulse'], ['Use o especial: Q', 'spec']];
   const hd = Visual15.hudDraw;
   Visual15.hudDraw = function () {
-    hd.call(this); const p = G.player, d = Save.data; if (!p || G.state !== 'play' || d.tutDone || Extras.tut || G.stageIdx !== 0 || G.endless || G.training || G.rush || G.practice) return;
+    hd.call(this); const p = G.player, d = Save.data; if (!p || G.state !== 'play' || d.tutDone || Extras.tut || typeof Visual86 !== 'undefined' || G.stageIdx !== 0 || G.endless || G.training || G.rush || G.practice) return;
     const T = Visual80.tm; if (T.run !== G.runId) { Visual80.step = 0; Visual80.tm = { run: G.runId, px: p.x, py: p.y, mv: 0, dc: p.dashCd, pt: p.pulseT, sc: p.specCd }; }
     const t = Visual80.tm; t.mv += Math.hypot(p.x - t.px, p.y - t.py); t.px = p.x; t.py = p.y;
     const k = STEPS[Visual80.step][1];

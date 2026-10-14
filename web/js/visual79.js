@@ -76,7 +76,7 @@ const SD = () => Save.data;
   });
   const hd = Visual15.hudDraw;
   Visual15.hudDraw = function () {
-    hd.call(this); if (G.state !== 'play' || !G.t || G.t > 5 || !Visual79.adaptNote) return;
+    hd.call(this); if (G.state !== 'play' || !G.t || G.t > 5 || !Visual79.adaptNote || G.tutOn) return;
     ctx.save(); ctx.globalAlpha = clamp(G.t / .6, 0, 1) * clamp((5 - G.t) / .8, 0, 1) * .85; txt(Visual79.adaptNote, W / 2, 630, 15, '#cdb8ff', 'center', 700); ctx.restore();
   };
 }

@@ -82,7 +82,7 @@ const rum77 = (ms, s, w, gap = 90) => { const n = performance.now(); if (n - Vis
   const TIPS = ['Segure o tiro e deslize: o dash atravessa tiros inimigos.', 'Combos altos dão mais pontos: não deixe o contador zerar.', 'O ímã puxa estrelas de longe: invista nele se gosta de coletar.', 'Perto de um tiro inimigo sem ser atingido rende pontos de raspão.', 'Armas fundidas misturam os efeitos das duas: experimente no hangar.', 'O guardião ajuda a atirar e a defender: escolha o que combina com a sua arma.', 'Os chefes ficam mais fortes ao perder vida: guarde o especial para a fúria.', 'Na loja, melhorias permanentes valem para todas as fases.'];
   const hd = Visual15.hudDraw;
   Visual15.hudDraw = function () {
-    hd.call(this); if (G.state !== 'play' || QL() < 1 || !G.t || G.t > 5 || G.endless || G.training) return; if (Visual77.tipRun !== G.runId) { Visual77.tipRun = G.runId; Visual77.tip = (Visual77.tip + 1) % TIPS.length; }
+    hd.call(this); if (G.state !== 'play' || QL() < 1 || !G.t || G.t > 5 || G.endless || G.training || G.tutOn) return; if (Visual77.tipRun !== G.runId) { Visual77.tipRun = G.runId; Visual77.tip = (Visual77.tip + 1) % TIPS.length; }
     const a = clamp(G.t / .6, 0, 1) * clamp((5 - G.t) / .8, 0, 1); ctx.save(); ctx.globalAlpha = a * .9; ctx.font = `700 17px ${FONT}`; const s = 'DICA: ' + TIPS[Visual77.tip], w = ctx.measureText(s).width + 36; ctx.fillStyle = 'rgba(10,4,32,.75)'; ctx.beginPath(); ctx.roundRect(W / 2 + 100 - w / 2, 664, w, 34, 17); ctx.fill(); ctx.fillStyle = '#e8dcff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(s, W / 2 + 100, 681); ctx.restore();
   };
   const sf = Game.startStage; Game.startStage = function () { G.runId = (G.runId || 0) + 1; return sf.apply(this, arguments); };

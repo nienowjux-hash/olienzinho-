@@ -15,7 +15,7 @@ const h62 = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s 
     if (xw > 4) { ctx.save(); ctx.beginPath(); ctx.rect(0, 0, xw, 8); ctx.clip(); ctx.globalCompositeOperation = 'lighter'; const gx = ((t * 260) % (W + 200)) - 100, g = ctx.createLinearGradient(gx - 60, 0, gx + 60, 0); g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(.5, 'rgba(255,255,255,.55)'); g.addColorStop(1, 'rgba(255,255,255,0)'); ctx.fillStyle = g; ctx.fillRect(0, 0, xw, 8); ctx.restore(); }
     ctx.fillStyle = 'rgba(255,255,255,.18)'; ctx.fillRect(0, 0, W, 3);
     ctx.translate(0, H); ctx.scale(.62, .62); ctx.translate(0, -H);
-    const wp = WEAPONS[p.weapon]; if (wp) [[p.pulseT, p.pulseCd, '#ffb340'], [p.dashCd, p.dashCdMax, '#7fe0ff'], [p.specCd, p.specCdMax, wp.c]].forEach(([cd, mx, col], i) => {
+    const wp = WEAPONS[p.weapon]; if (wp && !(typeof Visual83 !== 'undefined' && Visual83.hideAb())) [[p.pulseT, p.pulseCd, '#ffb340'], [p.dashCd, p.dashCdMax, '#7fe0ff'], [p.specCd, p.specCdMax, wp.c]].forEach(([cd, mx, col], i) => {
       if (cd > 0 || !ok62(col)) return; const cx = 56 + i * 112, cy = H - 66; ctx.globalCompositeOperation = 'lighter';
       for (let k = 0; k < 3; k++) { const a = t * 2.2 + k * 2.094 + i; drawGlow(cx + Math.cos(a) * 30, cy + Math.sin(a) * 30, 5, col, .9); }
     });

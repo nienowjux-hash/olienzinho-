@@ -197,8 +197,8 @@ const wk = () => { const d = Save.data; if (!d.wk || d.wk.week !== wkKey()) d.wk
   const pos = e => { const r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left) / r.width * W, y: (e.clientY - r.top) / r.height * H }; };
   const keys = ['arrowleft', 'arrowright', 'arrowup', 'arrowdown'];
   const rel = () => { Visual80.stick = null; keys.forEach(k => { Input.keys[k] = false; }); };
-  addEventListener('pointerdown', e => { if (e.pointerType !== 'touch' || G.state !== 'play') return; const q = pos(e); if (q.x > W * .42 || q.y < H * .35 || Visual80.stick) return; e.stopImmediatePropagation(); Visual80.stick = { id: e.pointerId, ox: q.x, oy: q.y, x: q.x, y: q.y }; }, true);
-  addEventListener('pointermove', e => { const s = Visual80.stick; if (!s || e.pointerId !== s.id) return; e.stopImmediatePropagation(); const q = pos(e); s.x = q.x; s.y = q.y; const dx = q.x - s.ox, dy = q.y - s.oy, th = 14; Input.keys.arrowleft = dx < -th; Input.keys.arrowright = dx > th; Input.keys.arrowup = dy < -th; Input.keys.arrowdown = dy > th; }, true);
+  addEventListener('pointerdown', e => { if (typeof Visual83 !== 'undefined' || e.pointerType !== 'touch' || G.state !== 'play') return; const q = pos(e); if (q.x > W * .42 || q.y < H * .35 || Visual80.stick) return; e.stopImmediatePropagation(); Visual80.stick = { id: e.pointerId, ox: q.x, oy: q.y, x: q.x, y: q.y }; }, true);
+  addEventListener('pointermove', e => { if (typeof Visual83 !== 'undefined') return; const s = Visual80.stick; if (!s || e.pointerId !== s.id) return; e.stopImmediatePropagation(); const q = pos(e); s.x = q.x; s.y = q.y; const dx = q.x - s.ox, dy = q.y - s.oy, th = 14; Input.keys.arrowleft = dx < -th; Input.keys.arrowright = dx > th; Input.keys.arrowup = dy < -th; Input.keys.arrowdown = dy > th; }, true);
   addEventListener('pointerup', e => { if (Visual80.stick && e.pointerId === Visual80.stick.id) rel(); }, true); addEventListener('pointercancel', e => { if (Visual80.stick && e.pointerId === Visual80.stick.id) rel(); }, true);
   const hd = Visual15.hudDraw;
   Visual15.hudDraw = function () {

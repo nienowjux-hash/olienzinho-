@@ -26,13 +26,13 @@ Visual56.hudFrame = function (wl, comboH, ab, edge) {
   return Visual56.sprite('hud' + wl + '_' + comboH + '_' + ab + edge, W, H, (g) => {
     g.beginPath(); g.moveTo(8, 6); g.lineTo(8 + wl, 6); g.lineTo(8 + wl - 26, 92); g.lineTo(8, 92); g.closePath(); g.fillStyle = 'rgba(10,3,30,.5)'; g.fill(); g.strokeStyle = 'rgba(200,170,255,.45)'; g.lineWidth = 2; g.stroke(); g.fillStyle = edge; g.globalAlpha = .7; g.fillRect(8, 6, 4, 86); g.globalAlpha = 1;
     const wr = 330; g.beginPath(); g.moveTo(W - 8, 6); g.lineTo(W - 8 - wr, 6); g.lineTo(W - 8 - wr + 22, 6 + comboH); g.lineTo(W - 8, 6 + comboH); g.closePath(); g.fillStyle = 'rgba(10,3,30,.46)'; g.fill(); g.strokeStyle = 'rgba(200,170,255,.4)'; g.stroke(); g.fillStyle = edge; g.globalAlpha = .7; g.fillRect(W - 12, 6, 4, comboH); g.globalAlpha = 1;
-    g.beginPath(); g.roundRect(8, H - 72, 18 + ab * 70, 64, 16); g.fillStyle = 'rgba(10,3,30,.42)'; g.fill(); g.strokeStyle = 'rgba(200,170,255,.38)'; g.stroke();
+    if (ab > 0) { g.beginPath(); g.roundRect(8, H - 72, 18 + ab * 70, 64, 16); g.fillStyle = 'rgba(10,3,30,.42)'; g.fill(); g.strokeStyle = 'rgba(200,170,255,.38)'; g.stroke(); }
   });
 };
 {
   const dh = Game.drawHud;
   Game.drawHud = function () {
-    const p = G.player; if (p && QL() >= 1) { const mh = p.maxHp > 5 ? 0 : p.maxHp, hsp = Math.min(38, 520 / Math.max(1, p.maxHp)), wl = p.maxHp > 5 ? 250 : Math.round(clamp(30 + mh * hsp + 34, 250, 590)), ab = 3 + (typeof Visual13 !== 'undefined' && Visual13.secHud ? Visual13.secHud(p).length : 0); const edge = hx56(G.stage && G.stage.tint) ? G.stage.tint : '#b98cff'; ctx.save(); Visual56.drawSprite(Visual56.hudFrame(wl, G.combo >= 3 ? 130 : 72, ab, edge), 0, 0); ctx.restore(); }
+    const p = G.player; if (p && QL() >= 1) { const mh = p.maxHp > 5 ? 0 : p.maxHp, hsp = Math.min(38, 520 / Math.max(1, p.maxHp)), wl = p.maxHp > 5 ? 250 : Math.round(clamp(30 + mh * hsp + 34, 250, 590)), ab = (typeof Visual83 !== 'undefined' && Visual83.hideAb()) ? 0 : 3 + (typeof Visual13 !== 'undefined' && Visual13.secHud ? Visual13.secHud(p).length : 0); const edge = hx56(G.stage && G.stage.tint) ? G.stage.tint : '#b98cff'; ctx.save(); Visual56.drawSprite(Visual56.hudFrame(wl, G.combo >= 3 ? 130 : 72, ab, edge), 0, 0); ctx.restore(); }
     return dh.call(this);
   };
 }

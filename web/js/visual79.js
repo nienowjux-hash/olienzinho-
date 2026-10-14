@@ -171,10 +171,10 @@ const msn = () => { const d = SD(); if (!d.msn || d.msn.day !== dayK()) d.msn = 
 
 // ---------- 9. botoes de toque ----------
 {
-  const isTouch = () => ('ontouchstart' in window) || (matchMedia && matchMedia('(pointer:coarse)').matches);
+  const isTouch = () => (typeof Visual83 !== 'undefined') ? false : ('ontouchstart' in window) || (matchMedia && matchMedia('(pointer:coarse)').matches);
   const BT = [{ k: ' ', x: 1210, y: 640, c: '#ffb340', l: 'PULSO' }, { k: 'shift', x: 1110, y: 640, c: '#7fe0ff', l: 'ESQ.' }, { k: 'q', x: 1210, y: 545, c: '#b98cff', l: 'ESP.' }];
   const hit = e => { const r = cv.getBoundingClientRect(), x = (e.clientX - r.left) / r.width * W, y = (e.clientY - r.top) / r.height * H; return BT.find(b => Math.hypot(b.x - x, b.y - y) < 48); };
-  addEventListener('pointerdown', e => { if (e.pointerType !== 'touch' || G.state !== 'play') return; const b = hit(e); if (!b) return; e.stopImmediatePropagation(); e.preventDefault(); Input.hit[b.k] = true; Input.keys[b.k] = true; Visual79.touch[e.pointerId] = b.k; }, true);
+  addEventListener('pointerdown', e => { if (typeof Visual83 !== 'undefined' || e.pointerType !== 'touch' || G.state !== 'play') return; const b = hit(e); if (!b) return; e.stopImmediatePropagation(); e.preventDefault(); Input.hit[b.k] = true; Input.keys[b.k] = true; Visual79.touch[e.pointerId] = b.k; }, true);
   const rel = e => { const k = Visual79.touch[e.pointerId]; if (k) { Input.keys[k] = false; delete Visual79.touch[e.pointerId]; } };
   addEventListener('pointerup', rel, true); addEventListener('pointercancel', rel, true);
   const hd = Visual15.hudDraw;

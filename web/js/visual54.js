@@ -73,7 +73,7 @@ Visual16.impact = function (x, y, crit) {
 {
   const dh = Game.drawHud;
   Game.drawHud = function () {
-    const r = dh.call(this); const p = G.player; if (!p || QL() < 1) return r; const wp = WEAPONS[p.weapon]; if (!wp) return r;
+    const r = dh.call(this); const p = G.player; if (!p || QL() < 1 || (typeof Visual83 !== 'undefined' && Visual83.hideAb())) return r; const wp = WEAPONS[p.weapon]; if (!wp) return r;
     const list = [[p.pulseT, p.pulseCd, '#ffb340'], [p.dashCd, p.dashCdMax, '#7fe0ff'], [p.specCd, p.specCdMax, wp.c]]; ctx.save(); ctx.globalCompositeOperation = 'lighter';
     ctx.translate(0, H); ctx.scale(.62, .62); ctx.translate(0, -H); list.forEach(([cd, mx, col], i) => { if (!(cd > 0 && cd < 1.1 && mx > 1.2) || !hx54(col)) return; const k = 1 - cd / 1.1; ctx.globalAlpha = .25 + k * .55; ctx.strokeStyle = col; ctx.lineWidth = 3 + k * 2; ctx.beginPath(); ctx.arc(56 + i * 112, H - 66, 32 + Math.sin(World.t * 14) * 2 + k * 4, 0, TAU); ctx.stroke(); });
     ctx.restore(); return r;

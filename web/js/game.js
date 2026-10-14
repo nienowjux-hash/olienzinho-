@@ -669,7 +669,7 @@ const Game = {
     // habilidades: pulso (Espaço), esquiva (Shift) e especial da arma (Q)
     const wp = WEAPONS[p.weapon];
     ctx.save(); ctx.translate(0, H); ctx.scale(.62, .62); ctx.translate(0, -H);
-    [['PULSO', 'ESPAÇO', p.pulseT, p.pulseCd, '#ffb340'], ['ESQUIVA', 'SHIFT', p.dashCd, p.dashCdMax, '#7fe0ff'], [wp.specName.toUpperCase(), 'Q', p.specCd, p.specCdMax, wp.c], ...Visual13.secHud(p)].forEach(([name, key, cd, mx, col], i) => {
+    ((typeof Visual83 !== 'undefined' && Visual83.hideAb()) ? [] : [['PULSO', 'ESPAÇO', p.pulseT, p.pulseCd, '#ffb340'], ['ESQUIVA', 'SHIFT', p.dashCd, p.dashCdMax, '#7fe0ff'], [wp.specName.toUpperCase(), 'Q', p.specCd, p.specCdMax, wp.c], ...Visual13.secHud(p)]).forEach(([name, key, cd, mx, col], i) => {
       const cx = 56 + i * 112, cy = H - 66, rdy = cd <= 0, k = rdy ? 1 : 1 - cd / mx;
       G.abPrev = G.abPrev || []; G.abPop = G.abPop || []; if (rdy && G.abPrev[i] === false) G.abPop[i] = World.t; G.abPrev[i] = rdy;
       { const pp = G.abPop[i] !== undefined ? World.t - G.abPop[i] : 9; if (pp >= 0 && pp < .6) { ctx.save(); ctx.strokeStyle = col; ctx.globalAlpha = 1 - pp / .6; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(cx, cy, 28 + pp * 55, 0, TAU); ctx.stroke(); ctx.restore(); } }

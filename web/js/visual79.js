@@ -88,10 +88,12 @@ const SD = () => Save.data;
     const r = up.call(this, dt); const p = G.player; if (!p || p.dead) return r;
     if (p.specCd > Visual79.prevSpec + .5 && String(p.weapon).startsWith('fz_')) {
       const parts = p.weapon.split('_').slice(1), cs = parts.map(q => WEAPONS[q] && WEAPONS[q].c).filter(Boolean);
+      if (typeof Visual82 !== 'undefined' && Visual82.fusion) { Visual82.fusion(p, parts, cs); shake(5); Snd.play('special'); } else {
       for (let i = 0; i < 22; i++) mkBullet(p, p.x, p.y, i / 22 * TAU, 560, 1.3, { pierce: 2, c: cs[i % Math.max(1, cs.length)] || '#e8dcff' });
       for (const b of G.eb) if (Math.hypot(b.x - p.x, b.y - p.y) < 230) b.dead = true;
       shockwave(p.x, p.y, 260, cs[0] || '#e8dcff'); shockwave(p.x, p.y, 180, cs[1] || '#ffffff'); shake(5); Snd.play('special');
       popup(p.x, p.y - 70, 'GOLPE DE FUSÃO', cs[0] || '#e8dcff', 22);
+      }
     }
     Visual79.prevSpec = p.specCd || 0; return r;
   };

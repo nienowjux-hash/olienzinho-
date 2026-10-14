@@ -151,10 +151,10 @@ Screens.bench = function () {
 // ---------- hub: menu das telas extras ----------
 Screens.hub = function () {
   txt('EXTRAS', W / 2, 30, 48, '#fff', 'center');
-  const L = [['ÁRVORE', 'Melhorias permanentes', 'tree', '#ffb340'], ['METAS', 'Do dia e da semana', 'missions', '#7fe0a0'], ['TEMPO DOS CHEFES', 'Seus recordes', 'bosstime', '#ff8a5f'], ['GALERIA DE CHEFES', 'Veja cada um de perto', 'bossgal', '#ff7ac8'], ['DESAFIOS MALUCOS', 'Regras diferentes', 'chal', '#c04aff'], ['ESTATÍSTICAS', 'Tempo, armas e mortes', 'stats', '#7fe0ff'], ['TESTE DE DESEMPENHO', 'Mede o fps do aparelho', 'bench', '#b98cff'], ['GUIA DE QUALIDADE', 'O que cada opção faz', 'qguide', '#cdb8ff']];
+  const L = [['ÁRVORE', 'Melhorias permanentes', 'tree', '#ffb340'], ['METAS', 'Do dia e da semana', 'missions', '#7fe0a0'], ['TEMPO DOS CHEFES', 'Seus recordes', 'bosstime', '#ff8a5f'], ['GALERIA DE CHEFES', 'Veja cada um de perto', 'bossgal', '#ff7ac8'], ['DESAFIOS MALUCOS', 'Regras diferentes', 'chal', '#c04aff'], ['ESTATÍSTICAS', 'Tempo, armas e mortes', 'stats', '#7fe0ff'], ['TESTE DE DESEMPENHO', 'Mede o fps do aparelho', 'bench', '#b98cff'], ['GUIA DE QUALIDADE', 'O que cada opção faz', 'qguide', '#cdb8ff'], ['MAPAS DO INFINITO', 'Obstáculos e arenas', 'maps', '#7fe0ff'], ['MAIS ACESSIBILIDADE', 'Leitor, fonte e contraste', 'acc2', '#7fe0a0']];
   L.forEach(([a, b, s, c], i) => {
-    const x = 110 + (i % 2) * 560, y = 110 + Math.floor(i / 2) * 114, id = 'hub' + i, f = UI.focus(id); if (UI.hit(id, x, y, 520, 96)) { Snd.play('uiSelect'); G.state = s; if (s === 'bench') Visual81.bench = null; return; }
-    ctx.save(); if (f) { ctx.shadowColor = c; ctx.shadowBlur = 24; } UI.panel(x, y, 520, 96, { fill: f ? 'rgba(50,28,120,.85)' : 'rgba(20,8,55,.75)', stroke: f ? c : 'rgba(190,160,255,.3)', r: 20 }); ctx.restore(); txt(a, x + 28, y + 18, 26, c, 'left', 900); txt(b, x + 28, y + 56, 17, '#cdb8ff', 'left', 700);
+    const x = 110 + (i % 2) * 560, y = 96 + Math.floor(i / 2) * 82, id = 'hub' + i, f = UI.focus(id); if (UI.hit(id, x, y, 520, 70)) { Snd.play('uiSelect'); G.state = s; if (s === 'bench') Visual81.bench = null; return; }
+    ctx.save(); if (f) { ctx.shadowColor = c; ctx.shadowBlur = 24; } UI.panel(x, y, 520, 70, { fill: f ? 'rgba(50,28,120,.85)' : 'rgba(20,8,55,.75)', stroke: f ? c : 'rgba(190,160,255,.3)', r: 20 }); ctx.restore(); txt(a, x + 28, y + 10, 24, c, 'left', 900); txt(b, x + 28, y + 42, 16, '#cdb8ff', 'left', 700);
   });
   if (UI.button('back', W / 2 - 160, 580, 320, 56, 'VOLTAR', { size: 24 }) || Input.pressed('escape')) { Snd.play('uiBack'); G.state = 'modes'; }
 };

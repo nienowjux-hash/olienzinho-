@@ -61,24 +61,24 @@ const set83 = () => Save.data.settings || {};
   const BT = () => {
     const p = G.player, wp = p && WEAPONS[p.weapon]; if (!p || !wp) return [];
     const g = geo(), sc = set83().tbtn === 1 ? 1.2 : 1;
-    const R = clamp(g.h * .115, 30, 54) * sc;
-    const pulse = { k: ' ', c: '#ffb340', l: 'PULSO', cd: p.pulseT, mx: p.pulseCd, r: R };
-    const dash = { k: 'shift', c: '#7fe0ff', l: 'ESQUIVA', cd: p.dashCd, mx: p.dashCdMax, r: R };
-    const spec = { k: 'q', c: wp.c, l: 'ESPECIAL', cd: p.specCd, mx: p.specCdMax, r: R * 1.2, big: 1 };
-    const parry = { k: 'f', c: '#7fe0a0', l: 'REBATER', cd: p.parryCd || 0, mx: 4.5, r: R * .92 };
-    let sec = null; try { const s = typeof Visual13 !== 'undefined' && Visual13.secHud ? Visual13.secHud(p) : []; if (s.length) sec = { k: 'r', c: s[0][4], l: String(s[0][0]).toUpperCase().slice(0, 9), cd: s[0][2], mx: s[0][3], r: R * .9 }; } catch (e) { }
-    // polegar direito: ESPECIAL grande no canto, ESQUIVA ao lado, PULSO em cima, REBATER na diagonal, arma 2 mais afastada
-    const m = 18, sx = g.w - m - spec.r, sy = g.h - m - spec.r;
+    const R = clamp(g.h * .058, 20, 32) * sc, m = 14;
+    const spec = { k: 'q', c: wp.c, cd: p.specCd, mx: p.specCdMax, r: R * 1.3 };
+    const dash = { k: 'shift', c: '#7fe0ff', cd: p.dashCd, mx: p.dashCdMax, r: R };
+    const pulse = { k: ' ', c: '#ffb340', cd: p.pulseT, mx: p.pulseCd, r: R };
+    const parry = { k: 'f', c: '#7fe0a0', cd: p.parryCd || 0, mx: 4.5, r: R };
+    let sec = null; try { const s = typeof Visual13 !== 'undefined' && Visual13.secHud ? Visual13.secHud(p) : []; if (s.length) sec = { k: 'r', c: s[0][4], cd: s[0][2], mx: s[0][3], r: R * .9 }; } catch (e) { }
+    // cacho compacto no canto do polegar: ESPECIAL no canto, os outros colados em arco (so icones)
+    const sx = g.w - m - spec.r, sy = g.h - m - spec.r, d = spec.r + R + 7;
     spec.x = sx; spec.y = sy;
-    dash.x = sx - spec.r - dash.r - 8; dash.y = sy + spec.r - dash.r;
-    pulse.x = sx - 4; pulse.y = sy - spec.r - pulse.r - 8;
-    parry.x = dash.x - 10; parry.y = dash.y - dash.r - parry.r - 14;
-    if (sec) { sec.x = dash.x - dash.r - sec.r - 10; sec.y = dash.y; }
-    const pause = { k: 'p', c: '#cdb8ff', l: 'II', pause: true, r: Math.max(20, R * .52), x: g.w - 8 - Math.max(20, R * .52), y: 8 + Math.max(20, R * .52) };
+    dash.x = sx - d; dash.y = sy + spec.r - R;
+    parry.x = sx - d * .74; parry.y = sy - d * .74;
+    pulse.x = sx; pulse.y = sy - d * 1.12;
+    if (sec) { sec.x = dash.x - R - sec.r - 7; sec.y = dash.y; }
+    const pr = Math.max(15, R * .62), pause = { k: 'p', c: '#cdb8ff', pause: true, r: pr, x: g.w - 8 - pr, y: 8 + pr };
     return [pause, spec, dash, pulse, parry].concat(sec ? [sec] : []);
   };
   T83.BT = BT;
-  const stickR = () => 56 * geo().u;
+  const stickR = () => clamp(geo().h * .09, 34, 52);
   const logical = e => { const r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left) / r.width * W, y: (e.clientY - r.top) / r.height * H }; };
   const mposSafe = e => { try { const q = logical(e); Input.mouse.x = q.x; Input.mouse.y = q.y; } catch (er) { } };
   const owns = id => id in T83.pts;
@@ -111,19 +111,30 @@ const set83 = () => Save.data.settings || {};
     og.setTransform(d, 0, 0, d, 0, 0); const on = T83.on && G.state === 'play' && G.player && !G.cut && !G.hideHud;
     if (!on) { if (drawn) { og.clearRect(0, 0, w, h); drawn = false; } return; } drawn = true; og.clearRect(0, 0, w, h);
     const g = geo(), t = World.t, s = T83.stick, R = stickR(), dn = T83.down || {};
-    const bx = s ? s.ox : Math.max(R + 18, g.bar >= 54 ? g.bar / 2 : g.r.left + 96 * g.u), by = s ? s.oy : g.h - Math.max(84 * g.u, R + 40);
-    og.globalAlpha = s ? .6 : .26; og.strokeStyle = '#e8dcff'; og.lineWidth = 3; og.fillStyle = 'rgba(184,160,255,.12)'; og.beginPath(); og.arc(bx, by, R, 0, TAU); og.fill(); og.stroke();
-    og.globalAlpha = s ? .9 : .32; og.fillStyle = 'rgba(210,190,255,.75)'; const kx = s ? clamp(s.x - s.ox, -R, R) : 0, ky = s ? clamp(s.y - s.oy, -R, R) : 0; og.beginPath(); og.arc(bx + kx, by + ky, R * .46, 0, TAU); og.fill();
-    if (T83.hl === 'move') { og.save(); og.globalAlpha = .55 + .45 * Math.sin(t * 7); og.strokeStyle = '#ffe9a8'; og.lineWidth = 5; og.beginPath(); og.arc(bx, by, R + 8 + 3 * Math.sin(t * 7), 0, TAU); og.stroke(); og.restore(); }
-    if (!s) { og.globalAlpha = .4; og.fillStyle = '#cdb8ff'; og.font = '800 ' + Math.max(9, 11 * g.u) + 'px Nunito,sans-serif'; og.textAlign = 'center'; og.fillText('ARRASTE PARA MOVER', bx, by + R + 16 * g.u); }
+    // analogico: discreto (so aparece forte quando voce encosta o dedo)
+    const bx = s ? s.ox : Math.max(R + 16, g.bar >= 54 ? g.bar / 2 : g.r.left + 80 * g.u), by = s ? s.oy : g.h - Math.max(70 * g.u, R + 26);
+    if (T83.hl === 'move') { og.save(); og.globalAlpha = .55 + .45 * Math.sin(t * 7); og.strokeStyle = '#ffe9a8'; og.lineWidth = 4; og.beginPath(); og.arc(bx, by, R + 7 + 3 * Math.sin(t * 7), 0, TAU); og.stroke(); og.restore(); }
+    og.globalAlpha = s ? .5 : .2; og.strokeStyle = '#e8dcff'; og.lineWidth = 2.5; og.fillStyle = 'rgba(184,160,255,.08)'; og.beginPath(); og.arc(bx, by, R, 0, TAU); og.fill(); og.stroke();
+    og.globalAlpha = s ? .8 : .25; og.fillStyle = 'rgba(210,190,255,.7)'; const kx = s ? clamp(s.x - s.ox, -R, R) : 0, ky = s ? clamp(s.y - s.oy, -R, R) : 0; og.beginPath(); og.arc(bx + kx, by + ky, R * .42, 0, TAU); og.fill();
+    if (T83.hl === 'move' && !s) { og.globalAlpha = .7; og.fillStyle = '#ffe9a8'; og.font = '800 ' + Math.max(10, 11 * g.u) + 'px Nunito,sans-serif'; og.textAlign = 'center'; og.fillText('ARRASTE PARA MOVER', bx, by + R + 14 * g.u); }
     for (const q of (T83.extra || [])) { og.globalAlpha = .9; og.fillStyle = 'rgba(40,22,110,.92)'; og.strokeStyle = '#cdb8ff'; og.lineWidth = 2.5; og.beginPath(); og.roundRect(q.x, q.y, q.w, q.h, q.h / 2); og.fill(); og.stroke(); og.fillStyle = '#fff'; og.font = '900 ' + Math.max(12, q.h * .38) + 'px Nunito,sans-serif'; og.textAlign = 'center'; og.textBaseline = 'middle'; og.fillText(q.label, q.x + q.w / 2, q.y + q.h / 2 + 1); }
+    // botoes: so icones, pequenos, transparentes
     for (const b of BT()) {
-      const down = !!dn[b.k], rdy = !(b.cd > 0), k = rdy ? 1 : 1 - clamp(b.cd / (b.mx || 1), 0, 1); og.globalAlpha = down ? 1 : .8;
-      og.fillStyle = down ? 'rgba(70,40,160,.95)' : 'rgba(14,6,40,.78)'; og.beginPath(); og.arc(b.x, b.y, b.r, 0, TAU); og.fill();
-      og.lineWidth = Math.max(3, b.r * .13); og.strokeStyle = rdy ? b.c : '#6a5aa8'; og.beginPath(); og.arc(b.x, b.y, b.r - og.lineWidth, -Math.PI / 2, -Math.PI / 2 + TAU * k); og.stroke();
-      if (rdy && !b.pause && /^#[0-9a-f]{6}$/i.test(b.c)) { const gr = og.createRadialGradient(b.x, b.y, b.r * .6, b.x, b.y, b.r * 1.5); gr.addColorStop(0, b.c + '55'); gr.addColorStop(1, b.c + '00'); og.globalAlpha = .6 + .3 * Math.sin(t * 6); og.fillStyle = gr; og.beginPath(); og.arc(b.x, b.y, b.r * 1.5, 0, TAU); og.fill(); og.globalAlpha = down ? 1 : .8; }
-      if (T83.hl && T83.hl === b.k) { og.save(); og.globalAlpha = .55 + .45 * Math.sin(t * 7); og.strokeStyle = '#ffe9a8'; og.lineWidth = 5; og.beginPath(); og.arc(b.x, b.y, b.r + 7 + 3 * Math.sin(t * 7), 0, TAU); og.stroke(); og.restore(); }
-      og.fillStyle = rdy ? '#fff' : '#b0a0e0'; og.font = '900 ' + Math.max(9, b.pause ? b.r * .9 : b.r * (b.l.length > 6 ? .27 : .32)) + 'px Nunito,sans-serif'; og.textAlign = 'center'; og.textBaseline = 'middle'; og.fillText(b.l, b.x, b.y + (b.pause ? 0 : 1));
+      const down = !!dn[b.k], rdy = !(b.cd > .05), k = rdy ? 1 : 1 - clamp(b.cd / (b.mx || 1), 0, 1), col = rdy ? b.c : '#7a6aa8';
+      og.globalAlpha = down ? .95 : (rdy ? .62 : .42);
+      og.fillStyle = down ? 'rgba(80,50,170,.9)' : 'rgba(12,5,36,.55)'; og.beginPath(); og.arc(b.x, b.y, b.r, 0, TAU); og.fill();
+      og.lineWidth = Math.max(2.5, b.r * .1); og.strokeStyle = col; og.beginPath(); og.arc(b.x, b.y, b.r - og.lineWidth / 2, -Math.PI / 2, -Math.PI / 2 + TAU * k); og.stroke();
+      if (T83.hl && T83.hl === b.k) { og.save(); og.globalAlpha = .55 + .45 * Math.sin(t * 7); og.strokeStyle = '#ffe9a8'; og.lineWidth = 4; og.beginPath(); og.arc(b.x, b.y, b.r + 6 + 3 * Math.sin(t * 7), 0, TAU); og.stroke(); og.restore(); }
+      // icone
+      og.save(); og.translate(b.x, b.y); og.strokeStyle = rdy ? '#fff' : '#a898d8'; og.fillStyle = og.strokeStyle; og.lineWidth = Math.max(2, b.r * .09); og.lineCap = 'round'; og.lineJoin = 'round'; const u = b.r * .45;
+      if (b.k === ' ') { og.beginPath(); og.arc(0, 0, u * .22, 0, TAU); og.fill(); og.beginPath(); og.arc(0, 0, u * .62, -2.5, 2.5 - 3.1 + 3.1); og.stroke(); og.beginPath(); og.arc(0, 0, u * 1.0, 0.6, TAU - 0.6); og.stroke(); }
+      else if (b.k === 'shift') { for (const o of [-.5, .35]) { og.beginPath(); og.moveTo(o * u - u * .35, -u * .6); og.lineTo(o * u + u * .35, 0); og.lineTo(o * u - u * .35, u * .6); og.stroke(); } }
+      else if (b.k === 'q') { og.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? u * .5 : u * 1.15; og.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); } og.closePath(); og.globalAlpha *= .95; og.fill(); }
+      else if (b.k === 'f') { og.beginPath(); og.moveTo(0, -u); og.lineTo(u * .85, -u * .55); og.lineTo(u * .7, u * .35); og.quadraticCurveTo(0, u * 1.1, 0, u * 1.1); og.quadraticCurveTo(0, u * 1.1, -u * .7, u * .35); og.lineTo(-u * .85, -u * .55); og.closePath(); og.stroke(); }
+      else if (b.k === 'r') { og.beginPath(); og.moveTo(0, -u); og.lineTo(u * .6, u * .4); og.lineTo(0, u * .15); og.lineTo(-u * .6, u * .4); og.closePath(); og.stroke(); }
+      else if (b.pause) { og.fillRect(-u * .55, -u * .65, u * .4, u * 1.3); og.fillRect(u * .15, -u * .65, u * .4, u * 1.3); }
+      og.restore();
+      if (!rdy && (b.mx || 0) > 1.5 && !b.pause) { og.globalAlpha = .95; og.fillStyle = '#fff'; og.font = '900 ' + Math.max(10, b.r * .62) + 'px Nunito,sans-serif'; og.textAlign = 'center'; og.textBaseline = 'middle'; og.fillText(String(Math.ceil(b.cd)), b.x, b.y + 1); }
     }
     og.globalAlpha = 1;
   });

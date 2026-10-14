@@ -16868,7 +16868,7 @@ const wk = () => { const d = Save.data; if (!d.wk || d.wk.week !== wkKey()) d.wk
   const up = Game.updatePlay;
   Game.updatePlay = function (dt) {
     const r = up.call(this, dt); if (G.state !== 'play' || G.endless || G.training || G.rush || G.practice || G.daily || G.boss || G.bossPending) return r;
-    if (!G.routeDone && G.t > G.stage.duration * .45 && G.t < G.stage.duration - 40) { G.routeDone = true; G.routeAsk = { t: 0 }; }
+    if (!G.routeDone && G.t > G.stage.duration * .45 && G.t < G.stage.duration - 40) { G.routeDone = true; }   // a escolha de rota segura/arriscada foi removida a pedido
     if (G.routeAsk) { G.routeAsk.t += dt; const k = Input.pressed('1') ? 1 : Input.pressed('2') ? 2 : 0; if (k) pickRoute(k === 1 ? 'safe' : 'risk'); else if (G.routeAsk.t > 9) pickRoute('safe'); }
     return r;
   };

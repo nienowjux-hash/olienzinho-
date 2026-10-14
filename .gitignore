@@ -15,3 +15,6 @@ android/app/build/
 android/app/src/main/assets/
 android/local.properties
 dist/
+ios/Resources/web/
+ios/Olienzinho.xcodeproj/
+ios/build/

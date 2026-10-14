@@ -1,0 +1,41 @@
+name: Gerar o aplicativo do iPhone (IPA sem assinatura)
+on:
+  workflow_dispatch:
+  push:
+    paths: ['ios/**', '.github/workflows/ios-ipa.yml']
+permissions:
+  contents: read
+jobs:
+  ipa:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Juntar os scripts em um so
+        run: python3 tools/build_bundle.py
+      - name: Copiar o jogo para dentro do aplicativo
+        run: |
+          mkdir -p ios/Resources/web/js
+          cp web/index.html web/icon-192.png web/icon-512.png ios/Resources/web/
+          cp web/js/bundle.js ios/Resources/web/js/
+          cp -R web/fonts ios/Resources/web/fonts
+          cp -R web/video ios/Resources/web/video
+      - name: Instalar o XcodeGen
+        run: brew install xcodegen
+      - name: Gerar o projeto
+        run: cd ios && xcodegen generate
+      - name: Compilar (sem assinatura)
+        run: |
+          cd ios
+          xcodebuild -project Olienzinho.xcodeproj -scheme Olienzinho -configuration Release -sdk iphoneos -derivedDataPath build CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build
+      - name: Montar o .ipa
+        run: |
+          cd ios
+          mkdir Payload
+          cp -R build/Build/Products/Release-iphoneos/Olienzinho.app Payload/
+          zip -qry ../Olienzinho.ipa Payload
+          ls -la ../Olienzinho.ipa
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Olienzinho-ipa
+          path: Olienzinho.ipa
+          retention-days: 30

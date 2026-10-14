@@ -26,7 +26,15 @@ jobs:
       - name: Compilar (sem assinatura)
         run: |
           cd ios
-          xcodebuild -project Olienzinho.xcodeproj -scheme Olienzinho -configuration Release -sdk iphoneos -derivedDataPath build CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build
+          set -o pipefail
+          xcodebuild -project Olienzinho.xcodeproj -scheme Olienzinho -configuration Release -sdk iphoneos -derivedDataPath build CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build 2>&1 | tee build.log || {
+            echo "::error::$(grep -E 'error|Error|failed|FAILED' build.log | head -12 | cut -c1-220 | tr '
+' '|')"
+            echo "::error::$(tail -n 14 build.log | cut -c1-200 | tr '
+' '|')"
+            ls -la; cat project.yml | head -5
+            exit 1
+          }
       - name: Montar o .ipa
         run: |
           cd ios

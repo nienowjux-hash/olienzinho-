@@ -197,11 +197,11 @@ const msn = () => { const d = SD(); if (!d.msn || d.msn.day !== dayK()) d.msn = 
   Screens.settings = function () {
     const r = st.apply(this, arguments);
     if (G.stab === 'sav') {
-      if (UI.button('scpy', 60, 420, 410, 56, 'COPIAR CÓDIGO DO SAVE', { size: 18 })) { try { navigator.clipboard.writeText(enc()); say79('Código copiado. Cole no outro aparelho.'); } catch (e) { say79('Não foi possível copiar.'); } }
-      if (UI.button('spas', 510, 420, 410, 56, 'COLAR CÓDIGO DO SAVE', { size: 18 })) { navigator.clipboard.readText().then(t => { try { const d = JSON.parse(decodeURIComponent(escape(atob(t.trim())))); if (!d || !d.settings) throw 0; localStorage.setItem('olienzinho_save_v1', JSON.stringify(d)); say79('Save importado! Recarregando...'); setTimeout(() => location.reload(), 900); } catch (e) { say79('Código inválido.'); } }, () => say79('Permita ler a área de transferência.')); }
-      txt('Sem servidor: o código leva seu progresso de um aparelho para outro (copie aqui, cole lá).', 60, 490, 15, '#8a7fb0', 'left', 700);
+      if (UI.button('scpy', 228, 440, 400, 52, 'COPIAR CÓDIGO DO SAVE', { size: 18 })) { try { navigator.clipboard.writeText(enc()); say79('Código copiado. Cole no outro aparelho.'); } catch (e) { say79('Não foi possível copiar.'); } }
+      if (UI.button('spas', 676, 440, 400, 52, 'COLAR CÓDIGO DO SAVE', { size: 18 })) { navigator.clipboard.readText().then(t => { try { const d = JSON.parse(decodeURIComponent(escape(atob(t.trim())))); if (!d || !d.settings) throw 0; localStorage.setItem('olienzinho_save_v1', JSON.stringify(d)); say79('Save importado! Recarregando...'); setTimeout(() => location.reload(), 900); } catch (e) { say79('Código inválido.'); } }, () => say79('Permita ler a área de transferência.')); }
+      txt('Sem servidor: o código leva seu progresso de um aparelho para outro (copie aqui, cole lá).', 218, 510, 15, '#8a7fb0', 'left', 700);
     }
-    if (World.t - Visual79.msgT < 3) txt(Visual79.msg, W / 2, 520, 20, '#7fe0a0', 'center', 800);
+    if (World.t - Visual79.msgT < 3) txt(Visual79.msg, W / 2, 548, 20, '#7fe0a0', 'center', 800);
     return r;
   };
 }

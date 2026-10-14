@@ -20,7 +20,7 @@ const wk = () => { const d = Save.data; if (!d.wk || d.wk.week !== wkKey()) d.wk
     for (const e of G.enemies) {
       if (e.dead || e.mode === 'enter' || !e.variant) continue;
       if (e.variant === 'blink') { e._bt = (e._bt ?? rand(1, 2.4)) - dt; if (e._bt <= 0) { e._bt = rand(2.2, 3); burst(e.x, e.y, ['#7fe0ff', '#ffffff'], 8, 160, 4); e.x = clamp(p.x + rand(-260, 260), 60, W - 60); e.bx = e.x; e.tx = e.x; burst(e.x, e.y, ['#7fe0ff', '#ffffff'], 8, 160, 4); } }
-      else if (e.variant === 'barreira') { e._bt = (e._bt ?? rand(2, 4)) - dt; if (e._bt <= 0) { e._bt = 4.2; if (G.enemies.filter(q => q.type === 'rock').length < 6 && e.y < H - 200) { spawnEnemy('rock', e.x, e.y + 70); shockwave(e.x, e.y + 40, 60, '#ffb340'); } } }
+      else if (e.variant === 'barreira') { e._bt = (e._bt ?? rand(2, 4)) - dt; if (e._bt <= 0) { e._bt = 4.2; if (G.enemies.filter(q => q.type === 'rock').length < 6 && e.y < H - 200) { spawnEnemy('rock', e.x, e.y + 70, { vx: 0, vy: 70, rot: 0, vr: rand(-1, 1) }); shockwave(e.x, e.y + 40, 60, '#ffb340'); } } }
       else if (e.variant === 'espelho') { for (const b of G.pb) if (!b.refl && !b.dead && Math.hypot(b.x - e.x, b.y - e.y) < e.rad + 8) { b.refl = 1; if (Math.random() < .4) ebullet(b.x, b.y, Math.atan2(-b.vy, -b.vx), 230, { r: 6, c: '#9fe8ff' }); } }
     }
     return r;

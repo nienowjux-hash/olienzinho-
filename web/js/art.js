@@ -178,7 +178,8 @@ const Art = {
         break;
       }
       case 'rock': {
-        ctx.rotate(e.rot);
+        if (!e.pts) { e.pts = Array.from({ length: 9 }, (_, i) => { const a = i / 9 * TAU, k = .72 + Math.random() * .4; return [Math.cos(a) * r * k, Math.sin(a) * r * k]; }); e.rot = e.rot || 0; }
+        ctx.rotate(e.rot || 0);
         const g = ctx.createLinearGradient(-r, -r, r, r); g.addColorStop(0, hit ? '#fff' : '#7a58c0'); g.addColorStop(1, '#1a0c45');
         ctx.beginPath(); e.pts.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.closePath();
         ctx.fillStyle = g; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = '#ff9a3c'; ctx.stroke();

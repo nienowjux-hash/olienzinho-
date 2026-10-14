@@ -148,7 +148,7 @@ const set83 = () => Save.data.settings || {};
   // padroes de dica / fundo do tutorial guiado (visual80) trocados no proprio lugar
   Visual83.touchSkip = function () {
     if (!T83.on || (G.state !== 'story' && !(G.state === 'cine'))) return;
-    if (UI.button('tskip', W - 270, 10, 250, 62, 'PULAR ▸', { size: 22 })) Input.hit.escape = true;
+    if (UI.button('tskip', W - 270, 10, 250, 62, 'PULAR CENA ▸', { size: 22 })) { const S = G.story; if (S) { try { const pg = S.pages[S.i]; if (pg && pg.video) Visual18.get(pg.video).pause(); } catch (e) { } S.vOn = false; Snd.play('uiBack'); Game.endStory(); } }
   };
   const st = Screens.story; Screens.story = function () { const r = st.apply(this, arguments); Visual83.touchSkip(); return r; };
 }

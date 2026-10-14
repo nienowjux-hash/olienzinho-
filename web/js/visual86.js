@@ -19,7 +19,7 @@ const Visual86 = { step: 0, run: -1, done: 0, base: {}, moved: 0, px: 0, py: 0, 
       { key: 'f', title: 'REBATER', hint: t ? 'Toque em REBATER quando um tiro estiver bem perto: ele volta contra o inimigo.' : 'Aperte F quando um tiro estiver bem perto: ele volta contra o inimigo.', ok: () => (G.player.parryT || 0) > 0 },
     ];
   };
-  Visual86.skip = function () { Save.data.tut2 = true; Save.save(); G.tutOn = false; if (typeof Visual83 !== 'undefined') { Visual83.hl = null; Visual83.pass = []; } };
+  Visual86.skip = function () { Save.data.tut2 = true; Save.save(); G.tutOn = false; if (typeof Visual83 !== 'undefined') { Visual83.hl = null; Visual83.pass = []; Visual83.extra = []; } };
 
   const upd = Game.updatePlay;
   Game.updatePlay = function (dt) {
@@ -41,7 +41,7 @@ const Visual86 = { step: 0, run: -1, done: 0, base: {}, moved: 0, px: 0, py: 0, 
   // um cartao so, sempre no mesmo lugar (no alto, abaixo da barra da fase)
   const hd = Visual15.hudDraw;
   Visual15.hudDraw = function () {
-    hd.call(this); const V = Visual86; if (!G.tutOn || G.state !== 'play' || G.cut) { if (typeof Visual83 !== 'undefined') { Visual83.hl = null; Visual83.pass = []; } return; }
+    hd.call(this); const V = Visual86; if (!G.tutOn || G.state !== 'play' || G.cut) { if (typeof Visual83 !== 'undefined') { Visual83.hl = null; Visual83.pass = []; Visual83.extra = []; } return; }
     const S = STEPS(), n = S.length, fin = V.step >= n, cur = fin ? null : S[V.step], t = World.t;
     const w = 700, h = 92, x = W / 2 - w / 2, y = 92, a = fin ? clamp((2.6 - (t - V.fin)) / .5, 0, 1) : clamp((t - (V.lastT || t)) * 8, 0, 1);
     V.lastT = V.lastT || t;
@@ -53,12 +53,13 @@ const Visual86 = { step: 0, run: -1, done: 0, base: {}, moved: 0, px: 0, py: 0, 
       for (let i = 0; i < n; i++) { ctx.fillStyle = i < V.step ? '#7fe0a0' : i === V.step ? '#ffb340' : 'rgba(255,255,255,.22)'; ctx.beginPath(); ctx.arc(x + 32 + i * 18, y + h - 14, 4.5, 0, TAU); ctx.fill(); }
     }
     ctx.restore();
-    if (!fin) {   // botao PULAR so reage a clique/toque (nunca a ESPACO/ENTER, que sao pulso e confirmacao)
+    if (typeof Visual83 !== 'undefined' && Visual83.on) { const g = Visual83.geo(); Visual83.extra = fin ? [] : [{ x: g.r.left + g.r.width / 2 - 66, y: g.r.top + (y + h) * (g.r.width / W) + 8, w: 132, h: 44, label: 'PULAR', fn: () => Visual86.skip() }]; }
+    else if (!fin) {   // botao PULAR so reage a clique/toque (nunca a ESPACO/ENTER, que sao pulso e confirmacao)
       const bx = x + w - 112, by = y + h - 36, bw = 96, bh = 26, m = Input.mouse, inside = m.x >= bx && m.x <= bx + bw && m.y >= by && m.y <= by + bh;
       ctx.save(); ctx.fillStyle = inside ? 'rgba(154,99,255,.9)' : 'rgba(60,34,140,.85)'; ctx.strokeStyle = 'rgba(205,184,255,.6)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, 15); ctx.fill(); ctx.stroke(); txt('PULAR', bx + bw / 2, by + 3, 13, '#fff', 'center', 800); ctx.restore();
       if (m.click && inside) Visual86.skip();
     }
-    if (typeof Visual83 !== 'undefined') { Visual83.hl = fin ? null : cur.key === 'move' ? 'move' : cur.key; Visual83.pass = fin ? [] : [[x + w - 112, y + h - 36, 96, 26]]; }
+    if (typeof Visual83 !== 'undefined') { Visual83.hl = fin ? null : cur.key === 'move' ? 'move' : cur.key; Visual83.pass = []; }
   };
 
   // dicas soltas (rebater, etc.) e a dica de inicio de fase nao aparecem durante o tutorial

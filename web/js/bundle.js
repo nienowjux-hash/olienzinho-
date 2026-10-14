@@ -17454,26 +17454,22 @@ const set83 = () => Save.data.settings || {};
   T83.geo = geo;
   const BT = () => {
     const p = G.player, wp = p && WEAPONS[p.weapon]; if (!p || !wp) return [];
-    const g = geo(), sc = set83().tbtn === 1 ? 1.18 : 1;
-    const pulse = { k: ' ', c: '#ffb340', l: 'PULSO', cd: p.pulseT, mx: p.pulseCd };
-    const dash = { k: 'shift', c: '#7fe0ff', l: 'ESQUIVA', cd: p.dashCd, mx: p.dashCdMax };
-    const spec = { k: 'q', c: wp.c, l: 'ESPECIAL', cd: p.specCd, mx: p.specCdMax, big: 1 };
-    const parry = { k: 'f', c: '#7fe0a0', l: 'REBATER', cd: p.parryCd || 0, mx: 4.5 };
-    let sec = null; try { const s = typeof Visual13 !== 'undefined' && Visual13.secHud ? Visual13.secHud(p) : []; if (s.length) sec = { k: 'r', c: s[0][4], l: String(s[0][0]).toUpperCase().slice(0, 9), cd: s[0][2], mx: s[0][3] }; } catch (e) { }
-    const pause = { k: 'p', c: '#cdb8ff', l: 'II', pause: true, small: 1 };
-    if (g.bar >= 54) {   // coluna principal na barra da direita (nada cobre o jogo) e uma segunda, estreita, junto da borda do jogo
-      const A = [pause, pulse, dash, spec], B = [parry].concat(sec ? [sec] : []);
-      const rr = Math.min(g.bar * .45, 46 * g.u * sc, (g.h - 24 - 8 * 3) / (2 * (.55 + 1.12 + 2)));
-      const place = (list, cx) => { let y = 10; for (const b of list) { b.r = rr * (b.small ? .55 : b.big ? 1.12 : 1); y += b.r; b.x = cx; b.y = y; y += b.r + 8; } const extra = (g.h - 10 - y + 8) / list.length; if (extra > 0) list.forEach((b, i) => { b.y += extra * (i + .5); }); };
-      place(A, g.w - g.bar / 2); place(B, g.w - g.bar - rr - 8);
-      return A.concat(B);
-    }
-    // sem barras: arco no canto inferior direito, sobre o jogo
-    const r = g.r, k = r.width / W, R = Math.max(30, 46 * k * 1.15 * sc), X = r.right - 14, Yb = r.bottom - 12;
-    const pos = { q: [X - R * 1.25, Yb - R * 1.25, 1.2], shift: [X - R * 3.6, Yb - R * .95, 1], f: [X - R * 3.4, Yb - R * 3.0, .9], ' ': [X - R * 1.1, Yb - R * 3.9, 1], r: [X - R * 5.6, Yb - R * 1.2, .85] };
-    const items = [pulse, dash, spec, parry].concat(sec ? [sec] : []);
-    for (const b of items) { const q = pos[b.k]; b.x = q[0]; b.y = q[1]; b.r = R * q[2]; } pause.x = r.right - 30; pause.y = r.top + 120 * k + 30; pause.r = Math.max(18, 26 * k * 1.3);
-    return [pause].concat(items);
+    const g = geo(), sc = set83().tbtn === 1 ? 1.2 : 1;
+    const R = clamp(g.h * .115, 30, 54) * sc;
+    const pulse = { k: ' ', c: '#ffb340', l: 'PULSO', cd: p.pulseT, mx: p.pulseCd, r: R };
+    const dash = { k: 'shift', c: '#7fe0ff', l: 'ESQUIVA', cd: p.dashCd, mx: p.dashCdMax, r: R };
+    const spec = { k: 'q', c: wp.c, l: 'ESPECIAL', cd: p.specCd, mx: p.specCdMax, r: R * 1.2, big: 1 };
+    const parry = { k: 'f', c: '#7fe0a0', l: 'REBATER', cd: p.parryCd || 0, mx: 4.5, r: R * .92 };
+    let sec = null; try { const s = typeof Visual13 !== 'undefined' && Visual13.secHud ? Visual13.secHud(p) : []; if (s.length) sec = { k: 'r', c: s[0][4], l: String(s[0][0]).toUpperCase().slice(0, 9), cd: s[0][2], mx: s[0][3], r: R * .9 }; } catch (e) { }
+    // polegar direito: ESPECIAL grande no canto, ESQUIVA ao lado, PULSO em cima, REBATER na diagonal, arma 2 mais afastada
+    const m = 18, sx = g.w - m - spec.r, sy = g.h - m - spec.r;
+    spec.x = sx; spec.y = sy;
+    dash.x = sx - spec.r - dash.r - 8; dash.y = sy + spec.r - dash.r;
+    pulse.x = sx - 4; pulse.y = sy - spec.r - pulse.r - 8;
+    parry.x = dash.x - 10; parry.y = dash.y - dash.r - parry.r - 14;
+    if (sec) { sec.x = dash.x - dash.r - sec.r - 10; sec.y = dash.y; }
+    const pause = { k: 'p', c: '#cdb8ff', l: 'II', pause: true, r: Math.max(20, R * .52), x: g.w - 8 - Math.max(20, R * .52), y: 8 + Math.max(20, R * .52) };
+    return [pause, spec, dash, pulse, parry].concat(sec ? [sec] : []);
   };
   T83.BT = BT;
   const stickR = () => 56 * geo().u;
@@ -17486,6 +17482,8 @@ const set83 = () => Save.data.settings || {};
     if (typeof Extras !== 'undefined' && Extras.tut && Extras.tut.wait) { Input.mouse.click = true; Input.hit.enter = true; mposSafe(e); e.stopImmediatePropagation(); return; }
     if (G.routeAsk) { const q = logical(e); if (q.x > 300 && q.x < 980 && q.y > 230 && q.y < 370) return; }
     { const q = logical(e); if (T83.pass && T83.pass.some(r => q.x >= r[0] && q.x <= r[0] + r[2] && q.y >= r[1] && q.y <= r[1] + r[3])) { mposSafe(e); Input.mouse.click = true; e.stopImmediatePropagation(); return; } }
+    const xb = (T83.extra || []).find(q => e.clientX >= q.x - 6 && e.clientX <= q.x + q.w + 6 && e.clientY >= q.y - 6 && e.clientY <= q.y + q.h + 6);
+    if (xb) { try { navigator.vibrate && navigator.vibrate(12); } catch (er) { } e.stopImmediatePropagation(); e.preventDefault(); xb.fn(); return; }
     const b = BT().find(b => Math.hypot(b.x - e.clientX, b.y - e.clientY) < b.r + 10);
     if (b) { Input.hit[b.k] = true; if (!b.pause) Input.keys[b.k] = true; T83.pts[e.pointerId] = { k: b.k, btn: b }; T83.down = T83.down || {}; T83.down[b.k] = 1; try { navigator.vibrate && navigator.vibrate(12); } catch (er) { } }
     else if (e.clientX < innerWidth * .5 && !T83.stick) { T83.stick = { id: e.pointerId, ox: e.clientX, oy: e.clientY, x: e.clientX, y: e.clientY }; T83.pts[e.pointerId] = { stick: 1 }; }
@@ -17512,6 +17510,7 @@ const set83 = () => Save.data.settings || {};
     og.globalAlpha = s ? .9 : .32; og.fillStyle = 'rgba(210,190,255,.75)'; const kx = s ? clamp(s.x - s.ox, -R, R) : 0, ky = s ? clamp(s.y - s.oy, -R, R) : 0; og.beginPath(); og.arc(bx + kx, by + ky, R * .46, 0, TAU); og.fill();
     if (T83.hl === 'move') { og.save(); og.globalAlpha = .55 + .45 * Math.sin(t * 7); og.strokeStyle = '#ffe9a8'; og.lineWidth = 5; og.beginPath(); og.arc(bx, by, R + 8 + 3 * Math.sin(t * 7), 0, TAU); og.stroke(); og.restore(); }
     if (!s) { og.globalAlpha = .4; og.fillStyle = '#cdb8ff'; og.font = '800 ' + Math.max(9, 11 * g.u) + 'px Nunito,sans-serif'; og.textAlign = 'center'; og.fillText('ARRASTE PARA MOVER', bx, by + R + 16 * g.u); }
+    for (const q of (T83.extra || [])) { og.globalAlpha = .9; og.fillStyle = 'rgba(40,22,110,.92)'; og.strokeStyle = '#cdb8ff'; og.lineWidth = 2.5; og.beginPath(); og.roundRect(q.x, q.y, q.w, q.h, q.h / 2); og.fill(); og.stroke(); og.fillStyle = '#fff'; og.font = '900 ' + Math.max(12, q.h * .38) + 'px Nunito,sans-serif'; og.textAlign = 'center'; og.textBaseline = 'middle'; og.fillText(q.label, q.x + q.w / 2, q.y + q.h / 2 + 1); }
     for (const b of BT()) {
       const down = !!dn[b.k], rdy = !(b.cd > 0), k = rdy ? 1 : 1 - clamp(b.cd / (b.mx || 1), 0, 1); og.globalAlpha = down ? 1 : .8;
       og.fillStyle = down ? 'rgba(70,40,160,.95)' : 'rgba(14,6,40,.78)'; og.beginPath(); og.arc(b.x, b.y, b.r, 0, TAU); og.fill();
@@ -17543,7 +17542,7 @@ const set83 = () => Save.data.settings || {};
   // padroes de dica / fundo do tutorial guiado (visual80) trocados no proprio lugar
   Visual83.touchSkip = function () {
     if (!T83.on || (G.state !== 'story' && !(G.state === 'cine'))) return;
-    if (UI.button('tskip', W - 188, 12, 172, 40, 'PULAR ▸', { size: 16 })) Input.hit.escape = true;
+    if (UI.button('tskip', W - 270, 10, 250, 62, 'PULAR ▸', { size: 22 })) Input.hit.escape = true;
   };
   const st = Screens.story; Screens.story = function () { const r = st.apply(this, arguments); Visual83.touchSkip(); return r; };
 }
@@ -17762,7 +17761,7 @@ const Visual86 = { step: 0, run: -1, done: 0, base: {}, moved: 0, px: 0, py: 0, 
       { key: 'f', title: 'REBATER', hint: t ? 'Toque em REBATER quando um tiro estiver bem perto: ele volta contra o inimigo.' : 'Aperte F quando um tiro estiver bem perto: ele volta contra o inimigo.', ok: () => (G.player.parryT || 0) > 0 },
     ];
   };
-  Visual86.skip = function () { Save.data.tut2 = true; Save.save(); G.tutOn = false; if (typeof Visual83 !== 'undefined') { Visual83.hl = null; Visual83.pass = []; } };
+  Visual86.skip = function () { Save.data.tut2 = true; Save.save(); G.tutOn = false; if (typeof Visual83 !== 'undefined') { Visual83.hl = null; Visual83.pass = []; Visual83.extra = []; } };
 
   const upd = Game.updatePlay;
   Game.updatePlay = function (dt) {
@@ -17784,7 +17783,7 @@ const Visual86 = { step: 0, run: -1, done: 0, base: {}, moved: 0, px: 0, py: 0, 
   // um cartao so, sempre no mesmo lugar (no alto, abaixo da barra da fase)
   const hd = Visual15.hudDraw;
   Visual15.hudDraw = function () {
-    hd.call(this); const V = Visual86; if (!G.tutOn || G.state !== 'play' || G.cut) { if (typeof Visual83 !== 'undefined') { Visual83.hl = null; Visual83.pass = []; } return; }
+    hd.call(this); const V = Visual86; if (!G.tutOn || G.state !== 'play' || G.cut) { if (typeof Visual83 !== 'undefined') { Visual83.hl = null; Visual83.pass = []; Visual83.extra = []; } return; }
     const S = STEPS(), n = S.length, fin = V.step >= n, cur = fin ? null : S[V.step], t = World.t;
     const w = 700, h = 92, x = W / 2 - w / 2, y = 92, a = fin ? clamp((2.6 - (t - V.fin)) / .5, 0, 1) : clamp((t - (V.lastT || t)) * 8, 0, 1);
     V.lastT = V.lastT || t;
@@ -17796,12 +17795,13 @@ const Visual86 = { step: 0, run: -1, done: 0, base: {}, moved: 0, px: 0, py: 0, 
       for (let i = 0; i < n; i++) { ctx.fillStyle = i < V.step ? '#7fe0a0' : i === V.step ? '#ffb340' : 'rgba(255,255,255,.22)'; ctx.beginPath(); ctx.arc(x + 32 + i * 18, y + h - 14, 4.5, 0, TAU); ctx.fill(); }
     }
     ctx.restore();
-    if (!fin) {   // botao PULAR so reage a clique/toque (nunca a ESPACO/ENTER, que sao pulso e confirmacao)
+    if (typeof Visual83 !== 'undefined' && Visual83.on) { const g = Visual83.geo(); Visual83.extra = fin ? [] : [{ x: g.r.left + g.r.width / 2 - 66, y: g.r.top + (y + h) * (g.r.width / W) + 8, w: 132, h: 44, label: 'PULAR', fn: () => Visual86.skip() }]; }
+    else if (!fin) {   // botao PULAR so reage a clique/toque (nunca a ESPACO/ENTER, que sao pulso e confirmacao)
       const bx = x + w - 112, by = y + h - 36, bw = 96, bh = 26, m = Input.mouse, inside = m.x >= bx && m.x <= bx + bw && m.y >= by && m.y <= by + bh;
       ctx.save(); ctx.fillStyle = inside ? 'rgba(154,99,255,.9)' : 'rgba(60,34,140,.85)'; ctx.strokeStyle = 'rgba(205,184,255,.6)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, 15); ctx.fill(); ctx.stroke(); txt('PULAR', bx + bw / 2, by + 3, 13, '#fff', 'center', 800); ctx.restore();
       if (m.click && inside) Visual86.skip();
     }
-    if (typeof Visual83 !== 'undefined') { Visual83.hl = fin ? null : cur.key === 'move' ? 'move' : cur.key; Visual83.pass = fin ? [] : [[x + w - 112, y + h - 36, 96, 26]]; }
+    if (typeof Visual83 !== 'undefined') { Visual83.hl = fin ? null : cur.key === 'move' ? 'move' : cur.key; Visual83.pass = []; }
   };
 
   // dicas soltas (rebater, etc.) e a dica de inicio de fase nao aparecem durante o tutorial
